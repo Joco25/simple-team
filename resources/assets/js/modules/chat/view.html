@@ -1,0 +1,18 @@
+<div class="row">
+    <div class="col-sm-3">
+        <div class="panel">
+            <div class="panel-body">
+                <button class="btn btn-success" ng-click="ctrl.createChannel()">
+                    Create Channel
+                </button>
+            </div>
+
+            <div class="list-group">
+                <a ui-sref="chat.channel({ channelId: channel.$id })" class="list-group-item" ng-repeat="channel in ctrl.channels">
+                    <h4>{{ channel.name }}</h4>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-9" ui-view></div>
+</div>

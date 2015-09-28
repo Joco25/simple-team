@@ -1,0 +1,108 @@
+<div class="container-fluid">
+    <div class="row" style="margin-bottom: 20px;">
+        <div class="col-sm-3">
+            <div class="panel panel-default">
+                <!-- Default panel contents -->
+                <div class="panel-heading">
+                    <h5 class="panel-title">People</h5>
+                </div>
+
+                <!-- List group -->
+                <div class="list-group">
+                    <a
+                        class="list-group-item pointer"
+                        ng-click="ctrl.clearFilters('users')">Show everyone</a>
+                    <a
+                        class="list-group-item pointer"
+                        ng-class="{ active: ctrl.isFilterObjActive('users', user) }"
+                        ng-click="ctrl.toggleFilter('users', user)"
+                        ng-repeat="user in ctrl.users">{{ user.name }}</a>
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <!-- Default panel contents -->
+                <div class="panel-heading">
+                    <h5 class="panel-title">Projects</h5>
+                </div>
+
+                <!-- List group -->
+                <div class="list-group">
+                    <a
+                        class="list-group-item pointer"
+                        ng-click="ctrl.clearFilters('projects')">Show all projects</a>
+                    <a
+                        class="list-group-item pointer"
+                        ng-class="{ active: ctrl.isFilterObjActive('projects', project) }"
+                        ng-click="ctrl.toggleFilter('projects', project)"
+                        ng-repeat="project in ctrl.projects">
+                        {{ project.name }}
+                    </a>
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <!-- Default panel contents -->
+                <div class="panel-heading">
+                    <h5 class="panel-title">Tags</h5>
+                </div>
+
+                <!-- List group -->
+                <div class="list-group">
+                    <a
+                        class="list-group-item pointer"
+                        ng-click="ctrl.clearFilters('tags')">Show all tags</a>
+                    <a
+                        class="list-group-item pointer"
+                        ng-class="{ active: ctrl.isFilterObjActive('tags', tag) }"
+                        ng-click="ctrl.toggleFilter('tags', tag)"
+                        ng-repeat="tag in ctrl.tags">{{ tag.name }}</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-9">
+            <form ng-submit="ctrl.createCard()">
+                <div class="row">
+                    <div class="col-sm-9">
+                        <div class="form-group">
+                            <input
+                                type="text"
+                                class="form-control"
+                                ng-model="ctrl.newCard.name"
+                                placeholder="Create a task and hit enter...">
+                        </div>
+                    </div>
+                    <div class="col-sm-3">
+                        <select
+                            class="form-control"
+                            ng-options="project.id as project.name for project in ctrl.projects"
+                            ng-model="ctrl.newCard.project_id"
+                            required>
+                            <option value="">Select a project...</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+            <div class="list-group">
+                <a
+                    class="list-group-item pointer"
+                    ng-repeat="card in ctrl.cards"
+                    ng-class="{'list-group-item-danger': card.blocked }"
+                    ui-sref="tasklist.card({ cardId: card.id })">
+                    {{ card.name }}
+
+                    <span title="Users assigned to this card." ng-repeat="user in card.users">
+                        <span class="label label-warning">{{ user.name }}</span>
+                    </span>
+
+                    <span title="Tags attached to this card." ng-repeat="tag in card.tags">
+                        <span class="label label-primary">{{ tag.name }}</span>
+                    </span>
+
+                    <span title="Impact of card on project out of 100." class="badge">{{ card.impact }}</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<div ui-view></div>

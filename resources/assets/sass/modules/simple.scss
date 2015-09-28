@@ -1,0 +1,159 @@
+#loading-bar .bar {
+    background: #f05f40;
+    opacity: .8;
+}
+
+.simple-page {
+    background: #F9F8F8;
+    color: #212121;
+    height: 100%;
+    font-family: Arial;
+    color: #333;
+    overflow-x: hidden;
+    width: 100%;
+
+    .pointer {
+        cursor: pointer;
+    }
+
+    .fa-2 {
+        font-size: 22px;
+    }
+
+    .navbar {
+        background: #fff;
+        border: 0;
+        border-bottom: 1px solid #eee;
+
+        .navbar-brand {
+            color: #f05f40;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-family: 'Open Sans';
+        }
+    }
+
+    .navbar-default .navbar-nav>.active>a, .navbar-default .navbar-nav>.active>a:focus, .navbar-default .navbar-nav>.active>a:hover {
+        background: #f05f40;
+        color: white;
+    }
+
+    .navbar-nav > li > a {
+        font-weight: 500;
+        color: #333;
+
+        &:hover {
+            background: #f05f40;
+            color: white;
+        }
+    }
+
+    .navbar-nav > .open > a {
+        color: #777;
+
+        &:hover {
+            color: #777;
+        }
+    }
+
+    .kanban-container {
+         overflow: auto;
+         position: relative;
+    }
+
+    .subtask-placeholder {
+        background: #08c;
+        border-radius: 3px;
+        height: 20px;
+        width: 100%;
+    }
+
+    .projects-container {
+        .stage-container {
+            .stage-column {
+                border-radius: 3px;
+                padding: 5px;
+
+                ul.sortable {
+                    width: 100%;
+                    min-height: 100px;
+                    list-style-type: none;
+                    margin: 0;
+                    padding: 0 0 60px;
+                    float: left;
+                    margin-right: 10px;
+
+                    li {
+                        box-shadow: 0 1px 3px #cdcdcd;
+                        border-radius: 3px;
+                        background: white;
+                        box-sizing: border-box;
+                        color: #6F6F6F;
+                        cursor: pointer;
+                        font-size: 14px;
+                        margin: 0 0 5px;
+                        padding: 10px;
+                        width: 100%;
+
+                        &:first-child {
+                            margin-top: 5px;
+                        }
+
+                        &.card-blocked {
+                            background: #C95B59;
+                            color: white;
+
+                            span, i {
+                                color: white;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /* just some content with arbitrary styles for explanation purposes */
+    .side-panel {
+        background-color: #fff;
+        position: fixed;
+        padding: 15px;
+        overflow-y: scroll;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        width: 70%;
+        z-index: 2000;
+    }
+
+    .side-panel-background {
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, .5);
+        position: fixed;
+        z-index: 1050
+    }
+
+    .drag-overlay {
+        background: rgba(255, 255, 255, .8);
+        border: 3px dashed #ccc;
+        color: #999;
+        font-size: 16px;
+        font-weight: bold;
+        padding: 15px;
+        text-align: center;
+
+        span {
+            color: #f05f40;
+        }
+
+        &:hover {
+            border-color: #f05f40;
+            color: #f05f40;
+            opacity: .8;
+        }
+    }
+}

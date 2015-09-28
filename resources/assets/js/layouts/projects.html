@@ -1,0 +1,198 @@
+<div class="container-fluid">
+    <div class="row" style="margin-bottom: 20px;">
+        <div class="col-sm-12">
+            <button
+                class="btn btn-success pull-right"
+                ng-click="ctrl.createProject()">
+                Create Active Project
+            </button>
+
+            <div class="btn-group pull-left" style="margin-right: 10px;">
+                <div class="btn-group">
+                    <button
+                        type="button"
+                        class="btn btn-default dropdown-toggle"
+                        data-toggle="dropdown">
+                        Tags <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">filmsupply.com</a></li>
+                        <li><a href="#">musicbed.com</a></li>
+                    </ul>
+                </div>
+
+                <div class="btn-group">
+                    <button
+                        type="button"
+                        class="btn btn-default dropdown-toggle"
+                        data-toggle="dropdown">
+                        Assigned to <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Me</a></li>
+                        <li><a href="#">Everyone</a></li>
+                        <li><a href="#">No One Assigned</a></li>
+                        <li><a href="#">Andrew Del Prete</a></li>
+                        <li><a href="#">Jaymes</a></li>
+                    </ul>
+                </div>
+
+                <div class="btn-group">
+                    <button
+                        type="button"
+                        class="btn btn-default dropdown-toggle"
+                        data-toggle="dropdown">
+                        Quick Filters <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Action</a></li>
+                        <li><a href="#">Active</a></li>
+                        <li><a href="#">Completed</a></li>
+                        <li><a href="#">Due today</a></li>
+                        <li><a href="#">Late</a></li>
+                        <li><a href="#">All</a></li>
+                        <li><a href="#">Hide done</a></li>
+                        <li><a href="#">Due This Week</a></li>
+                        <li><a href="#">Created by me</a></li>
+                        <li><a href="#">With files attached</a></li>
+                        <li><a href="#">Tasks blocked</a></li>
+                        <li><a href="#">Tasks in progress</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <form class="form-inline pull-left">
+                <div class="form-group">
+                    <div class="input-group">
+                        <input
+                            type="text"
+                            class="form-control"
+                            placeholder="Search cards..."
+                            ng-model="ctrl.searchInput">
+                        <div class="input-group-addon btn btn-default" ng-if="ctrl.searchInput" ng-click="ctrl.searchInput = ''">
+                            <i class="fa fa-times"></i>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="projects-container">
+    <div class="panel panel-default" ng-repeat="project in ctrl.projects" style="border: 0; margin: 0; border-radius: 0;">
+        <div class="panel-heading clearfix" style="border-radius: 0; border: 0; background: #137FA8; color: white">
+            <h5 class="panel-title pull-left" style="padding-top: 7.5px;">{{ project.name }}</h5>
+
+            <div class="btn-group pull-right">
+                <button class="btn btn-default btn-sm" type="submit" ng-click="ctrl.toggleProjectVisibility(project)">
+                    {{ project.hidden ? 'Show' : 'Hide' }}
+                </button>
+                <button type="button" class="btn btn-default dropdown-toggle btn-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="fa fa-cog"></span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li ng-click="ctrl.editProject(project)"><a href="#">Rename</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li ng-click="ctrl.deleteProject(project)"><a href="#">Delete</a></li>
+                </ul>
+            </div>
+        </div>
+        <table class="table stage-container" style="table-layout: fixed; background: #F9F8F8" ng-hide="project.hidden">
+            <tr>
+                <td ng-repeat="(stageIndex, stage) in project.stages">
+                    <div class="stage-column">
+                        <div class="btn-group" style="width: 100%; border-bottom: 5px solid #d6cfcf">
+                            <strong style="text-transform: uppercase; color: #929292">{{ stage.name }}</strong>
+
+                            <button
+                                type="button"
+                                class="btn btn-link btn-sm dropdown-toggle pull-right"
+                                data-toggle="dropdown">
+                                <span class="fa fa-cog"></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-right">
+                                <li>
+                                    <a ng-click="ctrl.editStage(stage)">Rename</a>
+                                </li>
+                                <li>
+                                    <a ng-click="ctrl.archiveAllCardsInStage(stage)">Archive All Cards</a>
+                                </li>
+                                <li role="separator" class="divider"></li>
+                                <li>
+                                    <a ng-click="ctrl.deleteStage(project, stageIndex)">Delete</a>
+                                </li>
+                            </ul>
+
+                            <button
+                                type="button"
+                                class="btn btn-sm pull-right btn-link"
+                                ng-click="ctrl.openTopCreateCard(stage)">Add a Card</button>
+                        </div>
+
+                        <div ng-show="ctrl.openTopCreateCards[stage.id]">
+                            <textarea
+                                msd-elastic
+                                ng-keyup="$event.keyCode == 13 && ctrl.createCard(stage)"
+                                ng-model="ctrl.newCardName"
+                                class="form-control"
+                                focus-me="ctrl.openTopCreateCards[stage.id]"
+                                ng-blur="ctrl.hideCreateCard()"
+                                ></textarea>
+                            <a class="btn btn-link btn-sm" ng-click="ctrl.hideCreateCard()">Cancel</a>
+                        </div>
+
+                        <div class="clearfix"></div>
+
+                        <ul
+                            class="sortable"
+                            ui-sortable="ctrl.sortableOptions"
+                            ng-model="stage.cards">
+                            <li
+                                ng-click="ctrl.openEditCard(card)"
+                                ng-repeat="(cardIndex, card) in stage.cards | filter:ctrl.searchInput"
+                                ng-class="{ 'card-blocked': card.blocked }">
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        {{ card.name }}
+                                    </div>
+                                </div>
+                                <div class="row" ng-hide="card.tags.length == 0">
+                                    <div class="col-sm-12">
+                                        <p style="margin: 5px 0">
+                                            <span ng-repeat="tag in card.tags">
+                                                <span class="label label-primary">{{ tag.name }}</span>
+                                            </span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="row text-center text-muted">
+                                    <div class="col-sm-3" title="{{ card.comments.length }} comment(s)">
+                                        <span ng-show="card.comments.length">
+                                            <i class="fa fa-comments"></i> {{ card.comments.length }}
+                                        </span>
+                                    </div>
+                                    <div class="col-sm-3" title="{{ card.users.length }} user(s) assigned to this card">
+                                        <span ng-show="card.users.length">
+                                            <i class="fa fa-user"></i> {{ card.users.length }}
+                                        </span>
+                                    </div>
+                                    <div class="col-sm-3" title="{{ card.subtasks.length }} subtask(s)">
+                                        <span ng-show="card.subtasks.length">
+                                            <i class="fa fa-check"></i> {{ card.subtasks.length }}
+                                        </span>
+                                    </div>
+                                    <div class="col-sm-3" title="Has a description">
+                                        <span ng-show="card.description">
+                                            <i class="fa fa-align-left"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div ui-view></div>

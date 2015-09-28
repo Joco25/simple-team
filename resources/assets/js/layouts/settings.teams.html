@@ -1,0 +1,20 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <span class="panel-title">Teams</span>
+        <button class="pull-right btn btn-success" ng-click="ctrl.createTeam()">
+            Create Team
+        </button>
+    </div>
+    <table class="table">
+        <tr ng-repeat="team in ctrl.teams">
+            <td>
+                {{ team.name || 'Unamed team' }}
+            </td>
+            <td class="text-right">
+                <button ng-click="ctrl.deleteTeam(team)" class="btn btn-danger">
+                    Delete
+                </button>
+            </td>
+        </tr>
+    </table>
+</div>
