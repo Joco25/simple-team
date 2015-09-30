@@ -148,6 +148,7 @@ return [
         /*
          * Vendor Service Providers...
          */
+        Bugsnag\BugsnagLaravel\BugsnagLaravelServiceProvider::class,
         // Used when generating migrations is necessary.
         // 'Way\Generators\GeneratorsServiceProvider',
         // 'Xethron\MigrationsGenerator\MigrationsGeneratorServiceProvider'
@@ -200,6 +201,11 @@ return [
         'URL'       => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View'      => Illuminate\Support\Facades\View::class,
+
+        /*
+         * Vendor aliases...
+         */
+        'Bugsnag' => Bugsnag\BugsnagLaravel\BugsnagFacade::class,
 
     ],
 
