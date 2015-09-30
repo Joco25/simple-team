@@ -40745,7 +40745,7 @@ module.exports = [
 'use strict';
 module.exports = [
   '$http', '$rootScope', 'TagDataService', function($http, $rootScope, TagData) {
-    var init;
+    var _hasFilteredTags, _hasFilteredUsers, init;
     this.newCard = {};
     this.users = [];
     this.filters = {
@@ -40831,10 +40831,44 @@ module.exports = [
               return;
             }
             return _.each(stage.cards, function(card) {
+              if (_this.filters.users.length > 0 && !_hasFilteredUsers(card)) {
+                return;
+              }
+              if (_this.filters.tags.length > 0 && !_hasFilteredTags(card)) {
+                return;
+              }
               return _this.cards.push(card);
             });
           });
         });
+      };
+    })(this);
+    _hasFilteredTags = (function(_this) {
+      return function(card) {
+        var found;
+        found = false;
+        _.each(_this.filters.tags, function(tag) {
+          if (_.findIndex(card.tags, {
+            id: tag.id
+          }) > -1) {
+            return found = true;
+          }
+        });
+        return found;
+      };
+    })(this);
+    _hasFilteredUsers = (function(_this) {
+      return function(card) {
+        var found;
+        found = false;
+        _.each(_this.filters.users, function(user) {
+          if (_.findIndex(card.users, {
+            id: user.id
+          }) > -1) {
+            return found = true;
+          }
+        });
+        return found;
       };
     })(this);
     init();

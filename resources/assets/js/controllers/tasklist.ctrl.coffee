@@ -69,11 +69,29 @@ module.exports = ['$http', '$rootScope', 'TagDataService', ($http, $rootScope, T
                     return
 
                 _.each stage.cards, (card) =>
-                    # if @filters.users.length > 0
+                    if @filters.users.length > 0 && ! _hasFilteredUsers(card)
+                        return
 
-                    # if @filters.tags.length > 0
+                    if @filters.tags.length > 0 && ! _hasFilteredTags(card)
+                        return
 
                     @cards.push card
+
+    _hasFilteredTags = (card) =>
+        found = false
+        _.each @filters.tags, (tag) ->
+            if _.findIndex(card.tags, { id: tag.id }) > -1
+                found = true
+
+        found
+
+    _hasFilteredUsers = (card) =>
+        found = false
+        _.each @filters.users, (user) ->
+            if _.findIndex(card.users, { id: user.id }) > -1
+                found = true
+
+        found
 
     init()
 
