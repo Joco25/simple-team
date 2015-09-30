@@ -148,8 +148,9 @@ return [
         /*
          * Vendor Service Providers...
          */
-        'Way\Generators\GeneratorsServiceProvider',
-        'Xethron\MigrationsGenerator\MigrationsGeneratorServiceProvider'
+        // Used when generating migrations is necessary.
+        // 'Way\Generators\GeneratorsServiceProvider',
+        // 'Xethron\MigrationsGenerator\MigrationsGeneratorServiceProvider'
 
     ],
 
