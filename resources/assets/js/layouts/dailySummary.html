@@ -1,0 +1,101 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="row">
+                <div class="col-sm-6">
+                    Saturday, 25 Jul 2015
+                </div>
+                <div class="col-sm-6 text-right">
+                    <div class="btn-group">
+                        <button class="btn btn-default">&lt;</button>
+                        <button class="btn btn-default">Today</button>
+                        <button class="btn btn-default">&gt;</button>
+                    </div>
+
+                    <input type="date">
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-heading">Michael Calkins</div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <input
+                            type="text"
+                            class="form-control"
+                            ng-model="dailySummaryBody"
+                            placeholder="Today I..."
+                            v-on="keyup:createDailySummary | key 'enter'">
+                    </div>
+
+                    <table class="table">
+                        <tr ng-repeat="dailySummary in dailySummaries">
+                            <td>
+                                <div
+                                    ng-show="dailySummary != dailySummaryCopy"
+                                    v-on="dblclick: editDailySummary(dailySummary)">
+                                    {{ dailySummary.body }}
+                                </div>
+                                <div ng-show="dailySummary == dailySummaryCopy">
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        ng-model="dailySummaryCopy.body"
+                                        v-on="
+                                            blur: updateDailySummary(dailySummary),
+                                            keyup: updateDailySummary(dailySummary) | key 'enter',
+                                            keyup: cancelDailySummary(dailySummary) | key 'esc'
+                                        ">
+                                </div>
+                            </td>
+                            <td class="text-right">
+                                <button class="btn btn-primary" v-on="click: editDailySummary(dailySummary)">Edit</button>
+                                <button class="btn btn-danger" v-on="click: deleteDailySummary(dailySummary)">Delete</button>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel" ng-repeat="(userId, dailySummaries) in ctrl.dailySummaries">
+                <div class="panel-heading">{{ ctrl.usersById[userId].name }}</div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <input
+                            type="text"
+                            class="form-control"
+                            ng-model="dailySummaryBody"
+                            placeholder="Today I..." v-on="keyup:createDailySummary | key 'enter'">
+                    </div>
+
+                    <table class="table">
+                        <tr ng-repeat="dailySummary in dailySummaries">
+                            <td>
+                                <div
+                                    ng-show="dailySummary != dailySummaryCopy"
+                                    v-on="dblclick: editDailySummary(dailySummary)">
+                                    {{ dailySummary.body }}
+                                </div>
+                                <div ng-show="dailySummary == dailySummaryCopy">
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        ng-model="dailySummaryCopy.body"
+                                        v-on="
+                                            blur: updateDailySummary(dailySummary),
+                                            keyup: updateDailySummary(dailySummary) | key 'enter',
+                                            keyup: cancelDailySummary(dailySummary) | key 'esc'
+                                        ">
+                                </div>
+                            </td>
+                            <td class="text-right">
+                                <button class="btn btn-primary" v-on="click: editDailySummary(dailySummary)">Edit</button>
+                                <button class="btn btn-danger" v-on="click: deleteDailySummary(dailySummary)">Delete</button>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

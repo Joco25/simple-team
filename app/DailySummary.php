@@ -1,0 +1,21 @@
+<?php
+
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class DailySummary extends Model
+{
+    //
+    protected $table = 'daily_summaries';
+
+    public function user()
+    {
+        return $this->belongsTo('\App\User');
+    }
+
+    public function team()
+    {
+        return $this->belongsTo('\App\User');
+    }
+}

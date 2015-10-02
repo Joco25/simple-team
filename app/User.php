@@ -40,6 +40,7 @@ class User extends Model implements AuthenticatableContract,
     public function teams()
     {
         return $this->belongsToMany('App\Team')
+            ->with('users')
             ->orderBy('name');
     }
 

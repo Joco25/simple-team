@@ -51,9 +51,12 @@ angular
     .controller 'AppCtrl', ['$state', '$http', 'InitService', '$rootScope', ($state, $http, Init, $rootScope) ->
         @teams = angular.copy Init.teams
         @authUser = angular.copy Init.authUser
-        $rootScope.teams = @teams
-        $rootScope.authUser = @authUser
         @state = $state
+
+        $rootScope.teams = @teams
+        $rootScope.$broadcast 'teams:loaded', @teams
+        $rootScope.authUser = @authUser
+        $rootScope.$broadcast 'user:loaded', @authUser
 
         init = =>
             @loadTeams()

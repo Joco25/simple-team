@@ -26,6 +26,12 @@ angular
                 controller: require('./controllers/card.ctrl.coffee')
                 controllerAs: 'ctrl'
 
+            .state 'dailySummary',
+                url: '/dailySummary'
+                template: require('./layouts/dailySummary.html')
+                controller: require('./controllers/dailySummary.ctrl.coffee')
+                controllerAs: 'ctrl'
+
             .state 'settings',
                 url: '/settings'
                 template: require('./layouts/settings.html')

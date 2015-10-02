@@ -38,10 +38,18 @@
         <div class="container-fluid">
             <a href="../" class="navbar-brand">simple.team</a>
             <ul class="nav navbar-nav navbar-right">
-                <li ng-class="{ active: appCtrl.state.current.name == 'projects' }"><a ui-sref="projects">Projects</a></li>
-                <li><a ui-sref="tasklist">Tasklist</a></li>
-                <li><a ui-sref="timeline">Timeline</a></li>
-                <li><a ui-sref="daily-summary">Daily Summary</a></li>
+                <li ng-class="{ active: appCtrl.state.current.name.indexOf('projects') > -1 }">
+                    <a ui-sref="projects">Projects</a>
+                </li>
+                <li ng-class="{ active: appCtrl.state.current.name.indexOf('tasklist') > -1 }">
+                    <a ui-sref="tasklist">Tasklist</a>
+                </li>
+                <li ng-class="{ active: appCtrl.state.current.name.indexOf('timeline') > -1 }">
+                    <a ui-sref="timeline">Timeline</a>
+                </li>
+                <li ng-class="{ active: appCtrl.state.current.name.indexOf('dailySummary') > -1 }">
+                    <a ui-sref="dailySummary">Daily Summary</a>
+                </li>
                 <!-- <li><a ui-sref="chat">Chat</a></li>
                 <li><a ui-sref="notes">Notes</a></li>
                 <li><a ui-sref="one-use-notes">View Once Notes</a></li>
