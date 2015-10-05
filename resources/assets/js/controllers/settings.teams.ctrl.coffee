@@ -1,8 +1,7 @@
 'use strict'
 
-module.exports = ['AuthService', (Auth) ->
+module.exports = ['$rootScope', '$http', ($rootScope, $http) ->
     @teams = []
-    @auth = Auth
 
     init = =>
         @authUser = angular.copy $rootScope.authUser
@@ -26,7 +25,7 @@ module.exports = ['AuthService', (Auth) ->
             .post '/api/teams',
                 name: teamName
             .success (data) =>
-                @teams.push data.team
+                @teams = data.teams
 
     init()
 

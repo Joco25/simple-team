@@ -24,16 +24,6 @@ class ApiTeamController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  Request  $request
@@ -42,6 +32,17 @@ class ApiTeamController extends Controller
     public function store(Request $request)
     {
         //
+        $team = \App\Team::create([
+            'user_id' => \Auth::user()->id,
+            'name' => \Input::get('name')
+        ]);
+
+        $team->users()->attach(\Auth::user()->id);
+        $teams = \Auth::user()->teams;
+
+        return response()->json([
+            'teams' => $teams
+        ]);
     }
 
     /**
@@ -87,5 +88,15 @@ class ApiTeamController extends Controller
     public function destroy($id)
     {
         //
+        $success = \App\Team::whereId($id)
+            ->whereUserId(\Auth::user()->id)
+            ->delete();
+
+        $teams = \Auth::user()->teams;
+
+        return response()->json([
+            'success' => $success,
+            'teams' => $teams
+        ]);
     }
 }

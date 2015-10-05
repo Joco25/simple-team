@@ -2232,6 +2232,14 @@ Copyright (c) 2015 Daniel Eden
   background: #f05f40;
   opacity: .8; }
 
+.panel-heading h3 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: normal;
+  width: 75%;
+  padding-top: 8px; }
+
 .simple-page {
   background: #F9F8F8;
   color: #212121;

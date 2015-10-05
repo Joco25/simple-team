@@ -56,7 +56,7 @@
                 <li><a ui-sref="designer">Designer</a></li> -->
 
                 <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">{{ appCtrl.authUser.team.name || 'Select a team...' }} <span class="caret"></span></a>
+                    <a class="pointer dropdown-toggle" data-toggle="dropdown">{{ appCtrl.authUser.team.name || 'Select a team...' }} <span class="caret"></span></a>
                     <ul class="dropdown-menu">
                         <li ng-repeat="team in appCtrl.teams" ng-click="appCtrl.setCurrentTeam(team)">
                             <a href="#">{{ team.name }}</a>

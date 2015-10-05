@@ -47,6 +47,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('/api/subtasks', 'ApiSubtaskController');
     Route::resource('/api/comments', 'ApiCommentController');
     Route::resource('/api/tags', 'ApiTagController');
+    Route::resource('/api/teams', 'ApiTeamController');
     Route::resource('/api/users', 'ApiUserController');
 
     Route::put('/api/me/team', 'ApiUserController@updateTeam');
