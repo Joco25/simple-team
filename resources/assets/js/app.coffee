@@ -1,5 +1,6 @@
 'use strict'
 
+require 'moment'
 require 'angular-ui-router'
 require 'angular-ui-sortable'
 require 'angular-sanitize'

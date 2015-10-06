@@ -1,18 +1,20 @@
 'use strict'
 
-module.exports = ['$http', ($http) ->
+module.exports = ['$http', '$rootScope', ($http, $rootScope) ->
     @dailySummaryBody = ''
     @dailySummaries = []
     @dailySummaryCopy = {}
     @usersById = {}
 
     init = =>
+        @authUser = $rootScope.authUser
         @loadDailySummaries()
 
     groupDailySummariesUser = (dailySummaries) =>
         @dailySummaries = _.groupBy dailySummaries, (summary) =>
             @usersById[summary.user_id] = summary.user
             summary.user_id
+        @selectedDailySummaries = @dailySummaries[@authUser.id]
 
     @loadDailySummaries = ->
         $http
@@ -20,23 +22,23 @@ module.exports = ['$http', ($http) ->
             .success (data) ->
                 groupDailySummariesUser(data.dailySummaries)
 
-    @deleteDailySummary = (dailySummary) ->
+    @deleteDailySummary = (userId, dailySummary) =>
         if ! confirm("Delete this daily summary?") then return
-
         $http.delete('/api/dailySummaries/' + dailySummary.id)
-
-        _.remove(@dailySummaries, dailySummary)
+        _.remove(@dailySummaries[@authUser.id], dailySummary)
 
     @editDailySummary = (dailySummary) ->
-        @dailySummaryCopy = dailySummary
+        newDailySummaryBody = prompt('Edit daily summary', dailySummary.body)
+        if ! newDailySummaryBody then return
+        dailySummary.body = newDailySummaryBody
+        @updateDailySummary(dailySummary)
 
     @updateDailySummary = (dailySummary) ->
         $http
             .put '/api/dailySummaries/' + dailySummary.id,
                 body: dailySummary.body
-            .success (data) =>
-                @dailySummaries = data.dailySummaries
-                @dailySummaryCopy = {}
+            .success (data) ->
+                groupDailySummariesUser data.dailySummaries
 
     @cancelDailySummary = =>
         @dailySummaryCopy = {}
@@ -44,10 +46,10 @@ module.exports = ['$http', ($http) ->
     @createDailySummary = =>
         $http
             .post '/api/dailySummaries',
-                body: this.dailySummaryBody
-            , (data) =>
-                @dailySummaries.unshift(data.dailySummary)
-                @dailySummaryBody = ''
+                body: @dailySummaryBody
+            .success (data) ->
+                groupDailySummariesUser(data.dailySummaries)
+        @dailySummaryBody = ''
 
     init()
 

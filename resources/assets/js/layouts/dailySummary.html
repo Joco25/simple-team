@@ -17,26 +17,26 @@
             </div>
 
             <div class="panel">
-                <div class="panel-heading">Michael Calkins</div>
+                <div class="panel-heading">{{ ctrl.authUser.name }}</div>
                 <div class="panel-body">
                     <div class="form-group">
-                        <input
-                            type="text"
-                            class="form-control"
-                            ng-model="dailySummaryBody"
-                            placeholder="Today I..."
-                            v-on="keyup:createDailySummary | key 'enter'">
+                        <form ng-submit="ctrl.createDailySummary()">
+                            <input
+                                type="text"
+                                class="form-control"
+                                ng-model="ctrl.dailySummaryBody"
+                                placeholder="Today I...">
+                        </form>
                     </div>
-
                     <table class="table">
-                        <tr ng-repeat="dailySummary in dailySummaries">
+                        <tr ng-repeat="dailySummary in ctrl.selectedDailySummaries">
                             <td>
                                 <div
                                     ng-show="dailySummary != dailySummaryCopy"
                                     v-on="dblclick: editDailySummary(dailySummary)">
                                     {{ dailySummary.body }}
-                                </div>mes
-                                
+                                </div>
+
                                 <div ng-show="dailySummary == dailySummaryCopy">
                                     <input
                                         type="text"
@@ -50,50 +50,34 @@
                                 </div>
                             </td>
                             <td class="text-right">
-                                <button class="btn btn-primary" v-on="click: editDailySummary(dailySummary)">Edit</button>
-                                <button class="btn btn-danger" v-on="click: deleteDailySummary(dailySummary)">Delete</button>
+                                <button
+                                    class="btn btn-primary"
+                                    ng-click="ctrl.editDailySummary(dailySummary)">
+                                    Edit
+                                </button>
+                                <button
+                                    class="btn btn-danger"
+                                    ng-click="ctrl.deleteDailySummary(userId, dailySummary)">
+                                    Delete
+                                </button>
                             </td>
                         </tr>
                     </table>
                 </div>
             </div>
 
-            <div class="panel" ng-repeat="(userId, dailySummaries) in ctrl.dailySummaries">
+            <div
+                class="panel"
+                ng-repeat="(userId, dailySummaries) in ctrl.dailySummaries"
+                ng-hide="userId == ctrl.authUser.id">
                 <div class="panel-heading">{{ ctrl.usersById[userId].name }}</div>
                 <div class="panel-body">
-                    <div class="form-group">
-                        <input
-                            type="text"
-                            class="form-control"
-                            ng-model="dailySummaryBody"
-                            placeholder="Today I..." v-on="keyup:createDailySummary | key 'enter'">
-                    </div>
-
                     <table class="table">
-                        <tr ng-repeat="dailySummary in dailySummaries">
-                            <td>
-                                <div
-                                    ng-show="dailySummary != dailySummaryCopy"
-                                    v-on="dblclick: editDailySummary(dailySummary)">
-                                    {{ dailySummary.body }}
-                                </div>
-                                <div ng-show="dailySummary == dailySummaryCopy">
-                                    <input
-                                        type="text"
-                                        class="form-control"
-                                        ng-model="dailySummaryCopy.body"
-                                        v-on="
-                                            blur: updateDailySummary(dailySummary),
-                                            keyup: updateDailySummary(dailySummary) | key 'enter',
-                                            keyup: cancelDailySummary(dailySummary) | key 'esc'
-                                        ">
-                                </div>
-                            </td>
-                            <td class="text-right">
-                                <button class="btn btn-primary" v-on="click: editDailySummary(dailySummary)">Edit</button>
-                                <button class="btn btn-danger" v-on="click: deleteDailySummary(dailySummary)">Delete</button>
-                            </td>
-                        </tr>
+                        <tbody>
+                            <tr ng-repeat="dailySummary in dailySummaries">
+                                <td>{{ dailySummary.body }}</td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
             </div>

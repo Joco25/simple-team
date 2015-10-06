@@ -43,6 +43,19 @@ class ApiDailySummaryController extends Controller
     public function store(Request $request)
     {
         //
+        $dailySummary = \App\DailySummary::create([
+            'user_id' => \Auth::user()->id,
+            'team_id' => \Auth::user()->team_id,
+            'body' => \Input::get('body')
+        ]);
+
+        $dailySummaries = \App\DailySummary::with('user')
+            ->whereTeamId(\Auth::user()->team_id)
+            ->get();
+
+        return response()->json([
+            'dailySummaries' => $dailySummaries
+        ]);
     }
 
     /**
@@ -77,6 +90,19 @@ class ApiDailySummaryController extends Controller
     public function update(Request $request, $id)
     {
         //
+        $success = \App\DailySummary::whereId($id)
+            ->whereUserId(\Auth::user()->id)
+            ->update([
+                'body' => \Input::get('body')
+            ]);
+
+        $dailySummaries = \App\DailySummary::with('user')
+            ->whereTeamId(\Auth::user()->team_id)
+            ->get();
+
+        return response()->json([
+            'dailySummaries' => $dailySummaries
+        ]);
     }
 
     /**
@@ -87,6 +113,12 @@ class ApiDailySummaryController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $success = \App\DailySummary::whereId($id)
+            ->whereTeamId(\Auth::user()->team_id)
+            ->delete();
+
+        return response()->json([
+            'success' => $success
+        ]);
     }
 }

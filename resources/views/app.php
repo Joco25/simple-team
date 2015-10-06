@@ -23,6 +23,9 @@
     <!-- Angular CSS -->
     <link href='//cdnjs.cloudflare.com/ajax/libs/angular-loading-bar/0.7.1/loading-bar.min.css' rel='stylesheet' type='text/css'>
     <link href="//cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/css/selectize.default.min.css" rel="stylesheet" type='text/css'>
+
+    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/angular.gantt/1.2.7/angular-gantt.min.css">
+    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/angular.gantt/1.2.7/angular-gantt-plugins.min.css">
 	<link href="/css/app.css" rel="stylesheet" type="text/css">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -95,6 +98,7 @@
             .service('InitService', function() {
                 return {
                     authUser: {
+                        id: <?php echo Auth::user()->id ?>,
                         team: <?php echo json_encode(Auth::user()->team) ?>,
                         name: <?php echo json_encode(Auth::user()->name) ?>,
                         email: <?php echo json_encode(Auth::user()->email) ?>
