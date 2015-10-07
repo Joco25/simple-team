@@ -158,11 +158,12 @@
         span {
             color: #f05f40;
         }
+    }
 
-        &:hover {
-            border-color: #f05f40;
-            color: #f05f40;
-            opacity: .8;
-        }
+    .drag-overlay:hover,
+    .dragover .drag-overlay {
+        border-color: #f05f40;
+        color: #f05f40;
+        opacity: .8;
     }
 }

@@ -136,10 +136,11 @@
         ng-model="ctrl.files"
         ngf-drop="ctrl.upload($file)"
         ngf-select="ctrl.uploadFiles($files)"
-        ngf-drag-over-class="dragover"
+        ngf-drag-over-class="{accept:'dragover'}"
         ngf-multiple="true"
         ngf-allow-dir="false">
-        <div class="drag-overlay">Drop files here or <span>Browse<span></div>
+        <div class="drag-overlay" ng-hide="ctrl.states.uploading">Drop files here or <span>Browse<span></div>
+        <div class="drag-overlay" ng-show="ctrl.states.uploading">Uploading...</div>
     </div>
     <table class="table" style="margin: 10px 0 0">
         <tr ng-repeat="attachment in ctrl.selectedCard.attachments">

@@ -8,6 +8,9 @@ module.exports = ($state, $stateParams, $scope, $http, $rootScope, TagDataServic
     @file = null
     @tagData = TagDataService
 
+    @states =
+        uploading: false
+
     @tagsConfig =
         valueField: 'name'
         labelField: 'name'
@@ -186,13 +189,16 @@ module.exports = ($state, $stateParams, $scope, $http, $rootScope, TagDataServic
                 url: '/api/attachments'
                 fields: 'card_id': cardId
                 file: file
-            .progress (evt) ->
+            .progress (evt) =>
+                @states.uploading = true
                 progressPercentage = parseInt(100.0 * evt.loaded / evt.total)
                 # console.log 'progress: ' + progressPercentage + '% ' + evt.config.file.name
             .success (data, status, headers, config) =>
                 # console.log 'file ' + config.file.name + 'uploaded. Response: ' + data
+                @states.uploading = false
                 @selectedCard.attachments.push(data.attachment)
             .error (data, status, headers, config) ->
+                @states.uploading = false
                 console.log 'error status: ' + status
 
     # for multiple files:

@@ -2341,10 +2341,11 @@ Copyright (c) 2015 Daniel Eden
     text-align: center; }
     .simple-page .drag-overlay span {
       color: #f05f40; }
-    .simple-page .drag-overlay:hover {
-      border-color: #f05f40;
-      color: #f05f40;
-      opacity: .8; }
+  .simple-page .drag-overlay:hover,
+  .simple-page .dragover .drag-overlay {
+    border-color: #f05f40;
+    color: #f05f40;
+    opacity: .8; }
 
 /**
  * selectize.default.css (v0.11.2) - Default Theme
