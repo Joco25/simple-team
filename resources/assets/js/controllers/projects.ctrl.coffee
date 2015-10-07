@@ -135,6 +135,8 @@ module.exports = ($http, $state, $rootScope) ->
             @projects.$save(project)
 
     @createCard = (stage) =>
+        if @newCardName.length is 0 then return
+        @newCardName = @newCardName.replace("\n", '')
         $http
             .post '/api/cards',
                 stage_id: stage.id

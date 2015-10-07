@@ -41713,6 +41713,10 @@ module.exports = function($http, $state, $rootScope) {
   })(this);
   this.createCard = (function(_this) {
     return function(stage) {
+      if (_this.newCardName.length === 0) {
+        return;
+      }
+      _this.newCardName = _this.newCardName.replace("\n", '');
       $http.post('/api/cards', {
         stage_id: stage.id,
         name: _this.newCardName,
