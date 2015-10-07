@@ -106,16 +106,6 @@ class ApiCardController extends Controller
 
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return Response
-     */
-    public function create()
-    {
-        //
-    }
-
     public function storeWithoutStage(Request $request)
     {
         $projectId = \Input::get('project_id');
@@ -180,7 +170,7 @@ class ApiCardController extends Controller
     public function show($id)
     {
         $card = \App\Card::whereId($id)
-            ->with('stage.project', 'users', 'comments.user', 'subtasks', 'tags')
+            ->with('stage.project', 'users', 'comments.user', 'subtasks', 'tags', 'attachments')
             ->whereTeamId(\Auth::user()->team_id)
             ->first();
 

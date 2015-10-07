@@ -9,6 +9,7 @@
     "angular-elastic": "^2.5.0",
     "angular-gantt": "^1.2.7",
     "angular-gravatar": "^0.4.1",
+    "angular-hotkeys": "^1.6.0",
     "angular-loading-bar": "^0.8.0",
     "angular-local-storage": "^0.2.2",
     "angular-messages": "^1.4.3",

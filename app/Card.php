@@ -9,6 +9,11 @@ class Card extends Model
     //
     protected $fillable = ['name', 'user_id', 'stage_id', 'priority', 'team_id'];
 
+    public function attachments()
+    {
+        return $this->hasMany('\App\Attachment');
+    }
+
     public function stage()
     {
         return $this->belongsTo('\App\Stage');

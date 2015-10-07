@@ -32,6 +32,7 @@ Route::post('password/reset', 'Auth\PasswordController@postReset');
 
 Route::group(['middleware' => 'auth'], function () {
     Route::get('/home', 'AppController@index');
+    Route::resource('/api/attachments', 'ApiAttachmentController');
     Route::resource('/api/teams', 'ApiTeamController');
     Route::resource('/api/projects', 'ApiProjectController');
     Route::resource('/api/stages', 'ApiStageController');

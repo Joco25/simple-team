@@ -7,7 +7,10 @@
     "require": {
         "php": ">=5.5.9",
         "laravel/framework": "5.1.*",
-        "bugsnag/bugsnag-laravel": "^1.6"
+        "bugsnag/bugsnag-laravel": "^1.6",
+        "aws/aws-sdk-php-laravel": "~3.0",
+        "xethron/migrations-generator": "dev-l5",
+        "way/generators": "dev-feature/laravel-five-stable"
     },
     "repositories": [
         {
