@@ -708,341 +708,6 @@ angular.module('md5', []).constant('md5', (function() {
 }).call(this);
 
 },{}],3:[function(require,module,exports){
-/*! 
- * angular-loading-bar v0.8.0
- * https://chieffancypants.github.io/angular-loading-bar
- * Copyright (c) 2015 Wes Cruver
- * License: MIT
- */
-/*
- * angular-loading-bar
- *
- * intercepts XHR requests and creates a loading bar.
- * Based on the excellent nprogress work by rstacruz (more info in readme)
- *
- * (c) 2013 Wes Cruver
- * License: MIT
- */
-
-
-(function() {
-
-'use strict';
-
-// Alias the loading bar for various backwards compatibilities since the project has matured:
-angular.module('angular-loading-bar', ['cfp.loadingBarInterceptor']);
-angular.module('chieffancypants.loadingBar', ['cfp.loadingBarInterceptor']);
-
-
-/**
- * loadingBarInterceptor service
- *
- * Registers itself as an Angular interceptor and listens for XHR requests.
- */
-angular.module('cfp.loadingBarInterceptor', ['cfp.loadingBar'])
-  .config(['$httpProvider', function ($httpProvider) {
-
-    var interceptor = ['$q', '$cacheFactory', '$timeout', '$rootScope', '$log', 'cfpLoadingBar', function ($q, $cacheFactory, $timeout, $rootScope, $log, cfpLoadingBar) {
-
-      /**
-       * The total number of requests made
-       */
-      var reqsTotal = 0;
-
-      /**
-       * The number of requests completed (either successfully or not)
-       */
-      var reqsCompleted = 0;
-
-      /**
-       * The amount of time spent fetching before showing the loading bar
-       */
-      var latencyThreshold = cfpLoadingBar.latencyThreshold;
-
-      /**
-       * $timeout handle for latencyThreshold
-       */
-      var startTimeout;
-
-
-      /**
-       * calls cfpLoadingBar.complete() which removes the
-       * loading bar from the DOM.
-       */
-      function setComplete() {
-        $timeout.cancel(startTimeout);
-        cfpLoadingBar.complete();
-        reqsCompleted = 0;
-        reqsTotal = 0;
-      }
-
-      /**
-       * Determine if the response has already been cached
-       * @param  {Object}  config the config option from the request
-       * @return {Boolean} retrns true if cached, otherwise false
-       */
-      function isCached(config) {
-        var cache;
-        var defaultCache = $cacheFactory.get('$http');
-        var defaults = $httpProvider.defaults;
-
-        // Choose the proper cache source. Borrowed from angular: $http service
-        if ((config.cache || defaults.cache) && config.cache !== false &&
-          (config.method === 'GET' || config.method === 'JSONP')) {
-            cache = angular.isObject(config.cache) ? config.cache
-              : angular.isObject(defaults.cache) ? defaults.cache
-              : defaultCache;
-        }
-
-        var cached = cache !== undefined ?
-          cache.get(config.url) !== undefined : false;
-
-        if (config.cached !== undefined && cached !== config.cached) {
-          return config.cached;
-        }
-        config.cached = cached;
-        return cached;
-      }
-
-
-      return {
-        'request': function(config) {
-          // Check to make sure this request hasn't already been cached and that
-          // the requester didn't explicitly ask us to ignore this request:
-          if (!config.ignoreLoadingBar && !isCached(config)) {
-            $rootScope.$broadcast('cfpLoadingBar:loading', {url: config.url});
-            if (reqsTotal === 0) {
-              startTimeout = $timeout(function() {
-                cfpLoadingBar.start();
-              }, latencyThreshold);
-            }
-            reqsTotal++;
-            cfpLoadingBar.set(reqsCompleted / reqsTotal);
-          }
-          return config;
-        },
-
-        'response': function(response) {
-          if (!response || !response.config) {
-            $log.error('Broken interceptor detected: Config object not supplied in response:\n https://github.com/chieffancypants/angular-loading-bar/pull/50');
-            return response;
-          }
-
-          if (!response.config.ignoreLoadingBar && !isCached(response.config)) {
-            reqsCompleted++;
-            $rootScope.$broadcast('cfpLoadingBar:loaded', {url: response.config.url, result: response});
-            if (reqsCompleted >= reqsTotal) {
-              setComplete();
-            } else {
-              cfpLoadingBar.set(reqsCompleted / reqsTotal);
-            }
-          }
-          return response;
-        },
-
-        'responseError': function(rejection) {
-          if (!rejection || !rejection.config) {
-            $log.error('Broken interceptor detected: Config object not supplied in rejection:\n https://github.com/chieffancypants/angular-loading-bar/pull/50');
-            return $q.reject(rejection);
-          }
-
-          if (!rejection.config.ignoreLoadingBar && !isCached(rejection.config)) {
-            reqsCompleted++;
-            $rootScope.$broadcast('cfpLoadingBar:loaded', {url: rejection.config.url, result: rejection});
-            if (reqsCompleted >= reqsTotal) {
-              setComplete();
-            } else {
-              cfpLoadingBar.set(reqsCompleted / reqsTotal);
-            }
-          }
-          return $q.reject(rejection);
-        }
-      };
-    }];
-
-    $httpProvider.interceptors.push(interceptor);
-  }]);
-
-
-/**
- * Loading Bar
- *
- * This service handles adding and removing the actual element in the DOM.
- * Generally, best practices for DOM manipulation is to take place in a
- * directive, but because the element itself is injected in the DOM only upon
- * XHR requests, and it's likely needed on every view, the best option is to
- * use a service.
- */
-angular.module('cfp.loadingBar', [])
-  .provider('cfpLoadingBar', function() {
-
-    this.autoIncrement = true;
-    this.includeSpinner = true;
-    this.includeBar = true;
-    this.latencyThreshold = 100;
-    this.startSize = 0.02;
-    this.parentSelector = 'body';
-    this.spinnerTemplate = '<div id="loading-bar-spinner"><div class="spinner-icon"></div></div>';
-    this.loadingBarTemplate = '<div id="loading-bar"><div class="bar"><div class="peg"></div></div></div>';
-
-    this.$get = ['$injector', '$document', '$timeout', '$rootScope', function ($injector, $document, $timeout, $rootScope) {
-      var $animate;
-      var $parentSelector = this.parentSelector,
-        loadingBarContainer = angular.element(this.loadingBarTemplate),
-        loadingBar = loadingBarContainer.find('div').eq(0),
-        spinner = angular.element(this.spinnerTemplate);
-
-      var incTimeout,
-        completeTimeout,
-        started = false,
-        status = 0;
-
-      var autoIncrement = this.autoIncrement;
-      var includeSpinner = this.includeSpinner;
-      var includeBar = this.includeBar;
-      var startSize = this.startSize;
-
-      /**
-       * Inserts the loading bar element into the dom, and sets it to 2%
-       */
-      function _start() {
-        if (!$animate) {
-          $animate = $injector.get('$animate');
-        }
-
-        var $parent = $document.find($parentSelector).eq(0);
-        $timeout.cancel(completeTimeout);
-
-        // do not continually broadcast the started event:
-        if (started) {
-          return;
-        }
-
-        $rootScope.$broadcast('cfpLoadingBar:started');
-        started = true;
-
-        if (includeBar) {
-          $animate.enter(loadingBarContainer, $parent, angular.element($parent[0].lastChild));
-        }
-
-        if (includeSpinner) {
-          $animate.enter(spinner, $parent, angular.element($parent[0].lastChild));
-        }
-
-        _set(startSize);
-      }
-
-      /**
-       * Set the loading bar's width to a certain percent.
-       *
-       * @param n any value between 0 and 1
-       */
-      function _set(n) {
-        if (!started) {
-          return;
-        }
-        var pct = (n * 100) + '%';
-        loadingBar.css('width', pct);
-        status = n;
-
-        // increment loadingbar to give the illusion that there is always
-        // progress but make sure to cancel the previous timeouts so we don't
-        // have multiple incs running at the same time.
-        if (autoIncrement) {
-          $timeout.cancel(incTimeout);
-          incTimeout = $timeout(function() {
-            _inc();
-          }, 250);
-        }
-      }
-
-      /**
-       * Increments the loading bar by a random amount
-       * but slows down as it progresses
-       */
-      function _inc() {
-        if (_status() >= 1) {
-          return;
-        }
-
-        var rnd = 0;
-
-        // TODO: do this mathmatically instead of through conditions
-
-        var stat = _status();
-        if (stat >= 0 && stat < 0.25) {
-          // Start out between 3 - 6% increments
-          rnd = (Math.random() * (5 - 3 + 1) + 3) / 100;
-        } else if (stat >= 0.25 && stat < 0.65) {
-          // increment between 0 - 3%
-          rnd = (Math.random() * 3) / 100;
-        } else if (stat >= 0.65 && stat < 0.9) {
-          // increment between 0 - 2%
-          rnd = (Math.random() * 2) / 100;
-        } else if (stat >= 0.9 && stat < 0.99) {
-          // finally, increment it .5 %
-          rnd = 0.005;
-        } else {
-          // after 99%, don't increment:
-          rnd = 0;
-        }
-
-        var pct = _status() + rnd;
-        _set(pct);
-      }
-
-      function _status() {
-        return status;
-      }
-
-      function _completeAnimation() {
-        status = 0;
-        started = false;
-      }
-
-      function _complete() {
-        if (!$animate) {
-          $animate = $injector.get('$animate');
-        }
-
-        $rootScope.$broadcast('cfpLoadingBar:completed');
-        _set(1);
-
-        $timeout.cancel(completeTimeout);
-
-        // Attempt to aggregate any start/complete calls within 500ms:
-        completeTimeout = $timeout(function() {
-          var promise = $animate.leave(loadingBarContainer, _completeAnimation);
-          if (promise && promise.then) {
-            promise.then(_completeAnimation);
-          }
-          $animate.leave(spinner);
-        }, 500);
-      }
-
-      return {
-        start            : _start,
-        set              : _set,
-        status           : _status,
-        inc              : _inc,
-        complete         : _complete,
-        autoIncrement    : this.autoIncrement,
-        includeSpinner   : this.includeSpinner,
-        latencyThreshold : this.latencyThreshold,
-        parentSelector   : this.parentSelector,
-        startSize        : this.startSize
-      };
-
-
-    }];     //
-  });       // wtf javascript. srsly
-})();       //
-
-},{}],4:[function(require,module,exports){
-require('./build/loading-bar');
-module.exports = 'angular-loading-bar';
-
-},{"./build/loading-bar":3}],5:[function(require,module,exports){
 /**
  * An Angular module that gives you access to the browsers local storage
  * @version v0.2.2 - 2015-05-29
@@ -1490,7 +1155,7 @@ angularLocalStorage.provider('localStorageService', function() {
   }];
 });
 })( window, window.angular );
-},{}],6:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 /**
  * @license AngularJS v1.4.6
  * (c) 2010-2015 Google, Inc. http://angularjs.org
@@ -2175,11 +1840,11 @@ angular.module('ngSanitize').filter('linky', ['$sanitize', function($sanitize) {
 
 })(window, window.angular);
 
-},{}],7:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 require('./angular-sanitize');
 module.exports = 'ngSanitize';
 
-},{"./angular-sanitize":6}],8:[function(require,module,exports){
+},{"./angular-sanitize":4}],6:[function(require,module,exports){
 /**
  * State-based routing for AngularJS
  * @version v0.2.15
@@ -6550,7 +6215,7 @@ angular.module('ui.router.state')
   .filter('isState', $IsStateFilter)
   .filter('includedByState', $IncludedByStateFilter);
 })(window, window.angular);
-},{}],9:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /*
  jQuery UI Sortable plugin wrapper
 
@@ -6902,7 +6567,7 @@ angular.module('ui.sortable', [])
     }
   ]);
 
-},{}],10:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 //! moment.js
 //! version : 2.10.6
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
@@ -10098,1910 +9763,7 @@ angular.module('ui.sortable', [])
     return _moment;
 
 }));
-},{}],11:[function(require,module,exports){
-/**!
- * AngularJS file upload/drop directive and service with progress and abort
- * FileAPI Flash shim for old browsers not supporting FormData
- * @author  Danial  <danial.farid@gmail.com>
- * @version 7.2.2
- */
-
-(function () {
-  /** @namespace FileAPI.noContentTimeout */
-
-  function patchXHR(fnName, newFn) {
-    window.XMLHttpRequest.prototype[fnName] = newFn(window.XMLHttpRequest.prototype[fnName]);
-  }
-
-  function redefineProp(xhr, prop, fn) {
-    try {
-      Object.defineProperty(xhr, prop, {get: fn});
-    } catch (e) {/*ignore*/
-    }
-  }
-
-  if (!window.FileAPI) {
-    window.FileAPI = {};
-  }
-
-  FileAPI.shouldLoad = (window.XMLHttpRequest && !window.FormData) || FileAPI.forceLoad;
-  if (FileAPI.shouldLoad) {
-    var initializeUploadListener = function (xhr) {
-      if (!xhr.__listeners) {
-        if (!xhr.upload) xhr.upload = {};
-        xhr.__listeners = [];
-        var origAddEventListener = xhr.upload.addEventListener;
-        xhr.upload.addEventListener = function (t, fn) {
-          xhr.__listeners[t] = fn;
-          if (origAddEventListener) origAddEventListener.apply(this, arguments);
-        };
-      }
-    };
-
-    patchXHR('open', function (orig) {
-      return function (m, url, b) {
-        initializeUploadListener(this);
-        this.__url = url;
-        try {
-          orig.apply(this, [m, url, b]);
-        } catch (e) {
-          if (e.message.indexOf('Access is denied') > -1) {
-            this.__origError = e;
-            orig.apply(this, [m, '_fix_for_ie_crossdomain__', b]);
-          }
-        }
-      };
-    });
-
-    patchXHR('getResponseHeader', function (orig) {
-      return function (h) {
-        return this.__fileApiXHR && this.__fileApiXHR.getResponseHeader ? this.__fileApiXHR.getResponseHeader(h) : (orig == null ? null : orig.apply(this, [h]));
-      };
-    });
-
-    patchXHR('getAllResponseHeaders', function (orig) {
-      return function () {
-        return this.__fileApiXHR && this.__fileApiXHR.getAllResponseHeaders ? this.__fileApiXHR.getAllResponseHeaders() : (orig == null ? null : orig.apply(this));
-      };
-    });
-
-    patchXHR('abort', function (orig) {
-      return function () {
-        return this.__fileApiXHR && this.__fileApiXHR.abort ? this.__fileApiXHR.abort() : (orig == null ? null : orig.apply(this));
-      };
-    });
-
-    patchXHR('setRequestHeader', function (orig) {
-      return function (header, value) {
-        if (header === '__setXHR_') {
-          initializeUploadListener(this);
-          var val = value(this);
-          // fix for angular < 1.2.0
-          if (val instanceof Function) {
-            val(this);
-          }
-        } else {
-          this.__requestHeaders = this.__requestHeaders || {};
-          this.__requestHeaders[header] = value;
-          orig.apply(this, arguments);
-        }
-      };
-    });
-
-    patchXHR('send', function (orig) {
-      return function () {
-        var xhr = this;
-        if (arguments[0] && arguments[0].__isFileAPIShim) {
-          var formData = arguments[0];
-          var config = {
-            url: xhr.__url,
-            jsonp: false, //removes the callback form param
-            cache: true, //removes the ?fileapiXXX in the url
-            complete: function (err, fileApiXHR) {
-              if (err && angular.isString(err) && err.indexOf('#2174') !== -1) {
-                // this error seems to be fine the file is being uploaded properly.
-                err = null;
-              }
-              xhr.__completed = true;
-              if (!err && xhr.__listeners.load)
-                xhr.__listeners.load({
-                  type: 'load',
-                  loaded: xhr.__loaded,
-                  total: xhr.__total,
-                  target: xhr,
-                  lengthComputable: true
-                });
-              if (!err && xhr.__listeners.loadend)
-                xhr.__listeners.loadend({
-                  type: 'loadend',
-                  loaded: xhr.__loaded,
-                  total: xhr.__total,
-                  target: xhr,
-                  lengthComputable: true
-                });
-              if (err === 'abort' && xhr.__listeners.abort)
-                xhr.__listeners.abort({
-                  type: 'abort',
-                  loaded: xhr.__loaded,
-                  total: xhr.__total,
-                  target: xhr,
-                  lengthComputable: true
-                });
-              if (fileApiXHR.status !== undefined) redefineProp(xhr, 'status', function () {
-                return (fileApiXHR.status === 0 && err && err !== 'abort') ? 500 : fileApiXHR.status;
-              });
-              if (fileApiXHR.statusText !== undefined) redefineProp(xhr, 'statusText', function () {
-                return fileApiXHR.statusText;
-              });
-              redefineProp(xhr, 'readyState', function () {
-                return 4;
-              });
-              if (fileApiXHR.response !== undefined) redefineProp(xhr, 'response', function () {
-                return fileApiXHR.response;
-              });
-              var resp = fileApiXHR.responseText || (err && fileApiXHR.status === 0 && err !== 'abort' ? err : undefined);
-              redefineProp(xhr, 'responseText', function () {
-                return resp;
-              });
-              redefineProp(xhr, 'response', function () {
-                return resp;
-              });
-              if (err) redefineProp(xhr, 'err', function () {
-                return err;
-              });
-              xhr.__fileApiXHR = fileApiXHR;
-              if (xhr.onreadystatechange) xhr.onreadystatechange();
-              if (xhr.onload) xhr.onload();
-            },
-            progress: function (e) {
-              e.target = xhr;
-              if (xhr.__listeners.progress) xhr.__listeners.progress(e);
-              xhr.__total = e.total;
-              xhr.__loaded = e.loaded;
-              if (e.total === e.loaded) {
-                // fix flash issue that doesn't call complete if there is no response text from the server
-                var _this = this;
-                setTimeout(function () {
-                  if (!xhr.__completed) {
-                    xhr.getAllResponseHeaders = function () {
-                    };
-                    _this.complete(null, {status: 204, statusText: 'No Content'});
-                  }
-                }, FileAPI.noContentTimeout || 10000);
-              }
-            },
-            headers: xhr.__requestHeaders
-          };
-          config.data = {};
-          config.files = {};
-          for (var i = 0; i < formData.data.length; i++) {
-            var item = formData.data[i];
-            if (item.val != null && item.val.name != null && item.val.size != null && item.val.type != null) {
-              config.files[item.key] = item.val;
-            } else {
-              config.data[item.key] = item.val;
-            }
-          }
-
-          setTimeout(function () {
-            if (!FileAPI.hasFlash) {
-              throw 'Adode Flash Player need to be installed. To check ahead use "FileAPI.hasFlash"';
-            }
-            xhr.__fileApiXHR = FileAPI.upload(config);
-          }, 1);
-        } else {
-          if (this.__origError) {
-            throw this.__origError;
-          }
-          orig.apply(xhr, arguments);
-        }
-      };
-    });
-    window.XMLHttpRequest.__isFileAPIShim = true;
-    window.FormData = FormData = function () {
-      return {
-        append: function (key, val, name) {
-          if (val.__isFileAPIBlobShim) {
-            val = val.data[0];
-          }
-          this.data.push({
-            key: key,
-            val: val,
-            name: name
-          });
-        },
-        data: [],
-        __isFileAPIShim: true
-      };
-    };
-
-    window.Blob = Blob = function (b) {
-      return {
-        data: b,
-        __isFileAPIBlobShim: true
-      };
-    };
-  }
-
-})();
-
-(function () {
-  /** @namespace FileAPI.forceLoad */
-  /** @namespace window.FileAPI.jsUrl */
-  /** @namespace window.FileAPI.jsPath */
-
-  function isInputTypeFile(elem) {
-    return elem[0].tagName.toLowerCase() === 'input' && elem.attr('type') && elem.attr('type').toLowerCase() === 'file';
-  }
-
-  function hasFlash() {
-    try {
-      var fo = new ActiveXObject('ShockwaveFlash.ShockwaveFlash');
-      if (fo) return true;
-    } catch (e) {
-      if (navigator.mimeTypes['application/x-shockwave-flash'] !== undefined) return true;
-    }
-    return false;
-  }
-
-  function getOffset(obj) {
-    var left = 0, top = 0;
-
-    if (window.jQuery) {
-      return jQuery(obj).offset();
-    }
-
-    if (obj.offsetParent) {
-      do {
-        left += (obj.offsetLeft - obj.scrollLeft);
-        top += (obj.offsetTop - obj.scrollTop);
-        obj = obj.offsetParent;
-      } while (obj);
-    }
-    return {
-      left: left,
-      top: top
-    };
-  }
-
-  if (FileAPI.shouldLoad) {
-
-    //load FileAPI
-    if (FileAPI.forceLoad) {
-      FileAPI.html5 = false;
-    }
-
-    if (!FileAPI.upload) {
-      var jsUrl, basePath, script = document.createElement('script'), allScripts = document.getElementsByTagName('script'), i, index, src;
-      if (window.FileAPI.jsUrl) {
-        jsUrl = window.FileAPI.jsUrl;
-      } else if (window.FileAPI.jsPath) {
-        basePath = window.FileAPI.jsPath;
-      } else {
-        for (i = 0; i < allScripts.length; i++) {
-          src = allScripts[i].src;
-          index = src.search(/\/ng\-file\-upload[\-a-zA-z0-9\.]*\.js/);
-          if (index > -1) {
-            basePath = src.substring(0, index + 1);
-            break;
-          }
-        }
-      }
-
-      if (FileAPI.staticPath == null) FileAPI.staticPath = basePath;
-      script.setAttribute('src', jsUrl || basePath + 'FileAPI.min.js');
-      document.getElementsByTagName('head')[0].appendChild(script);
-
-      FileAPI.hasFlash = hasFlash();
-    }
-
-    FileAPI.ngfFixIE = function (elem, fileElem, changeFn) {
-      if (!hasFlash()) {
-        throw 'Adode Flash Player need to be installed. To check ahead use "FileAPI.hasFlash"';
-      }
-      var fixInputStyle = function () {
-        if (elem.attr('disabled')) {
-          if (fileElem) fileElem.removeClass('js-fileapi-wrapper');
-        } else {
-          if (!fileElem.attr('__ngf_flash_')) {
-            fileElem.unbind('change');
-            fileElem.unbind('click');
-            fileElem.bind('change', function (evt) {
-              fileApiChangeFn.apply(this, [evt]);
-              changeFn.apply(this, [evt]);
-            });
-            fileElem.attr('__ngf_flash_', 'true');
-          }
-          fileElem.addClass('js-fileapi-wrapper');
-          if (!isInputTypeFile(elem)) {
-            fileElem.css('position', 'absolute')
-              .css('top', getOffset(elem[0]).top + 'px').css('left', getOffset(elem[0]).left + 'px')
-              .css('width', elem[0].offsetWidth + 'px').css('height', elem[0].offsetHeight + 'px')
-              .css('filter', 'alpha(opacity=0)').css('display', elem.css('display'))
-              .css('overflow', 'hidden').css('z-index', '900000')
-              .css('visibility', 'visible');
-          }
-        }
-      };
-
-      elem.bind('mouseenter', fixInputStyle);
-
-      var fileApiChangeFn = function (evt) {
-        var files = FileAPI.getFiles(evt);
-        //just a double check for #233
-        for (var i = 0; i < files.length; i++) {
-          if (files[i].size === undefined) files[i].size = 0;
-          if (files[i].name === undefined) files[i].name = 'file';
-          if (files[i].type === undefined) files[i].type = 'undefined';
-        }
-        if (!evt.target) {
-          evt.target = {};
-        }
-        evt.target.files = files;
-        // if evt.target.files is not writable use helper field
-        if (evt.target.files !== files) {
-          evt.__files_ = files;
-        }
-        (evt.__files_ || evt.target.files).item = function (i) {
-          return (evt.__files_ || evt.target.files)[i] || null;
-        };
-      };
-    };
-
-    FileAPI.disableFileInput = function (elem, disable) {
-      if (disable) {
-        elem.removeClass('js-fileapi-wrapper');
-      } else {
-        elem.addClass('js-fileapi-wrapper');
-      }
-    };
-  }
-})();
-
-if (!window.FileReader) {
-  window.FileReader = function () {
-    var _this = this, loadStarted = false;
-    this.listeners = {};
-    this.addEventListener = function (type, fn) {
-      _this.listeners[type] = _this.listeners[type] || [];
-      _this.listeners[type].push(fn);
-    };
-    this.removeEventListener = function (type, fn) {
-      if (_this.listeners[type]) _this.listeners[type].splice(_this.listeners[type].indexOf(fn), 1);
-    };
-    this.dispatchEvent = function (evt) {
-      var list = _this.listeners[evt.type];
-      if (list) {
-        for (var i = 0; i < list.length; i++) {
-          list[i].call(_this, evt);
-        }
-      }
-    };
-    this.onabort = this.onerror = this.onload = this.onloadstart = this.onloadend = this.onprogress = null;
-
-    var constructEvent = function (type, evt) {
-      var e = {type: type, target: _this, loaded: evt.loaded, total: evt.total, error: evt.error};
-      if (evt.result != null) e.target.result = evt.result;
-      return e;
-    };
-    var listener = function (evt) {
-      if (!loadStarted) {
-        loadStarted = true;
-        if (_this.onloadstart) _this.onloadstart(constructEvent('loadstart', evt));
-      }
-      var e;
-      if (evt.type === 'load') {
-        if (_this.onloadend) _this.onloadend(constructEvent('loadend', evt));
-        e = constructEvent('load', evt);
-        if (_this.onload) _this.onload(e);
-        _this.dispatchEvent(e);
-      } else if (evt.type === 'progress') {
-        e = constructEvent('progress', evt);
-        if (_this.onprogress) _this.onprogress(e);
-        _this.dispatchEvent(e);
-      } else {
-        e = constructEvent('error', evt);
-        if (_this.onerror) _this.onerror(e);
-        _this.dispatchEvent(e);
-      }
-    };
-    this.readAsArrayBuffer = function (file) {
-      FileAPI.readAsBinaryString(file, listener);
-    };
-    this.readAsBinaryString = function (file) {
-      FileAPI.readAsBinaryString(file, listener);
-    };
-    this.readAsDataURL = function (file) {
-      FileAPI.readAsDataURL(file, listener);
-    };
-    this.readAsText = function (file) {
-      FileAPI.readAsText(file, listener);
-    };
-  };
-}
-
-/**!
- * AngularJS file upload/drop directive and service with progress and abort
- * @author  Danial  <danial.farid@gmail.com>
- * @version 7.2.2
- */
-
-if (window.XMLHttpRequest && !(window.FileAPI && FileAPI.shouldLoad)) {
-  window.XMLHttpRequest.prototype.setRequestHeader = (function (orig) {
-    return function (header, value) {
-      if (header === '__setXHR_') {
-        var val = value(this);
-        // fix for angular < 1.2.0
-        if (val instanceof Function) {
-          val(this);
-        }
-      } else {
-        orig.apply(this, arguments);
-      }
-    };
-  })(window.XMLHttpRequest.prototype.setRequestHeader);
-}
-
-var ngFileUpload = angular.module('ngFileUpload', []);
-
-ngFileUpload.version = '7.2.2';
-
-ngFileUpload.service('UploadBase', ['$http', '$q', '$timeout', function ($http, $q, $timeout) {
-  function sendHttp(config) {
-    config.method = config.method || 'POST';
-    config.headers = config.headers || {};
-
-    var deferred = $q.defer();
-    var promise = deferred.promise;
-
-    config.headers.__setXHR_ = function () {
-      return function (xhr) {
-        if (!xhr) return;
-        config.__XHR = xhr;
-        if (config.xhrFn) config.xhrFn(xhr);
-        xhr.upload.addEventListener('progress', function (e) {
-          e.config = config;
-          if (deferred.notify) {
-            deferred.notify(e);
-          } else if (promise.progressFunc) {
-            $timeout(function () {
-              promise.progressFunc(e);
-            });
-          }
-        }, false);
-        //fix for firefox not firing upload progress end, also IE8-9
-        xhr.upload.addEventListener('load', function (e) {
-          if (e.lengthComputable) {
-            e.config = config;
-            if (deferred.notify) {
-              deferred.notify(e);
-            } else if (promise.progressFunc) {
-              $timeout(function () {
-                promise.progressFunc(e);
-              });
-            }
-          }
-        }, false);
-      };
-    };
-
-    $http(config).then(function (r) {
-      deferred.resolve(r);
-    }, function (e) {
-      deferred.reject(e);
-    }, function (n) {
-      deferred.notify(n);
-    });
-
-    promise.success = function (fn) {
-      promise.then(function (response) {
-        fn(response.data, response.status, response.headers, config);
-      });
-      return promise;
-    };
-
-    promise.error = function (fn) {
-      promise.then(null, function (response) {
-        fn(response.data, response.status, response.headers, config);
-      });
-      return promise;
-    };
-
-    promise.progress = function (fn) {
-      promise.progressFunc = fn;
-      promise.then(null, null, function (update) {
-        fn(update);
-      });
-      return promise;
-    };
-    promise.abort = function () {
-      if (config.__XHR) {
-        $timeout(function () {
-          config.__XHR.abort();
-        });
-      }
-      return promise;
-    };
-    promise.xhr = function (fn) {
-      config.xhrFn = (function (origXhrFn) {
-        return function () {
-          if (origXhrFn) origXhrFn.apply(promise, arguments);
-          fn.apply(promise, arguments);
-        };
-      })(config.xhrFn);
-      return promise;
-    };
-
-    return promise;
-  }
-
-  this.upload = function (config) {
-    function addFieldToFormData(formData, val, key) {
-      if (val !== undefined) {
-        if (angular.isDate(val)) {
-          val = val.toISOString();
-        }
-        if (angular.isString(val)) {
-          formData.append(key, val);
-        } else if (config.sendFieldsAs === 'form') {
-          if (angular.isObject(val)) {
-            for (var k in val) {
-              if (val.hasOwnProperty(k)) {
-                addFieldToFormData(formData, val[k], key + '[' + k + ']');
-              }
-            }
-          } else {
-            formData.append(key, val);
-          }
-        } else {
-          val = angular.isString(val) ? val : angular.toJson(val);
-          if (config.sendFieldsAs === 'json-blob') {
-            formData.append(key, new Blob([val], {type: 'application/json'}));
-          } else {
-            formData.append(key, val);
-          }
-        }
-      }
-    }
-
-    function isFile(file) {
-      return file instanceof Blob || (file.flashId && file.name && file.size);
-    }
-
-    function addFileToFormData(formData, file, key) {
-      if (isFile(file)) {
-        formData.append(key, file, file.fileName || file.name);
-      } else if (angular.isObject(file)) {
-        for (var k in file) {
-          if (file.hasOwnProperty(k)) {
-            var split = k.split(',');
-            if (split[1]) {
-              file[k].fileName = split[1].replace(/^\s+|\s+$/g, '');
-            }
-            addFileToFormData(formData, file[k], split[0]);
-          }
-        }
-      } else {
-        throw 'Expected file object in Upload.upload file option: ' + file.toString();
-      }
-    }
-
-    config.headers = config.headers || {};
-    config.headers['Content-Type'] = undefined;
-    config.transformRequest = config.transformRequest ?
-      (angular.isArray(config.transformRequest) ?
-        config.transformRequest : [config.transformRequest]) : [];
-    config.transformRequest.push(function (data) {
-      var formData = new FormData(), allFields = {}, key;
-      for (key in config.fields) {
-        if (config.fields.hasOwnProperty(key)) {
-          allFields[key] = config.fields[key];
-        }
-      }
-      if (data) allFields.data = data;
-      for (key in allFields) {
-        if (allFields.hasOwnProperty(key)) {
-          var val = allFields[key];
-          if (config.formDataAppender) {
-            config.formDataAppender(formData, key, val);
-          } else {
-            addFieldToFormData(formData, val, key);
-          }
-        }
-      }
-
-      if (config.file != null) {
-        if (angular.isArray(config.file)) {
-          for (var i = 0; i < config.file.length; i++) {
-            addFileToFormData(formData, config.file[i], 'file');
-          }
-        } else {
-          addFileToFormData(formData, config.file, 'file');
-        }
-      }
-      return formData;
-    });
-
-    return sendHttp(config);
-  };
-
-  this.http = function (config) {
-    config.transformRequest = config.transformRequest || function (data) {
-        if ((window.ArrayBuffer && data instanceof window.ArrayBuffer) || data instanceof Blob) {
-          return data;
-        }
-        return $http.defaults.transformRequest[0].apply(this, arguments);
-      };
-    return sendHttp(config);
-  };
-
-  this.setDefaults = function (defaults) {
-    this.defaults = defaults || {};
-  };
-
-  this.defaults = {};
-  this.version = ngFileUpload.version;
-}
-
-]);
-
-ngFileUpload.service('Upload', ['$parse', '$timeout', '$compile', 'UploadResize', function ($parse, $timeout, $compile, UploadResize) {
-  var upload = UploadResize;
-  upload.getAttrWithDefaults = function (attr, name) {
-    return attr[name] != null ? attr[name] :
-      (upload.defaults[name] == null ?
-        upload.defaults[name] : upload.defaults[name].toString());
-  };
-
-  upload.attrGetter = function (name, attr, scope, params) {
-    if (scope) {
-      try {
-        if (params) {
-          return $parse(this.getAttrWithDefaults(attr, name))(scope, params);
-        } else {
-          return $parse(this.getAttrWithDefaults(attr, name))(scope);
-        }
-      } catch (e) {
-        // hangle string value without single qoute
-        if (name.search(/min|max|pattern/i)) {
-          return this.getAttrWithDefaults(attr, name);
-        } else {
-          throw e;
-        }
-      }
-    } else {
-      return this.getAttrWithDefaults(attr, name);
-    }
-  };
-
-  upload.updateModel = function (ngModel, attr, scope, fileChange, files, evt, noDelay) {
-    function update() {
-      var file = files && files.length ? files[0] : null;
-      if (ngModel) {
-        var singleModel = !upload.attrGetter('ngfMultiple', attr, scope) && !upload.attrGetter('multiple', attr) && !keep;
-        $parse(upload.attrGetter('ngModel', attr)).assign(scope, singleModel ? file : files);
-      }
-      var ngfModel = upload.attrGetter('ngfModel', attr);
-      if (ngfModel) {
-        $parse(ngfModel).assign(scope, files);
-      }
-
-      if (fileChange) {
-        $parse(fileChange)(scope, {
-          $files: files,
-          $file: file,
-          $event: evt
-        });
-      }
-      // scope apply changes
-      $timeout(function () {
-      });
-    }
-
-    var keep = upload.attrGetter('ngfKeep', attr, scope);
-    if (keep === true) {
-      if (!files || !files.length) {
-        return;
-      } else {
-        var prevFiles = ((ngModel && ngModel.$modelValue) || attr.$$ngfPrevFiles || []).slice(0),
-          hasNew = false;
-        if (upload.attrGetter('ngfKeepDistinct', attr, scope) === true) {
-          var len = prevFiles.length;
-          for (var i = 0; i < files.length; i++) {
-            for (var j = 0; j < len; j++) {
-              if (files[i].name === prevFiles[j].name) break;
-            }
-            if (j === len) {
-              prevFiles.push(files[i]);
-              hasNew = true;
-            }
-          }
-          if (!hasNew) return;
-          files = prevFiles;
-        } else {
-          files = prevFiles.concat(files);
-        }
-      }
-    }
-
-    attr.$$ngfPrevFiles = files;
-
-    function resize(files, callback) {
-      var param = upload.attrGetter('ngfResize', attr, scope);
-      if (!param) return callback();
-      var count = files.length;
-      var checkCallback = function () {
-        count--;
-        if (count === 0) callback();
-      };
-      var success = function (index) {
-        return function (resizedFile) {
-          files.splice(index, 1, resizedFile);
-          checkCallback();
-        };
-      };
-      var error = function (f) {
-        return function (e) {
-          checkCallback();
-          f.$error = 'resize';
-          f.$errorParam = (e ? (e.message ? e.message : e) + ': ' : '') + (f && f.name);
-        };
-      };
-      for (var i = 0; i < files.length; i++) {
-        var f = files[i];
-        if (!f.$error && f.type.indexOf('image') === 0) {
-          upload.resize(f, param.width, param.height, param.quality).then(success(i), error(f));
-        } else {
-          checkCallback();
-        }
-      }
-    }
-
-    if (noDelay) {
-      update();
-    } else if (upload.validate(files, ngModel, attr, scope, upload.attrGetter('ngfValidateLater', attr), function () {
-        resize(files, function () {
-          $timeout(function () {
-            update();
-          });
-        });
-      }));
-  };
-
-  return upload;
-}]);
-
-ngFileUpload.directive('ngfSelect', ['$parse', '$timeout', '$compile', 'Upload', function ($parse, $timeout, $compile, Upload) {
-  var generatedElems = [];
-
-  function isDelayedClickSupported(ua) {
-    // fix for android native browser < 4.4 and safari windows
-    var m = ua.match(/Android[^\d]*(\d+)\.(\d+)/);
-    if (m && m.length > 2) {
-      var v = Upload.defaults.androidFixMinorVersion || 4;
-      return parseInt(m[1]) < 4 || (parseInt(m[1]) === v && parseInt(m[2]) < v);
-    }
-
-    // safari on windows
-    return ua.indexOf('Chrome') === -1 && /.*Windows.*Safari.*/.test(ua);
-  }
-
-  function linkFileSelect(scope, elem, attr, ngModel, $parse, $timeout, $compile, upload) {
-    /** @namespace attr.ngfSelect */
-    /** @namespace attr.ngfChange */
-    /** @namespace attr.ngModel */
-    /** @namespace attr.ngfModel */
-    /** @namespace attr.ngfMultiple */
-    /** @namespace attr.ngfCapture */
-    /** @namespace attr.ngfValidate */
-    /** @namespace attr.ngfKeep */
-    /** @namespace attr.ngfKeepDistinct */
-    var attrGetter = function (name, scope) {
-      return upload.attrGetter(name, attr, scope);
-    };
-
-    function isInputTypeFile() {
-      return elem[0].tagName.toLowerCase() === 'input' && attr.type && attr.type.toLowerCase() === 'file';
-    }
-
-    function fileChangeAttr() {
-      return attrGetter('ngfChange') || attrGetter('ngfSelect');
-    }
-
-    function changeFn(evt) {
-      var fileList = evt.__files_ || (evt.target && evt.target.files), files = [];
-      for (var i = 0; i < fileList.length; i++) {
-        files.push(fileList[i]);
-      }
-      upload.updateModel(ngModel, attr, scope, fileChangeAttr(), files.length ? files : null, evt);
-    }
-
-    var unwatches = [];
-    unwatches.push(scope.$watch(attrGetter('ngfMultiple'), function () {
-      fileElem.attr('multiple', attrGetter('ngfMultiple', scope));
-    }));
-    unwatches.push(scope.$watch(attrGetter('ngfCapture'), function () {
-      fileElem.attr('capture', attrGetter('ngfCapture', scope));
-    }));
-    attr.$observe('accept', function () {
-      fileElem.attr('accept', attrGetter('accept'));
-    });
-    unwatches.push(function () {
-      if (attr.$$observers) delete attr.$$observers.accept;
-    });
-    function bindAttrToFileInput(fileElem) {
-      if (elem !== fileElem) {
-        for (var i = 0; i < elem[0].attributes.length; i++) {
-          var attribute = elem[0].attributes[i];
-          if (attribute.name !== 'type' && attribute.name !== 'class' &&
-            attribute.name !== 'id' && attribute.name !== 'style') {
-            if (attribute.value == null || attribute.value === '') {
-              if (attribute.name === 'required') attribute.value = 'required';
-              if (attribute.name === 'multiple') attribute.value = 'multiple';
-            }
-            fileElem.attr(attribute.name, attribute.value);
-          }
-        }
-      }
-    }
-
-    function createFileInput() {
-      if (isInputTypeFile()) {
-        return elem;
-      }
-
-      var fileElem = angular.element('<input type="file">');
-      bindAttrToFileInput(fileElem);
-
-      fileElem.css('visibility', 'hidden').css('position', 'absolute').css('overflow', 'hidden')
-        .css('width', '0px').css('height', '0px').css('border', 'none')
-        .css('margin', '0px').css('padding', '0px').attr('tabindex', '-1');
-      generatedElems.push({el: elem, ref: fileElem});
-      document.body.appendChild(fileElem[0]);
-
-      return fileElem;
-    }
-
-    var initialTouchStartY = 0;
-
-    function clickHandler(evt) {
-      if (elem.attr('disabled') || attrGetter('ngfSelectDisabled', scope)) return false;
-
-      var r = handleTouch(evt);
-      if (r != null) return r;
-
-      resetModel(evt);
-
-      if (isDelayedClickSupported(navigator.userAgent)) {
-        setTimeout(function () {
-          fileElem[0].click();
-        }, 0);
-      } else {
-        fileElem[0].click();
-      }
-
-      return false;
-    }
-
-    function handleTouch(evt) {
-      var touches = evt.changedTouches || (evt.originalEvent && evt.originalEvent.changedTouches);
-      if (evt.type === 'touchstart') {
-        initialTouchStartY = touches ? touches[0].clientY : 0;
-        return true; // don't block event default
-      } else {
-        evt.stopPropagation();
-        evt.preventDefault();
-
-        // prevent scroll from triggering event
-        if (evt.type === 'touchend') {
-          var currentLocation = touches ? touches[0].clientY : 0;
-          if (Math.abs(currentLocation - initialTouchStartY) > 20) return false;
-        }
-      }
-    }
-
-    var fileElem = elem;
-
-    function resetModel(evt) {
-      if (fileElem.val()) {
-        fileElem.val(null);
-        upload.updateModel(ngModel, attr, scope, fileChangeAttr(), null, evt, true);
-      }
-    }
-
-    if (!isInputTypeFile()) {
-      fileElem = createFileInput();
-    }
-    fileElem.bind('change', changeFn);
-
-    if (!isInputTypeFile()) {
-      elem.bind('click touchstart touchend', clickHandler);
-    } else {
-      elem.bind('click', resetModel);
-    }
-
-    upload.registerValidators(ngModel, fileElem, attr, scope);
-
-    function ie10SameFileSelectFix(evt) {
-      if (fileElem && !fileElem.attr('__ngf_ie10_Fix_')) {
-        if (!fileElem[0].parentNode) {
-          fileElem = null;
-          return;
-        }
-        evt.preventDefault();
-        evt.stopPropagation();
-        fileElem.unbind('click');
-        var clone = fileElem.clone();
-        fileElem.replaceWith(clone);
-        fileElem = clone;
-        fileElem.attr('__ngf_ie10_Fix_', 'true');
-        fileElem.bind('change', changeFn);
-        fileElem.bind('click', ie10SameFileSelectFix);
-        fileElem[0].click();
-        return false;
-      } else {
-        fileElem.removeAttr('__ngf_ie10_Fix_');
-      }
-    }
-
-    if (navigator.appVersion.indexOf('MSIE 10') !== -1) {
-      fileElem.bind('click', ie10SameFileSelectFix);
-    }
-
-    scope.$on('$destroy', function () {
-      if (!isInputTypeFile()) fileElem.remove();
-      angular.forEach(unwatches, function (unwatch) {
-        unwatch();
-      });
-    });
-
-    $timeout(function () {
-      for (var i = 0; i < generatedElems.length; i++) {
-        var g = generatedElems[i];
-        if (!document.body.contains(g.el[0])) {
-          generatedElems.splice(i, 1);
-          g.ref.remove();
-        }
-      }
-    });
-
-    if (window.FileAPI && window.FileAPI.ngfFixIE) {
-      window.FileAPI.ngfFixIE(elem, fileElem, changeFn);
-    }
-  }
-
-  return {
-    restrict: 'AEC',
-    require: '?ngModel',
-    link: function (scope, elem, attr, ngModel) {
-      linkFileSelect(scope, elem, attr, ngModel, $parse, $timeout, $compile, Upload);
-    }
-  };
-}]);
-
-(function () {
-
-  ngFileUpload.service('UploadDataUrl', ['UploadBase', '$timeout', '$q', function (UploadBase, $timeout, $q) {
-    var upload = UploadBase;
-    upload.dataUrl = function (file, disallowObjectUrl) {
-      if ((disallowObjectUrl && file.dataUrl != null) || (!disallowObjectUrl && file.blobUrl != null)) {
-        var d = $q.defer();
-        $timeout(function () {
-          d.resolve(disallowObjectUrl ? file.dataUrl : file.blobUrl);
-        });
-        return d.promise;
-      }
-      var p = disallowObjectUrl ? file.$ngfDataUrlPromise : file.$ngfBlobUrlPromise;
-      if (p) return p;
-
-      var deferred = $q.defer();
-      $timeout(function () {
-        if (window.FileReader && file &&
-          (!window.FileAPI || navigator.userAgent.indexOf('MSIE 8') === -1 || file.size < 20000) &&
-          (!window.FileAPI || navigator.userAgent.indexOf('MSIE 9') === -1 || file.size < 4000000)) {
-          //prefer URL.createObjectURL for handling refrences to files of all sizes
-          //since it doesn´t build a large string in memory
-          var URL = window.URL || window.webkitURL;
-          if (URL && URL.createObjectURL && !disallowObjectUrl) {
-            var url;
-            try {
-              url = URL.createObjectURL(file);
-            } catch (e) {
-              $timeout(function () {
-                file.blobUrl = '';
-                deferred.reject();
-              });
-              return;
-            }
-            $timeout(function () {
-              file.blobUrl = url;
-              if (url) deferred.resolve(url);
-            });
-          } else {
-            var fileReader = new FileReader();
-            fileReader.onload = function (e) {
-              $timeout(function () {
-                file.dataUrl = e.target.result;
-                deferred.resolve(e.target.result);
-              });
-            };
-            fileReader.onerror = function () {
-              $timeout(function () {
-                file.dataUrl = '';
-                deferred.reject();
-              });
-            };
-            fileReader.readAsDataURL(file);
-          }
-        } else {
-          $timeout(function () {
-            file[disallowObjectUrl ? 'dataUrl' : 'blobUrl'] = '';
-            deferred.reject();
-          });
-        }
-      });
-
-      if (disallowObjectUrl) {
-        p = file.$ngfDataUrlPromise = deferred.promise;
-      } else {
-        p = file.$ngfBlobUrlPromise = deferred.promise;
-      }
-      p['finally'](function () {
-        delete file[disallowObjectUrl ? '$ngfDataUrlPromise' : '$ngfBlobUrlPromise'];
-      });
-      return p;
-    };
-    return upload;
-  }]);
-
-  function getTagType(el) {
-    if (el.tagName.toLowerCase() === 'img') return 'image';
-    if (el.tagName.toLowerCase() === 'audio') return 'audio';
-    if (el.tagName.toLowerCase() === 'video') return 'video';
-    return /\./;
-  }
-
-  var style = angular.element('<style>.ngf-hide{display:none !important}</style>');
-  document.getElementsByTagName('head')[0].appendChild(style[0]);
-
-  /** @namespace attr.ngfSrc */
-  /** @namespace attr.ngfNoObjectUrl */
-  ngFileUpload.directive('ngfSrc', ['$compile', '$timeout', 'Upload', function ($compile, $timeout, Upload) {
-    return {
-      restrict: 'AE',
-      link: function (scope, elem, attr) {
-        $timeout(function () {
-          var unwatch = scope.$watch(attr.ngfSrc, function (file) {
-            if (angular.isString(file)) {
-              elem.removeClass('ngf-hide');
-              return elem.attr('src', file);
-            }
-            if (file && file.type && file.type.indexOf(getTagType(elem[0])) === 0) {
-              var disallowObjectUrl = Upload.attrGetter('ngfNoObjectUrl', attr, scope);
-              Upload.dataUrl(file, disallowObjectUrl)['finally'](function () {
-                $timeout(function () {
-                  if (file.blobUrl || file.dataUrl) {
-                    elem.removeClass('ngf-hide');
-                    elem.attr('src', (disallowObjectUrl ? file.dataUrl : file.blobUrl) || file.dataUrl);
-                  } else {
-                    elem.addClass('ngf-hide');
-                  }
-                });
-              });
-            } else {
-              elem.addClass('ngf-hide');
-            }
-          });
-
-          scope.$on('$destroy', function () {
-            unwatch();
-          });
-        });
-      }
-    };
-  }]);
-
-  /** @namespace attr.ngfBackground */
-  /** @namespace attr.ngfNoObjectUrl */
-  ngFileUpload.directive('ngfBackground', ['Upload', '$compile', '$timeout', function (Upload, $compile, $timeout) {
-    return {
-      restrict: 'AE',
-      link: function (scope, elem, attr) {
-        $timeout(function () {
-          var unwatch = scope.$watch(attr.ngfBackground, function (file) {
-            if (angular.isString(file)) return elem.css('background-image', 'url(\'' + file + '\')');
-            if (file && file.type && file.type.indexOf('image') === 0) {
-              var disallowObjectUrl = Upload.attrGetter('ngfNoObjectUrl', attr, scope);
-              Upload.dataUrl(file, disallowObjectUrl)['finally'](function () {
-                $timeout(function () {
-                  if ((disallowObjectUrl && file.dataUrl) || (!disallowObjectUrl && file.blobUrl)) {
-                    elem.css('background-image', 'url(\'' + (disallowObjectUrl ? file.dataUrl : file.blobUrl) + '\')');
-                  } else {
-                    elem.css('background-image', '');
-                  }
-                });
-              });
-            } else {
-              elem.css('background-image', '');
-            }
-          });
-          scope.$on('$destroy', function () {
-            unwatch();
-          });
-        });
-      }
-    };
-  }]);
-
-  //ngFileUpload.config(['$compileProvider', function ($compileProvider) {
-  //  if ($compileProvider.imgSrcSanitizationWhitelist) $compileProvider.imgSrcSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|local|file|data|blob):/);
-  //  if ($compileProvider.aHrefSanitizationWhitelist) $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|local|file|data|blob):/);
-  //}]);
-  //
-  //ngFileUpload.filter('ngfDataUrl', ['UploadDataUrl', '$sce', function (UploadDataUrl, $sce) {
-  //  return function (file, disallowObjectUrl) {
-  //    if (angular.isString(file)) {
-  //      return $sce.trustAsResourceUrl(file);
-  //    }
-  //    if (file && !file.dataUrl) {
-  //      if (file.dataUrl === undefined && angular.isObject(file)) {
-  //        file.dataUrl = null;
-  //        UploadDataUrl.dataUrl(file, disallowObjectUrl);
-  //      }
-  //      return '';
-  //    }
-  //    return (file && file.dataUrl ? $sce.trustAsResourceUrl(file.dataUrl) : file) || '';
-  //  };
-  //}]);
-
-})();
-
-ngFileUpload.service('UploadValidate', ['UploadDataUrl', '$q', '$timeout', function (UploadDataUrl, $q, $timeout) {
-  var upload = UploadDataUrl;
-
-  function globStringToRegex(str) {
-    if (str.length > 2 && str[0] === '/' && str[str.length - 1] === '/') {
-      return str.substring(1, str.length - 1);
-    }
-    var split = str.split(','), result = '';
-    if (split.length > 1) {
-      for (var i = 0; i < split.length; i++) {
-        result += '(' + globStringToRegex(split[i]) + ')';
-        if (i < split.length - 1) {
-          result += '|';
-        }
-      }
-    } else {
-      if (str.indexOf('.') === 0) {
-        str = '*' + str;
-      }
-      result = '^' + str.replace(new RegExp('[.\\\\+*?\\[\\^\\]$(){}=!<>|:\\' + '-]', 'g'), '\\$&') + '$';
-      result = result.replace(/\\\*/g, '.*').replace(/\\\?/g, '.');
-    }
-    return result;
-  }
-
-  function translateScalars(str) {
-    if (angular.isString(str)) {
-      if (str.search(/kb/i) === str.length - 2) {
-        return parseFloat(str.substring(0, str.length - 2) * 1000);
-      } else if (str.search(/mb/i) === str.length - 2) {
-        return parseFloat(str.substring(0, str.length - 2) * 1000000);
-      } else if (str.search(/gb/i) === str.length - 2) {
-        return parseFloat(str.substring(0, str.length - 2) * 1000000000);
-      } else if (str.search(/b/i) === str.length - 1) {
-        return parseFloat(str.substring(0, str.length - 1));
-      } else if (str.search(/s/i) === str.length - 1) {
-        return parseFloat(str.substring(0, str.length - 1));
-      } else if (str.search(/m/i) === str.length - 1) {
-        return parseFloat(str.substring(0, str.length - 1) * 60);
-      } else if (str.search(/h/i) === str.length - 1) {
-        return parseFloat(str.substring(0, str.length - 1) * 3600);
-      }
-    }
-    return str;
-  }
-
-  upload.registerValidators = function (ngModel, elem, attr, scope) {
-    if (!ngModel) return;
-
-    ngModel.$ngfValidations = [];
-    function setValidities(ngModel) {
-      angular.forEach(ngModel.$ngfValidations, function (validation) {
-        ngModel.$setValidity(validation.name, validation.valid);
-      });
-    }
-
-    ngModel.$formatters.push(function (val) {
-      if (upload.attrGetter('ngfValidateLater', attr, scope) || !ngModel.$$ngfValidated) {
-        upload.validate(val, ngModel, attr, scope, false, function () {
-          setValidities(ngModel);
-          ngModel.$$ngfValidated = false;
-        });
-        if (val && val.length === 0) {
-          val = null;
-        }
-        if (elem && (val == null || val.length === 0)) {
-          if (elem.val()) {
-            elem.val(null);
-          }
-        }
-      } else {
-        setValidities(ngModel);
-        ngModel.$$ngfValidated = false;
-      }
-      return val;
-    });
-  };
-
-  upload.validatePattern = function (file, val) {
-    if (!val) {
-      return true;
-    }
-    var regexp = new RegExp(globStringToRegex(val), 'gi');
-    return (file.type != null && regexp.test(file.type.toLowerCase())) ||
-      (file.name != null && regexp.test(file.name.toLowerCase()));
-  };
-
-  upload.validate = function (files, ngModel, attr, scope, later, callback) {
-    ngModel = ngModel || {};
-    ngModel.$ngfValidations = ngModel.$ngfValidations || [];
-
-    angular.forEach(ngModel.$ngfValidations, function (v) {
-      v.valid = true;
-    });
-
-    var attrGetter = function (name, params) {
-      return upload.attrGetter(name, attr, scope, params);
-    };
-
-    if (later) {
-      callback.call(ngModel);
-      return;
-    }
-    ngModel.$$ngfValidated = true;
-
-    if (files == null || files.length === 0) {
-      callback.call(ngModel);
-      return;
-    }
-
-    files = files.length === undefined ? [files] : files.slice(0);
-
-    function validateSync(name, validatorVal, fn) {
-      if (files) {
-        var dName = 'ngf' + name[0].toUpperCase() + name.substr(1);
-        var i = files.length, valid = null;
-
-        while (i--) {
-          var file = files[i];
-          var val = attrGetter(dName, {'$file': file});
-          if (val == null) {
-            val = validatorVal(attrGetter('ngfValidate') || {});
-            valid = valid == null ? true : valid;
-          }
-          if (val != null) {
-            if (!fn(file, val)) {
-              file.$error = name;
-              file.$errorParam = val;
-              files.splice(i, 1);
-              valid = false;
-            }
-          }
-        }
-        if (valid !== null) {
-          ngModel.$ngfValidations.push({name: name, valid: valid});
-        }
-      }
-    }
-
-    validateSync('pattern', function (cons) {
-      return cons.pattern;
-    }, upload.validatePattern);
-    validateSync('minSize', function (cons) {
-      return cons.size && cons.size.min;
-    }, function (file, val) {
-      return file.size >= translateScalars(val);
-    });
-    validateSync('maxSize', function (cons) {
-      return cons.size && cons.size.max;
-    }, function (file, val) {
-      return file.size <= translateScalars(val);
-    });
-
-    validateSync('validateFn', function () {
-      return null;
-    }, function (file, r) {
-      return r === true || r === null || r === '';
-    });
-
-    if (!files.length) {
-      callback.call(ngModel, ngModel.$ngfValidations);
-      return;
-    }
-
-    var pendings = 0;
-
-    function validateAsync(name, validatorVal, type, asyncFn, fn) {
-      if (files) {
-        var thisPendings = 0, hasError = false, dName = 'ngf' + name[0].toUpperCase() + name.substr(1);
-        files = files.length === undefined ? [files] : files;
-        angular.forEach(files, function (file) {
-          if (file.type.search(type) !== 0) {
-            return true;
-          }
-          var val = attrGetter(dName, {'$file': file}) || validatorVal(attrGetter('ngfValidate', {'$file': file}) || {});
-          if (val) {
-            pendings++;
-            thisPendings++;
-            asyncFn(file, val).then(function (d) {
-              if (!fn(d, val)) {
-                file.$error = name;
-                file.$errorParam = val;
-                hasError = true;
-              }
-            }, function () {
-              if (attrGetter('ngfValidateForce', {'$file': file})) {
-                file.$error = name;
-                file.$errorParam = val;
-                hasError = true;
-              }
-            })['finally'](function () {
-              pendings--;
-              thisPendings--;
-              if (!thisPendings) {
-                ngModel.$ngfValidations.push({name: name, valid: !hasError});
-              }
-              if (!pendings) {
-                callback.call(ngModel, ngModel.$ngfValidations);
-              }
-            });
-          }
-        });
-      }
-    }
-
-    validateAsync('maxHeight', function (cons) {
-      return cons.height && cons.height.max;
-    }, /image/, this.imageDimensions, function (d, val) {
-      return d.height <= val;
-    });
-    validateAsync('minHeight', function (cons) {
-      return cons.height && cons.height.min;
-    }, /image/, this.imageDimensions, function (d, val) {
-      return d.height >= val;
-    });
-    validateAsync('maxWidth', function (cons) {
-      return cons.width && cons.width.max;
-    }, /image/, this.imageDimensions, function (d, val) {
-      return d.width <= val;
-    });
-    validateAsync('minWidth', function (cons) {
-      return cons.width && cons.width.min;
-    }, /image/, this.imageDimensions, function (d, val) {
-      return d.width >= val;
-    });
-    validateAsync('ratio', function (cons) {
-      return cons.ratio;
-    }, /image/, this.imageDimensions, function (d, val) {
-      var split = val.toString().split(','), valid = false;
-
-      for (var i = 0; i < split.length; i++) {
-        var r = split[i], xIndex = r.search(/x/i);
-        if (xIndex > -1) {
-          r = parseFloat(r.substring(0, xIndex)) / parseFloat(r.substring(xIndex + 1));
-        } else {
-          r = parseFloat(r);
-        }
-        if (Math.abs((d.width / d.height) - r) < 0.0001) {
-          valid = true;
-        }
-      }
-      return valid;
-    });
-    validateAsync('maxDuration', function (cons) {
-      return cons.duration && cons.duration.max;
-    }, /audio|video/, this.mediaDuration, function (d, val) {
-      return d <= translateScalars(val);
-    });
-    validateAsync('minDuration', function (cons) {
-      return cons.duration && cons.duration.min;
-    }, /audio|video/, this.mediaDuration, function (d, val) {
-      return d >= translateScalars(val);
-    });
-
-    validateAsync('validateAsyncFn', function () {
-      return null;
-    }, /./, function (file, val) {
-      return val;
-    }, function (r) {
-      return r === true || r === null || r === '';
-    });
-
-    if (!pendings) {
-      callback.call(ngModel, ngModel.$ngfValidations);
-    }
-  };
-
-  upload.imageDimensions = function (file) {
-    if (file.width && file.height) {
-      var d = $q.defer();
-      $timeout(function () {
-        d.resolve({width: file.width, height: file.height});
-      });
-      return d.promise;
-    }
-    if (file.$ngfDimensionPromise) return file.$ngfDimensionPromise;
-
-    var deferred = $q.defer();
-    $timeout(function () {
-      if (file.type.indexOf('image') !== 0) {
-        deferred.reject('not image');
-        return;
-      }
-      upload.dataUrl(file).then(function (dataUrl) {
-        var img = angular.element('<img>').attr('src', dataUrl).css('visibility', 'hidden').css('position', 'fixed');
-
-        function success() {
-          var width = img[0].clientWidth;
-          var height = img[0].clientHeight;
-          img.remove();
-          file.width = width;
-          file.height = height;
-          deferred.resolve({width: width, height: height});
-        }
-
-        function error() {
-          img.remove();
-          deferred.reject('load error');
-        }
-
-        img.on('load', success);
-        img.on('error', error);
-        var count = 0;
-
-        function checkLoadError() {
-          $timeout(function () {
-            if (img[0].parentNode) {
-              if (img[0].clientWidth) {
-                success();
-              } else if (count > 10) {
-                error();
-              } else {
-                checkLoadError();
-              }
-            }
-          }, 1000);
-        }
-
-        checkLoadError();
-
-        angular.element(document.getElementsByTagName('body')[0]).append(img);
-      }, function () {
-        deferred.reject('load error');
-      });
-    });
-
-    file.$ngfDimensionPromise = deferred.promise;
-    file.$ngfDimensionPromise['finally'](function () {
-      delete file.$ngfDimensionPromise;
-    });
-    return file.$ngfDimensionPromise;
-  };
-
-  upload.mediaDuration = function (file) {
-    if (file.duration) {
-      var d = $q.defer();
-      $timeout(function () {
-        d.resolve(file.duration);
-      });
-      return d.promise;
-    }
-    if (file.$ngfDurationPromise) return file.$ngfDurationPromise;
-
-    var deferred = $q.defer();
-    $timeout(function () {
-      if (file.type.indexOf('audio') !== 0 && file.type.indexOf('video') !== 0) {
-        deferred.reject('not media');
-        return;
-      }
-      upload.dataUrl(file).then(function (dataUrl) {
-        var el = angular.element(file.type.indexOf('audio') === 0 ? '<audio>' : '<video>')
-          .attr('src', dataUrl).css('visibility', 'none').css('position', 'fixed');
-
-        function success() {
-          var duration = el[0].duration;
-          file.duration = duration;
-          el.remove();
-          deferred.resolve(duration);
-        }
-
-        function error() {
-          el.remove();
-          deferred.reject('load error');
-        }
-
-        el.on('loadedmetadata', success);
-        el.on('error', error);
-        var count = 0;
-
-        function checkLoadError() {
-          $timeout(function () {
-            if (el[0].parentNode) {
-              if (el[0].duration) {
-                success();
-              } else if (count > 10) {
-                error();
-              } else {
-                checkLoadError();
-              }
-            }
-          }, 1000);
-        }
-
-        checkLoadError();
-
-        angular.element(document.body).append(el);
-      }, function () {
-        deferred.reject('load error');
-      });
-    });
-
-    file.$ngfDurationPromise = deferred.promise;
-    file.$ngfDurationPromise['finally'](function () {
-      delete file.$ngfDurationPromise;
-    });
-    return file.$ngfDurationPromise;
-  };
-  return upload;
-}
-]);
-
-// source: Source: https://github.com/romelgomez/angular-firebase-image-upload/blob/master/app/scripts/fileUpload.js#L89
-
-ngFileUpload.service('UploadResize', ['UploadValidate', '$q', '$timeout', function (UploadValidate, $q, $timeout) {
-  var upload = UploadValidate;
-
-  /**
-   * Conserve aspect ratio of the original region. Useful when shrinking/enlarging
-   * images to fit into a certain area.
-   * Source:  http://stackoverflow.com/a/14731922
-   *
-   * @param {Number} srcWidth Source area width
-   * @param {Number} srcHeight Source area height
-   * @param {Number} maxWidth Nestable area maximum available width
-   * @param {Number} maxHeight Nestable area maximum available height
-   * @return {Object} { width, height }
-   */
-  var calculateAspectRatioFit = function (srcWidth, srcHeight, maxWidth, maxHeight) {
-    var ratio = Math.min(maxWidth / srcWidth, maxHeight / srcHeight);
-    return {width: srcWidth * ratio, height: srcHeight * ratio};
-  };
-
-  /**
-   Reduce imagen size and quality.
-   @param {String} imagen is a base64 string
-   @param {Number} width
-   @param {Number} height
-   @param {Number} quality from 0.1 to 1.0
-   @return Promise.<String>
-   **/
-  var resize = function (imagen, width, height, quality, type) {
-    var deferred = $q.defer();
-    var canvasElement = document.createElement('canvas');
-    var imagenElement = document.createElement('img');
-    imagenElement.onload = function () {
-      try {
-        var dimensions = calculateAspectRatioFit(imagenElement.width, imagenElement.height, width, height);
-        canvasElement.width = dimensions.width;
-        canvasElement.height = dimensions.height;
-        var context = canvasElement.getContext('2d');
-        context.drawImage(imagenElement, 0, 0, dimensions.width, dimensions.height);
-        deferred.resolve(canvasElement.toDataURL(type || 'image/WebP', quality || 1.0));
-      } catch(e) {
-        deferred.reject(e);
-      }
-    };
-    imagenElement.onerror = function () {
-      deferred.reject();
-    };
-    imagenElement.src = imagen;
-    return deferred.promise;
-  };
-
-  var dataURLtoBlob = function (dataurl) {
-    var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
-      bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
-    while (n--) {
-      u8arr[n] = bstr.charCodeAt(n);
-    }
-    return new Blob([u8arr], {type: mime});
-  };
-
-  upload.resize = function (file, width, height, quality) {
-    var deferred = $q.defer();
-    if (file.type.indexOf('image') !== 0) {
-      $timeout(function() {deferred.resolve('Only images are allowed for resizing!');});
-      return deferred.promise;
-    }
-
-    upload.dataUrl(file, true).then(function (url) {
-      resize(url, width, height, quality, file.type).then(function (dataUrl) {
-        var blob= dataURLtoBlob(dataUrl);
-        blob.name = file.name;
-        deferred.resolve(blob);
-      }, function () {
-        deferred.reject();
-      });
-    }, function () {
-      deferred.reject();
-    });
-    return deferred.promise;
-  };
-
-  return upload;
-}]);
-
-(function () {
-  ngFileUpload.directive('ngfDrop', ['$parse', '$timeout', '$location', 'Upload',
-    function ($parse, $timeout, $location, Upload) {
-      return {
-        restrict: 'AEC',
-        require: '?ngModel',
-        link: function (scope, elem, attr, ngModel) {
-          linkDrop(scope, elem, attr, ngModel, $parse, $timeout, $location, Upload);
-        }
-      };
-    }]);
-
-  ngFileUpload.directive('ngfNoFileDrop', function () {
-    return function (scope, elem) {
-      if (dropAvailable()) elem.css('display', 'none');
-    };
-  });
-
-  ngFileUpload.directive('ngfDropAvailable', ['$parse', '$timeout', 'Upload', function ($parse, $timeout, Upload) {
-    return function (scope, elem, attr) {
-      if (dropAvailable()) {
-        var model = $parse(Upload.attrGetter('ngfDropAvailable', attr));
-        $timeout(function () {
-          model(scope);
-          if (model.assign) {
-            model.assign(scope, true);
-          }
-        });
-      }
-    };
-  }]);
-
-  function linkDrop(scope, elem, attr, ngModel, $parse, $timeout, $location, upload) {
-    var available = dropAvailable();
-
-    var attrGetter = function (name, scope, params) {
-      return upload.attrGetter(name, attr, scope, params);
-    };
-
-    if (attrGetter('dropAvailable')) {
-      $timeout(function () {
-        if (scope[attrGetter('dropAvailable')]) {
-          scope[attrGetter('dropAvailable')].value = available;
-        } else {
-          scope[attrGetter('dropAvailable')] = available;
-        }
-      });
-    }
-    if (!available) {
-      if (attrGetter('ngfHideOnDropNotAvailable', scope) === true) {
-        elem.css('display', 'none');
-      }
-      return;
-    }
-
-    function isDisabled() {
-      return elem.attr('disabled') || attrGetter('ngfDropDisabled', scope);
-    }
-
-    upload.registerValidators(ngModel, null, attr, scope);
-
-    var leaveTimeout = null;
-    var stopPropagation = $parse(attrGetter('ngfStopPropagation'));
-    var dragOverDelay = 1;
-    var actualDragOverClass;
-
-    elem[0].addEventListener('dragover', function (evt) {
-      if (isDisabled()) return;
-      evt.preventDefault();
-      if (stopPropagation(scope)) evt.stopPropagation();
-      // handling dragover events from the Chrome download bar
-      if (navigator.userAgent.indexOf('Chrome') > -1) {
-        var b = evt.dataTransfer.effectAllowed;
-        evt.dataTransfer.dropEffect = ('move' === b || 'linkMove' === b) ? 'move' : 'copy';
-      }
-      $timeout.cancel(leaveTimeout);
-      if (!actualDragOverClass) {
-        actualDragOverClass = 'C';
-        calculateDragOverClass(scope, attr, evt, function (clazz) {
-          actualDragOverClass = clazz;
-          elem.addClass(actualDragOverClass);
-        });
-      }
-    }, false);
-    elem[0].addEventListener('dragenter', function (evt) {
-      if (isDisabled()) return;
-      evt.preventDefault();
-      if (stopPropagation(scope)) evt.stopPropagation();
-    }, false);
-    elem[0].addEventListener('dragleave', function () {
-      if (isDisabled()) return;
-      leaveTimeout = $timeout(function () {
-        elem.removeClass(actualDragOverClass);
-        actualDragOverClass = null;
-      }, dragOverDelay || 1);
-    }, false);
-    elem[0].addEventListener('drop', function (evt) {
-      if (isDisabled()) return;
-      evt.preventDefault();
-      if (stopPropagation(scope)) evt.stopPropagation();
-      elem.removeClass(actualDragOverClass);
-      actualDragOverClass = null;
-      extractFiles(evt, function (files) {
-          upload.updateModel(ngModel, attr, scope, attrGetter('ngfChange') || attrGetter('ngfDrop'), files, evt);
-        }, attrGetter('ngfAllowDir', scope) !== false,
-        attrGetter('multiple') || attrGetter('ngfMultiple', scope));
-    }, false);
-    elem[0].addEventListener('paste', function (evt) {
-      if (isDisabled()) return;
-      var files = [];
-      var clipboard = evt.clipboardData || evt.originalEvent.clipboardData;
-      if (clipboard && clipboard.items) {
-        for (var k = 0; k < clipboard.items.length; k++) {
-          if (clipboard.items[k].type.indexOf('image') !== -1) {
-            files.push(clipboard.items[k].getAsFile());
-          }
-        }
-        upload.updateModel(ngModel, attr, scope, attrGetter('ngfChange') || attrGetter('ngfDrop'), files, evt);
-      }
-    }, false);
-
-    function calculateDragOverClass(scope, attr, evt, callback) {
-      var clazz = attrGetter('ngfDragOverClass', scope, {$event: evt}),
-        dClass = attrGetter('ngfDragOverClass') || 'dragover';
-      if (angular.isString(clazz)) {
-        callback(clazz);
-        return;
-      }
-      if (clazz) {
-        if (clazz.delay) dragOverDelay = clazz.delay;
-        if (clazz.accept || clazz.reject) {
-          var items = evt.dataTransfer.items;
-          if (items != null) {
-            var pattern = attrGetter('ngfPattern', scope, {$event: evt});
-            for (var i = 0; i < items.length; i++) {
-              if (items[i].kind === 'file' || items[i].kind === '') {
-                if (!upload.validatePattern(items[i], pattern)) {
-                  dClass = clazz.reject;
-                  break;
-                } else {
-                  dClass = clazz.accept;
-                }
-              }
-            }
-          }
-        }
-      }
-      callback(dClass);
-    }
-
-    function extractFiles(evt, callback, allowDir, multiple) {
-      var files = [], processing = 0;
-
-      function traverseFileTree(files, entry, path) {
-        if (entry != null) {
-          if (entry.isDirectory) {
-            var filePath = (path || '') + entry.name;
-            files.push({name: entry.name, type: 'directory', path: filePath});
-            var dirReader = entry.createReader();
-            var entries = [];
-            processing++;
-            var readEntries = function () {
-              dirReader.readEntries(function (results) {
-                try {
-                  if (!results.length) {
-                    for (var i = 0; i < entries.length; i++) {
-                      traverseFileTree(files, entries[i], (path ? path : '') + entry.name + '/');
-                    }
-                    processing--;
-                  } else {
-                    entries = entries.concat(Array.prototype.slice.call(results || [], 0));
-                    readEntries();
-                  }
-                } catch (e) {
-                  processing--;
-                  console.error(e);
-                }
-              }, function () {
-                processing--;
-              });
-            };
-            readEntries();
-          } else {
-            processing++;
-            entry.file(function (file) {
-              try {
-                processing--;
-                file.path = (path ? path : '') + file.name;
-                files.push(file);
-              } catch (e) {
-                processing--;
-                console.error(e);
-              }
-            }, function () {
-              processing--;
-            });
-          }
-        }
-      }
-
-      var items = evt.dataTransfer.items;
-
-      if (items && items.length > 0 && $location.protocol() !== 'file') {
-        for (var i = 0; i < items.length; i++) {
-          if (items[i].webkitGetAsEntry && items[i].webkitGetAsEntry() && items[i].webkitGetAsEntry().isDirectory) {
-            var entry = items[i].webkitGetAsEntry();
-            if (entry.isDirectory && !allowDir) {
-              continue;
-            }
-            if (entry != null) {
-              traverseFileTree(files, entry);
-            }
-          } else {
-            var f = items[i].getAsFile();
-            if (f != null) files.push(f);
-          }
-          if (!multiple && files.length > 0) break;
-        }
-      } else {
-        var fileList = evt.dataTransfer.files;
-        if (fileList != null) {
-          for (var j = 0; j < fileList.length; j++) {
-            files.push(fileList.item(j));
-            if (!multiple && files.length > 0) {
-              break;
-            }
-          }
-        }
-      }
-      var delays = 0;
-      (function waitForProcess(delay) {
-        $timeout(function () {
-          if (!processing) {
-            if (!multiple && files.length > 1) {
-              i = 0;
-              while (files[i].type === 'directory') i++;
-              files = [files[i]];
-            }
-            callback(files);
-          } else {
-            if (delays++ * 10 < 20 * 1000) {
-              waitForProcess(10);
-            }
-          }
-        }, delay || 0);
-      })();
-    }
-  }
-
-  function dropAvailable() {
-    var div = document.createElement('div');
-    return ('draggable' in div) && ('ondrop' in div) && !/Edge\/12./i.test(navigator.userAgent);
-  }
-
-})();
-
-},{}],12:[function(require,module,exports){
-require('./dist/ng-file-upload-all');
-module.exports = 'ngFileUpload';
-},{"./dist/ng-file-upload-all":11}],13:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 ;/*! ng-showdown 18-07-2015 */
 (function (angular, showdown) {
   // Conditional load for NodeJS
@@ -12156,7 +9918,7 @@ module.exports = 'ngFileUpload';
 })(angular, showdown);
 
 
-},{"angular":15,"showdown":16}],14:[function(require,module,exports){
+},{"angular":11,"showdown":12}],10:[function(require,module,exports){
 /**
  * @license AngularJS v1.4.6
  * (c) 2010-2015 Google, Inc. http://angularjs.org
@@ -40983,11 +38745,11 @@ $provide.value("$locale", {
 })(window, document);
 
 !window.angular.$$csp().noInlineStyle && window.angular.element(document.head).prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:absolute;}</style>');
-},{}],15:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 require('./angular');
 module.exports = angular;
 
-},{"./angular":14}],16:[function(require,module,exports){
+},{"./angular":10}],12:[function(require,module,exports){
 ;/*! showdown 27-08-2015 */
 (function(){
 /**
@@ -43283,7 +41045,7 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 }).call(this);
 
-},{}],17:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 'use strict';
 require('moment');
 
@@ -43298,10 +41060,6 @@ require('angular-gravatar');
 require('angular-elastic');
 
 require('angular-local-storage');
-
-require('angular-loading-bar');
-
-require('ng-file-upload');
 
 require('ng-showdown');
 
@@ -43323,16 +41081,16 @@ require('./modules/sidebar/index.coffee');
 
 require('./modules/navbar/index.coffee');
 
-angular.module('simple.team', ['ngSanitize', 'ui.router', 'ui.sortable', 'ui.gravatar', 'ui.bootstrap', 'selectize', 'ngFileUpload', 'ng-showdown', 'LocalStorageModule', 'angular-loading-bar', 'monospaced.elastic', 'simple.team.init', 'simple.team.routes', 'simple.team.focusMe', 'simple.team.bytes', 'simple.team.sidebar', 'simple.team.navbar', 'simple.team.auth', 'simple.team.tagData', 'simple.team.userData']).config([
+angular.module('simple.team', ['ngFileUpload', 'ngSanitize', 'ui.router', 'ui.sortable', 'ui.gravatar', 'ui.bootstrap', 'selectize', 'angular-loading-bar', 'ng-showdown', 'LocalStorageModule', 'monospaced.elastic', 'simple.team.routes', 'simple.team.focusMe', 'simple.team.bytes', 'simple.team.sidebar', 'simple.team.navbar', 'simple.team.auth', 'simple.team.tagData', 'simple.team.userData']).config([
   '$urlRouterProvider', 'cfpLoadingBarProvider', function($urlRouterProvider, cfpLoadingBarProvider) {
     $urlRouterProvider.otherwise('/projects');
     cfpLoadingBarProvider.includeSpinner = false;
   }
 ]).controller('AppCtrl', [
-  '$state', '$http', 'InitService', '$rootScope', function($state, $http, Init, $rootScope) {
+  '$state', '$http', '$rootScope', function($state, $http, $rootScope) {
     var init;
-    $rootScope.teams = angular.copy(Init.teams);
-    $rootScope.authUser = angular.copy(Init.authUser);
+    $rootScope.teams = angular.copy(ENV.teams);
+    $rootScope.authUser = angular.copy(ENV.authUser);
     this.state = $state;
     this.teams = $rootScope.teams;
     $rootScope.$broadcast('teams:loaded', this.teams);
@@ -43374,7 +41132,7 @@ angular.module('simple.team', ['ngSanitize', 'ui.router', 'ui.sortable', 'ui.gra
 ]);
 
 
-},{"./modules/auth/index.coffee":34,"./modules/bytes/index.coffee":35,"./modules/focusMe/index.coffee":36,"./modules/navbar/index.coffee":37,"./modules/selectize":39,"./modules/sidebar/index.coffee":40,"./modules/tagData/index.coffee":42,"./modules/userData/index.coffee":43,"./routes.coffee":44,"angular-elastic":1,"angular-gravatar":2,"angular-loading-bar":4,"angular-local-storage":5,"angular-sanitize":7,"angular-ui-router":8,"angular-ui-sortable":9,"moment":10,"ng-file-upload":12,"ng-showdown":13}],18:[function(require,module,exports){
+},{"./modules/auth/index.coffee":30,"./modules/bytes/index.coffee":31,"./modules/focusMe/index.coffee":32,"./modules/navbar/index.coffee":33,"./modules/selectize":35,"./modules/sidebar/index.coffee":36,"./modules/tagData/index.coffee":38,"./modules/userData/index.coffee":39,"./routes.coffee":40,"angular-elastic":1,"angular-gravatar":2,"angular-local-storage":3,"angular-sanitize":5,"angular-ui-router":6,"angular-ui-sortable":7,"moment":8,"ng-showdown":9}],14:[function(require,module,exports){
 'use strict';
 module.exports = function($state, $stateParams, $modal) {
   var cardId, init;
@@ -43417,7 +41175,7 @@ module.exports = function($state, $stateParams, $modal) {
 };
 
 
-},{"../layouts/card.modal.html":27,"./card.modal.ctrl.coffee":19}],19:[function(require,module,exports){
+},{"../layouts/card.modal.html":23,"./card.modal.ctrl.coffee":15}],15:[function(require,module,exports){
 'use strict';
 module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDataService, Upload, $modalInstance, cardId) {
   var init, projectId, stageId, updateCardTags, updateCardUsers;
@@ -43637,46 +41395,37 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
   })(this);
   this.upload = (function(_this) {
     return function(file) {
-      console.log('file', file);
       return Upload.upload({
-        url: 'api/attachments',
+        url: '/api/attachments',
         fields: {
           'card_id': cardId
         },
         file: file
       }).progress(function(evt) {
         var progressPercentage;
-        progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
-        return console.log('progress: ' + progressPercentage + '% ' + evt.config.file.name);
+        return progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
       }).success(function(data, status, headers, config) {
-        console.log('file ' + config.file.name + 'uploaded. Response: ' + data);
-        console.log(data);
         return _this.selectedCard.attachments.push(data.attachment);
       }).error(function(data, status, headers, config) {
         return console.log('error status: ' + status);
       });
     };
   })(this);
-  this.uploadFiles = function(files) {
-    var i;
-    console.log('files', files);
-    if (files && files.length) {
-      i = 0;
-      while (i < files.length) {
-        Upload.upload({
-          file: files[i],
-          url: 'api/attachments',
-          fields: {
-            'card_id': cardId
-          }
-        });
-        i++;
+  this.uploadFiles = (function(_this) {
+    return function(files) {
+      var i, results;
+      console.log('files', files);
+      if (files && files.length) {
+        i = 0;
+        results = [];
+        while (i < files.length) {
+          _this.upload(files[i]);
+          results.push(i++);
+        }
+        return results;
       }
-    }
-    return Upload.upload({
-      file: files
-    });
-  };
+    };
+  })(this);
   this.deleteAttachment = (function(_this) {
     return function(attachment) {
       if (!confirm('Delete this attachment?')) {
@@ -43704,7 +41453,7 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
 };
 
 
-},{}],20:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 'use strict';
 module.exports = [
   '$http', '$rootScope', function($http, $rootScope) {
@@ -43778,7 +41527,7 @@ module.exports = [
 ];
 
 
-},{}],21:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 'use strict';
 module.exports = function($http, $state, $rootScope) {
   var init, updateStageCards;
@@ -44010,7 +41759,7 @@ module.exports = function($http, $state, $rootScope) {
 };
 
 
-},{}],22:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 'use strict';
 module.exports = [
   'AuthService', '$rootScope', function(Auth, $rootScope) {
@@ -44033,11 +41782,11 @@ module.exports = [
 ];
 
 
-},{}],23:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 module.exports = function() {};
 
 
-},{}],24:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 'use strict';
 module.exports = [
   '$rootScope', '$http', function($rootScope, $http) {
@@ -44081,7 +41830,7 @@ module.exports = [
 ];
 
 
-},{}],25:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 'use strict';
 module.exports = [
   '$http', '$rootScope', 'TagDataService', function($http, $rootScope, TagData) {
@@ -44216,23 +41965,23 @@ module.exports = [
 ];
 
 
-},{}],26:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 module.exports = '<!-- <div\n    class="modal fade in"\n    style="display: block; position: absolute; overflow: auto; bottom: auto">\n    <div class="modal-dialog modal-lg">\n        <div class="modal-content">\n            <div class="modal-header">\n                <button\n                    ng-click="ctrl.closeEditCard()"\n                    type="button"\n                    class="close"\n                    data-dismiss="modal"\n                    aria-label="Close"><span aria-hidden="true">&times;</span></button>\n                <h4\n                    ng-click="ctrl.selectedCard.editName = !ctrl.selectedCard.editName; ctrl.selectedCardName = ctrl.selectedCard.name"\n                    ng-hide="ctrl.selectedCard.editName"\n                    class="modal-title">{{ ctrl.selectedCard.name || \'Edit card name...\' }}</h4>\n                <div ng-show="ctrl.selectedCard.editName">\n                    <div class="form-group">\n                        <textarea\n                            class="form-control"\n                            ng-keydown="$event.keyCode == 13 && ctrl.updateCardName()"\n                            ng-blur="ctrl.updateCardName()"\n                            msd-elastic\n                            ng-model="ctrl.selectedCardName"></textarea>\n                    </div>\n                    <button\n                        class="btn btn-success btn-sm"\n                        ng-click="ctrl.updateCardName()">\n                        Save\n                    </button>\n                    <button\n                        class="btn btn-link btn-sm"\n                        ng-click="ctrl.selectedCard.editName = false">\n                        Cancel\n                    </button>\n                </div>\n            </div>\n            <div class="modal-body">\n                <span\n                    ng-hide="ctrl.showCardDescription"\n                    ng-click="ctrl.selectCardDescription()"\n                    ng-class="{ \'text-muted\': !ctrl.selectedCard.description }">{{ ctrl.selectedCard.description || \'Edit the description...\' }}</span>\n\n                <div ng-show="ctrl.showCardDescription">\n                    <div class="form-group">\n                        <textarea\n                            class="form-control"\n                            msd-elastic\n                            placeholder="Describe what\'s happening here..."\n                            ng-blur="ctrl.updateCardDescription()"\n                            ng-model="ctrl.selectedCardDescription"></textarea>\n                    </div>\n                    <button\n                        class="btn btn-success btn-sm"\n                        ng-click="ctrl.updateCardDescription()">\n                        Save\n                    </button>\n                    <button\n                        class="btn btn-link btn-sm"\n                        ng-click="ctrl.showCardDescription = false">\n                        Cancel\n                    </button>\n                </div>\n            </div>\n\n            <hr style="margin: 0;">\n\n            <div class="modal-body">\n                <h4>Assignees</h4>\n                <selectize\n                    config="ctrl.usersConfig"\n                    options="ctrl.users"\n                    ng-model="ctrl.selectedCard.userIds"></selectize>\n            </div>\n\n            <hr style="margin: 0;">\n\n            <div class="modal-body">\n                <h4>Subtasks</h4>\n                <div class="form-group">\n                    <textarea\n                        placeholder="Create a subtask..."\n                        class="form-control"\n                        rows="1"\n                        msd-elastic\n                        ng-model="ctrl.newSubtaskBody"\n                        ng-keyup="$event.keyCode == 13 && ctrl.createSubtask()"></textarea>\n                </div>\n                <div\n                    ui-sortable="ctrl.subTaskSortableOptions"\n                    ng-model="ctrl.selectedCard.subtasks">\n                    <div\n                        class="media"\n                        ng-repeat="task in ctrl.selectedCard.subtasks">\n                        <div class="media-left">\n                            <i\n                                class="fa fa-2 pointer"\n                                ng-click="ctrl.toggleSubtask(task)"\n                                ng-class="{ \'fa-square-o\': task.checked != true, \'fa-check-square-o\': task.checked == true }"></i>\n                        </div>\n                        <div class="media-body">\n                            <div ng-click="ctrl.editSubtask(task)" ng-hide="task.editMode">{{ task.body || \'Click to edit subtask...\' }}</div>\n                            <span ng-show="task.editMode">\n                                <div class="form-group">\n                                    <textarea\n                                        type="text"\n                                        class="form-control"\n                                        msd-elastic\n                                        ng-model="task.newBody"\n                                        ng-keyup="$event.keyCode == 13 && ctrl.updateSubtask(task)"></textarea>\n                                </div>\n                                <button class="btn btn-success btn-sm" ng-click="ctrl.updateSubtask(task)">Save</button>\n                                <button class="btn btn-link btn-sm" ng-click="ctrl.cancelSubtaskEdit(task)">Cancel</button>\n                                <button class="btn btn-link btn-sm pull-right" ng-click="ctrl.deleteSubtask(task)">Delete</button>\n                            </span>\n                        </div>\n                    </div>\n                </div>\n            </div>\n\n            <hr style="margin: 0;">\n\n            <div class="modal-body">\n                <h4>Impact</h4>\n                <p>By adding an impact value we can determine the priority of tasks against others.</p>\n                <input\n                    type="range"\n                    min="0"\n                    max="100"\n                    ng-model="ctrl.selectedCard.impact"\n                    ng-change="ctrl.updateCard()">\n            </div>\n\n            <hr style="margin: 0;">\n\n            <div class="modal-body">\n                <h4>Attachments</h4>\n                <div ngf-no-file-drop>File Drag/Drop is not supported for this browser</div>\n                <div\n                    ngf-drop\n                    ngf-select\n                    ng-model="ctrl.files"\n                    class="dropbox"\n                    ngf-drag-over-class="dragover"\n                    ngf-multiple="true"\n                    ngf-allow-dir="false">\n                    <div class="drag-overlay">Drop files here or <span>Browse<span></div>\n                </div>\n            </div>\n\n            <hr style="margin: 0;">\n\n            <div class="modal-body">\n                <h4>Tags</h4>\n                <selectize\n                    config="ctrl.tagsConfig"\n                    options="ctrl.tags"\n                    ng-model="ctrl.selectedCard.tagNames"></selectize>\n            </div>\n\n            <hr style="margin: 0;">\n\n            <div class="modal-body">\n                <h4>Comments</h4>\n                <div class="form-group">\n                    <textarea\n                        msd-elastic\n                        class="form-control"\n                        placeholder="What\'s on your mind?"\n                        ng-model="ctrl.newCommentBody"></textarea>\n                </div>\n                <button\n                    class="btn btn-success btn-sm"\n                    ng-click="ctrl.createComment()">Comment</button>\n\n                <div\n                    class="media"\n                    ng-repeat="comment in ctrl.selectedCard.comments">\n                    <div class="media-left">\n                        <a href="#">\n                            <img class="media-object" gravatar-src="comment.user.email" gravatar-size="45">\n                        </a>\n                    </div>\n                    <div class="media-body">\n                        <div ng-hide="comment.editMode">\n                            <p ng-bind="comment.body"></p>\n                            yesterday at 9:38am -\n                            <a class="pointer" ng-click="ctrl.editComment(comment)">Edit</a> -\n                            <a class="pointer" ng-click="ctrl.deleteComment(comment)">Delete</a>\n                        </div>\n                        <div ng-show="comment.editMode">\n                            <div class="form-group">\n                                <textarea\n                                    msd-elastic\n                                    type="text"\n                                    class="form-control"\n                                    ng-model="comment.newBody"></textarea>\n                            </div>\n                            <button\n                                class="btn btn-success btn-sm"\n                                ng-click="ctrl.updateComment(comment)">Save</button>\n                            <button\n                                class="btn btn-link btn-sm"\n                                ng-click="ctrl.cancelCommentEdit(comment)">Cancel</button>\n                        </div>\n                    </div>\n                </div>\n            </div>\n            <div class="modal-footer">\n                <button\n                    class="pull-left btn btn-danger"\n                    ng-click="ctrl.deleteCard()">\n                    Delete\n                </button>\n                <button\n                    ng-class="{\n                        \'btn-danger\': ctrl.selectedCard.blocked,\n                        \'btn-primary\': !ctrl.selectedCard.blocked\n                    }"\n                    class="btn" ng-click="ctrl.blockToggleSelectedCard()">\n                    {{ ctrl.selectedCard.blocked ? \'Unblock\' : \'Blocked\' }}\n                </button>\n                <button\n                    type="button"\n                    class="btn btn-default"\n                    data-dismiss="modal"\n                    ng-click="ctrl.closeEditCard()">Close</button>\n            </div>\n        </div>\n    </div>\n</div>\n<div class="modal-backdrop fade in" ng-click="ctrl.closeEditCard()"></div> -->\n';
-},{}],27:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 module.exports = '<div class="modal-header">\n    <button\n        ng-click="ctrl.ok()"\n        type="button"\n        class="close"\n        data-dismiss="modal"\n        aria-label="Close"><span aria-hidden="true">&times;</span></button>\n    <h4\n        ng-click="ctrl.selectedCard.editName = !ctrl.selectedCard.editName; ctrl.selectedCardName = ctrl.selectedCard.name"\n        ng-hide="ctrl.selectedCard.editName"\n        class="modal-title">{{ ctrl.selectedCard.name || \'Edit card name...\' }}</h4>\n    <div ng-show="ctrl.selectedCard.editName">\n        <div class="form-group">\n            <textarea\n                class="form-control"\n                ng-keydown="$event.keyCode == 13 && ctrl.updateCardName()"\n                ng-blur="ctrl.updateCardName()"\n                msd-elastic\n                ng-model="ctrl.selectedCardName"></textarea>\n        </div>\n        <button\n            class="btn btn-success btn-sm"\n            ng-click="ctrl.updateCardName()">\n            Save\n        </button>\n        <button\n            class="btn btn-link btn-sm"\n            ng-click="ctrl.selectedCard.editName = false">\n            Cancel\n        </button>\n    </div>\n</div>\n<div class="modal-body">\n    <span\n        ng-hide="ctrl.showCardDescription"\n        ng-click="ctrl.selectCardDescription()"\n        ng-class="{ \'text-muted\': !ctrl.selectedCard.description }">{{ ctrl.selectedCard.description || \'Edit the description...\' }}</span>\n\n    <div ng-show="ctrl.showCardDescription">\n        <div class="form-group">\n            <textarea\n                class="form-control"\n                msd-elastic\n                placeholder="Describe what\'s happening here..."\n                ng-blur="ctrl.updateCardDescription()"\n                ng-model="ctrl.selectedCardDescription"></textarea>\n        </div>\n        <button\n            class="btn btn-success btn-sm"\n            ng-click="ctrl.updateCardDescription()">\n            Save\n        </button>\n        <button\n            class="btn btn-link btn-sm"\n            ng-click="ctrl.showCardDescription = false">\n            Cancel\n        </button>\n    </div>\n</div>\n\n<hr style="margin: 0;">\n\n<div class="modal-body">\n    <h4>Assignees</h4>\n    <selectize\n        config="ctrl.usersConfig"\n        options="ctrl.users"\n        ng-model="ctrl.selectedCard.userIds"></selectize>\n</div>\n\n<hr style="margin: 0;">\n\n<div class="modal-body">\n    <h4>Subtasks</h4>\n    <div class="form-group">\n        <textarea\n            placeholder="Create a subtask..."\n            class="form-control"\n            rows="1"\n            msd-elastic\n            ng-model="ctrl.newSubtaskBody"\n            ng-keyup="$event.keyCode == 13 && ctrl.createSubtask()"></textarea>\n    </div>\n    <div\n        ui-sortable="ctrl.subTaskSortableOptions"\n        ng-model="ctrl.selectedCard.subtasks">\n        <div\n            class="media"\n            ng-repeat="task in ctrl.selectedCard.subtasks">\n            <div class="media-left">\n                <i\n                    class="fa fa-2 pointer"\n                    ng-click="ctrl.toggleSubtask(task)"\n                    ng-class="{ \'fa-square-o\': task.checked != true, \'fa-check-square-o\': task.checked == true }"></i>\n            </div>\n            <div class="media-body">\n                <div ng-click="ctrl.editSubtask(task)" ng-hide="task.editMode">{{ task.body || \'Click to edit subtask...\' }}</div>\n                <span ng-show="task.editMode">\n                    <div class="form-group">\n                        <textarea\n                            type="text"\n                            class="form-control"\n                            msd-elastic\n                            ng-model="task.newBody"\n                            ng-keyup="$event.keyCode == 13 && ctrl.updateSubtask(task)"></textarea>\n                    </div>\n                    <button class="btn btn-success btn-sm" ng-click="ctrl.updateSubtask(task)">Save</button>\n                    <button class="btn btn-link btn-sm" ng-click="ctrl.cancelSubtaskEdit(task)">Cancel</button>\n                    <button class="btn btn-link btn-sm pull-right" ng-click="ctrl.deleteSubtask(task)">Delete</button>\n                </span>\n            </div>\n        </div>\n    </div>\n</div>\n\n<hr style="margin: 0;">\n\n<div class="modal-body">\n    <h4>Impact</h4>\n    <p>By adding an impact value we can determine the priority of tasks against others.</p>\n    <input\n        type="range"\n        min="0"\n        max="100"\n        ng-model="ctrl.selectedCard.impact"\n        ng-change="ctrl.updateCard()">\n</div>\n\n<hr style="margin: 0;">\n\n<div class="modal-body">\n    <h4>Attachments</h4>\n    <div ngf-no-file-drop>File Drag/Drop is not supported for this browser</div>\n    <div\n        class="dropbox"\n        ng-model="ctrl.files"\n        ngf-drop="ctrl.upload($file)"\n        ngf-select="ctrl.uploadFiles($files)"\n        ngf-drag-over-class="dragover"\n        ngf-multiple="true"\n        ngf-allow-dir="false">\n        <div class="drag-overlay">Drop files here or <span>Browse<span></div>\n    </div>\n    <table class="table" style="margin: 10px 0 0">\n        <tr ng-repeat="attachment in ctrl.selectedCard.attachments">\n            <td ng-click="ctrl.downloadAttachment(attachment)" class="pointer" style="vertical-align: middle">\n                <strong>{{ attachment.original_filename }}</strong> <span class="text-muted">({{ attachment.file_size | bytes }})</span>\n            </td>\n            <td class="text-right">\n                <button class="btn btn-danger btn-sm" type="button" ng-click="ctrl.deleteAttachment(attachment)">\n                    Delete\n                </button>\n            </td>\n        </tr>\n    </table>\n</div>\n\n<hr style="margin: 0;">\n\n<div class="modal-body">\n    <h4>Tags</h4>\n    <selectize\n        config="ctrl.tagsConfig"\n        options="ctrl.tags"\n        ng-model="ctrl.selectedCard.tagNames"></selectize>\n</div>\n\n<hr style="margin: 0;">\n\n<div class="modal-body">\n    <h4>Comments</h4>\n    <div class="form-group">\n        <textarea\n            msd-elastic\n            class="form-control"\n            placeholder="What\'s on your mind?"\n            ng-model="ctrl.newCommentBody"></textarea>\n    </div>\n    <button\n        class="btn btn-success btn-sm"\n        ng-click="ctrl.createComment()">Comment</button>\n\n    <div\n        class="media"\n        ng-repeat="comment in ctrl.selectedCard.comments">\n        <div class="media-left">\n            <a href="#">\n                <img class="media-object" gravatar-src="comment.user.email" gravatar-size="45">\n            </a>\n        </div>\n        <div class="media-body">\n            <div ng-hide="comment.editMode">\n                <p ng-bind="comment.body"></p>\n                yesterday at 9:38am -\n                <a class="pointer" ng-click="ctrl.editComment(comment)">Edit</a> -\n                <a class="pointer" ng-click="ctrl.deleteComment(comment)">Delete</a>\n            </div>\n            <div ng-show="comment.editMode">\n                <div class="form-group">\n                    <textarea\n                        msd-elastic\n                        type="text"\n                        class="form-control"\n                        ng-model="comment.newBody"></textarea>\n                </div>\n                <button\n                    class="btn btn-success btn-sm"\n                    ng-click="ctrl.updateComment(comment)">Save</button>\n                <button\n                    class="btn btn-link btn-sm"\n                    ng-click="ctrl.cancelCommentEdit(comment)">Cancel</button>\n            </div>\n        </div>\n    </div>\n</div>\n<div class="modal-footer">\n    <button\n        class="pull-left btn btn-danger"\n        ng-click="ctrl.deleteCard()">\n        Delete\n    </button>\n    <button\n        ng-class="{\n            \'btn-danger\': ctrl.selectedCard.blocked,\n            \'btn-primary\': !ctrl.selectedCard.blocked\n        }"\n        class="btn" ng-click="ctrl.blockToggleSelectedCard()">\n        {{ ctrl.selectedCard.blocked ? \'Unblock\' : \'Blocked\' }}\n    </button>\n    <button\n        type="button"\n        class="btn btn-default"\n        data-dismiss="modal"\n        ng-click="ctrl.ok()">Close</button>\n</div>\n';
-},{}],28:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 module.exports = '<div class="container-fluid">\n    <div class="row">\n        <div class="col-sm-12">\n            <div class="row">\n                <div class="col-sm-6">\n                    Saturday, 25 Jul 2015\n                </div>\n                <div class="col-sm-6 text-right">\n                    <div class="btn-group">\n                        <button class="btn btn-default">&lt;</button>\n                        <button class="btn btn-default">Today</button>\n                        <button class="btn btn-default">&gt;</button>\n                    </div>\n\n                    <input type="date">\n                </div>\n            </div>\n\n            <div class="panel">\n                <div class="panel-heading">{{ ctrl.authUser.name }}</div>\n                <div class="panel-body">\n                    <div class="form-group">\n                        <form ng-submit="ctrl.createDailySummary()">\n                            <input\n                                type="text"\n                                class="form-control"\n                                ng-model="ctrl.dailySummaryBody"\n                                placeholder="Today I...">\n                        </form>\n                    </div>\n                    <table class="table">\n                        <tr ng-repeat="dailySummary in ctrl.selectedDailySummaries">\n                            <td>\n                                <div\n                                    ng-show="dailySummary != dailySummaryCopy"\n                                    v-on="dblclick: editDailySummary(dailySummary)">\n                                    {{ dailySummary.body }}\n                                </div>\n\n                                <div ng-show="dailySummary == dailySummaryCopy">\n                                    <input\n                                        type="text"\n                                        class="form-control"\n                                        ng-model="dailySummaryCopy.body"\n                                        v-on="\n                                            blur: updateDailySummary(dailySummary),\n                                            keyup: updateDailySummary(dailySummary) | key \'enter\',\n                                            keyup: cancelDailySummary(dailySummary) | key \'esc\'\n                                        ">\n                                </div>\n                            </td>\n                            <td class="text-right">\n                                <button\n                                    class="btn btn-primary"\n                                    ng-click="ctrl.editDailySummary(dailySummary)">\n                                    Edit\n                                </button>\n                                <button\n                                    class="btn btn-danger"\n                                    ng-click="ctrl.deleteDailySummary(userId, dailySummary)">\n                                    Delete\n                                </button>\n                            </td>\n                        </tr>\n                    </table>\n                </div>\n            </div>\n\n            <div\n                class="panel"\n                ng-repeat="(userId, dailySummaries) in ctrl.dailySummaries"\n                ng-hide="userId == ctrl.authUser.id">\n                <div class="panel-heading">{{ ctrl.usersById[userId].name }}</div>\n                <div class="panel-body">\n                    <table class="table">\n                        <tbody>\n                            <tr ng-repeat="dailySummary in dailySummaries">\n                                <td>{{ dailySummary.body }}</td>\n                            </tr>\n                        </tbody>\n                    </table>\n                </div>\n            </div>\n        </div>\n    </div>\n</div>\n';
-},{}],29:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 module.exports = '<div class="container-fluid">\n    <div class="row" style="margin-bottom: 20px;">\n        <div class="col-sm-12">\n            <button\n                class="btn btn-success pull-right"\n                ng-click="ctrl.createProject()">\n                Create Active Project\n            </button>\n\n            <div class="btn-group pull-left" style="margin-right: 10px;">\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        Tags <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li><a href="#">filmsupply.com</a></li>\n                        <li><a href="#">musicbed.com</a></li>\n                    </ul>\n                </div>\n\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        Assigned to <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li><a href="#">Me</a></li>\n                        <li><a href="#">Everyone</a></li>\n                        <li><a href="#">No One Assigned</a></li>\n                        <li><a href="#">Andrew Del Prete</a></li>\n                        <li><a href="#">Jaymes</a></li>\n                    </ul>\n                </div>\n\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        Quick Filters <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li><a href="#">Action</a></li>\n                        <li><a href="#">Active</a></li>\n                        <li><a href="#">Completed</a></li>\n                        <li><a href="#">Due today</a></li>\n                        <li><a href="#">Late</a></li>\n                        <li><a href="#">All</a></li>\n                        <li><a href="#">Hide done</a></li>\n                        <li><a href="#">Due This Week</a></li>\n                        <li><a href="#">Created by me</a></li>\n                        <li><a href="#">With files attached</a></li>\n                        <li><a href="#">Tasks blocked</a></li>\n                        <li><a href="#">Tasks in progress</a></li>\n                    </ul>\n                </div>\n            </div>\n\n            <form class="form-inline pull-left">\n                <div class="form-group">\n                    <div class="input-group">\n                        <input\n                            type="text"\n                            class="form-control"\n                            placeholder="Search cards..."\n                            ng-model="ctrl.searchInput">\n                        <div class="input-group-addon btn btn-default" ng-if="ctrl.searchInput" ng-click="ctrl.searchInput = \'\'">\n                            <i class="fa fa-times"></i>\n                        </div>\n                    </div>\n                </div>\n            </form>\n        </div>\n    </div>\n</div>\n<div class="projects-container">\n    <div class="panel panel-default" ng-repeat="project in ctrl.projects" style="border: 0; margin: 0; border-radius: 0;">\n        <div class="panel-heading clearfix" style="border-radius: 0; border: 0; background: #137FA8; color: white">\n            <h5 class="panel-title pull-left" style="padding-top: 7.5px;">{{ project.name }}</h5>\n\n            <div class="btn-group pull-right">\n                <button class="btn btn-default btn-sm" type="submit" ng-click="ctrl.toggleProjectVisibility(project)">\n                    {{ project.hidden ? \'Show\' : \'Hide\' }}\n                </button>\n                <button type="button" class="btn btn-default dropdown-toggle btn-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">\n                    <span class="fa fa-cog"></span>\n                </button>\n                <ul class="dropdown-menu">\n                    <li ng-click="ctrl.editProject(project)"><a href="#">Rename</a></li>\n                    <li role="separator" class="divider"></li>\n                    <li ng-click="ctrl.deleteProject(project)"><a href="#">Delete</a></li>\n                </ul>\n            </div>\n        </div>\n        <table class="table stage-container" style="table-layout: fixed; background: #F9F8F8" ng-hide="project.hidden">\n            <tr>\n                <td ng-repeat="(stageIndex, stage) in project.stages">\n                    <div class="stage-column">\n                        <div class="btn-group" style="width: 100%; border-bottom: 5px solid #d6cfcf">\n                            <strong style="text-transform: uppercase; color: #929292">{{ stage.name }}</strong>\n\n                            <button\n                                type="button"\n                                class="btn btn-link btn-sm dropdown-toggle pull-right"\n                                data-toggle="dropdown">\n                                <span class="fa fa-cog"></span>\n                            </button>\n                            <ul class="dropdown-menu dropdown-menu-right">\n                                <li>\n                                    <a ng-click="ctrl.editStage(stage)">Rename</a>\n                                </li>\n                                <li>\n                                    <a ng-click="ctrl.archiveAllCardsInStage(stage)">Archive All Cards</a>\n                                </li>\n                                <li role="separator" class="divider"></li>\n                                <li>\n                                    <a ng-click="ctrl.deleteStage(project, stageIndex)">Delete</a>\n                                </li>\n                            </ul>\n\n                            <button\n                                type="button"\n                                class="btn btn-sm pull-right btn-link"\n                                ng-click="ctrl.openTopCreateCard(stage)">Add a Card</button>\n                        </div>\n\n                        <div ng-show="ctrl.openTopCreateCards[stage.id]">\n                            <textarea\n                                msd-elastic\n                                ng-keyup="$event.keyCode == 13 && ctrl.createCard(stage)"\n                                ng-model="ctrl.newCardName"\n                                class="form-control"\n                                focus-me="ctrl.openTopCreateCards[stage.id]"\n                                ng-blur="ctrl.hideCreateCard()"\n                                ></textarea>\n                            <a class="btn btn-link btn-sm" ng-click="ctrl.hideCreateCard()">Cancel</a>\n                        </div>\n\n                        <div class="clearfix"></div>\n\n                        <ul\n                            class="sortable"\n                            ui-sortable="ctrl.sortableOptions"\n                            ng-model="stage.cards">\n                            <li\n                                ng-click="ctrl.openEditCard(card)"\n                                ng-repeat="(cardIndex, card) in stage.cards | filter:ctrl.searchInput"\n                                ng-class="{ \'card-blocked\': card.blocked }">\n                                <div class="row">\n                                    <div class="col-sm-12">\n                                        {{ card.name }}\n                                    </div>\n                                </div>\n                                <div class="row" ng-hide="card.tags.length == 0">\n                                    <div class="col-sm-12">\n                                        <p style="margin: 5px 0">\n                                            <span ng-repeat="tag in card.tags">\n                                                <span class="label label-primary">{{ tag.name }}</span>\n                                            </span>\n                                        </p>\n                                    </div>\n                                </div>\n                                <div class="row text-center text-muted">\n                                    <div class="col-sm-3" title="{{ card.comments.length }} comment(s)">\n                                        <span ng-show="card.comments.length">\n                                            <i class="fa fa-comments"></i> {{ card.comments.length }}\n                                        </span>\n                                    </div>\n                                    <div class="col-sm-3" title="{{ card.users.length }} user(s) assigned to this card">\n                                        <span ng-show="card.users.length">\n                                            <i class="fa fa-user"></i> {{ card.users.length }}\n                                        </span>\n                                    </div>\n                                    <div class="col-sm-3" title="{{ card.subtasks.length }} subtask(s)">\n                                        <span ng-show="card.subtasks.length">\n                                            <i class="fa fa-check"></i> {{ card.subtasks.length }}\n                                        </span>\n                                    </div>\n                                    <div class="col-sm-3" title="Has a description">\n                                        <span ng-show="card.description">\n                                            <i class="fa fa-align-left"></i>\n                                        </span>\n                                    </div>\n                                </div>\n                            </li>\n                        </ul>\n                    </div>\n                </td>\n            </tr>\n        </table>\n    </div>\n</div>\n<div ui-view></div>\n';
-},{}],30:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 module.exports = '<div class="row">\n    <div class="col-sm-6">\n        <div class="panel panel-default">\n            <div class="panel-heading">\n                <h5 class="panel-title">Your info</h5>\n            </div>\n            <div class="panel-body">\n                <form>\n                    <div class="form-group">\n                        <label>Name</label>\n                        <input type="text" class="form-control" ng-model="ctrl.authUser.name">\n                    </div>\n                    <div class="form-group">\n                        <label>Email</label>\n                        <input type="email" class="form-control" ng-model="ctrl.authUser.email">\n                    </div>\n                    <button class="btn btn-primary">Submit</button>\n                </form>\n            </div>\n        </div>\n    </div>\n    <div class="col-sm-6">\n        <div class="panel panel-default">\n            <div class="panel-heading">\n                <h5 class="panel-title">Change your password</h5>\n            </div>\n            <div class="panel-body">\n                <form>\n                    <div class="form-group">\n                        <label>Password</label>\n                        <input type="text" class="form-control">\n                    </div>\n                    <div class="form-group">\n                        <label>Password Confirmation</label>\n                        <input type="email" class="form-control">\n                    </div>\n                    <button class="btn btn-primary">Submit</button>\n                </form>\n            </div>\n        </div>\n    </div>\n</div>\n';
-},{}],31:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 module.exports = '<div class="container-fluid">\n    <div class="row">\n        <div class="col-sm-3">\n            <ul class="list-group">\n                <li class="list-group-item" ui-sref="settings.account">\n                    <a href="#">Account</a>\n                </li>\n                <li class="list-group-item" ui-sref="settings.teams">\n                    <a href="#">Teams</a>\n                </li>\n            </ul>\n        </div>\n        <div class="col-sm-9">\n            <div ui-view></div>\n        </div>\n    </div>\n</div>\n';
-},{}],32:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 module.exports = '<div class="panel panel-default">\n    <div class="panel-heading">\n        <h3 class="panel-title pull-left">Teams</h3>\n        <button class="pull-right btn btn-sm btn-success" ng-click="ctrl.createTeam()">\n            Create Team\n        </button>\n        <div class="clearfix"></div>\n    </div>\n    <table class="table">\n        <tr ng-repeat="team in ctrl.teams">\n            <td>\n                {{ team.name || \'Unamed team\' }}\n            </td>\n            <td class="text-right">\n                <button ng-click="ctrl.deleteTeam(team)" class="btn btn-danger">\n                    Delete\n                </button>\n            </td>\n        </tr>\n    </table>\n</div>\n';
-},{}],33:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 module.exports = '<div class="container-fluid">\n    <div class="row" style="margin-bottom: 20px;">\n        <div class="col-sm-3">\n            <div class="panel panel-default">\n                <!-- Default panel contents -->\n                <div class="panel-heading">\n                    <h5 class="panel-title">People</h5>\n                </div>\n\n                <!-- List group -->\n                <div class="list-group">\n                    <a\n                        class="list-group-item pointer"\n                        ng-click="ctrl.clearFilters(\'users\')">Show everyone</a>\n                    <a\n                        class="list-group-item pointer"\n                        ng-class="{ active: ctrl.isFilterObjActive(\'users\', user) }"\n                        ng-click="ctrl.toggleFilter(\'users\', user)"\n                        ng-repeat="user in ctrl.users">{{ user.name }}</a>\n                </div>\n            </div>\n\n            <div class="panel panel-default">\n                <!-- Default panel contents -->\n                <div class="panel-heading">\n                    <h5 class="panel-title">Projects</h5>\n                </div>\n\n                <!-- List group -->\n                <div class="list-group">\n                    <a\n                        class="list-group-item pointer"\n                        ng-click="ctrl.clearFilters(\'projects\')">Show all projects</a>\n                    <a\n                        class="list-group-item pointer"\n                        ng-class="{ active: ctrl.isFilterObjActive(\'projects\', project) }"\n                        ng-click="ctrl.toggleFilter(\'projects\', project)"\n                        ng-repeat="project in ctrl.projects">\n                        {{ project.name }}\n                    </a>\n                </div>\n            </div>\n\n            <div class="panel panel-default">\n                <!-- Default panel contents -->\n                <div class="panel-heading">\n                    <h5 class="panel-title">Tags</h5>\n                </div>\n\n                <!-- List group -->\n                <div class="list-group">\n                    <a\n                        class="list-group-item pointer"\n                        ng-click="ctrl.clearFilters(\'tags\')">Show all tags</a>\n                    <a\n                        class="list-group-item pointer"\n                        ng-class="{ active: ctrl.isFilterObjActive(\'tags\', tag) }"\n                        ng-click="ctrl.toggleFilter(\'tags\', tag)"\n                        ng-repeat="tag in ctrl.tags">{{ tag.name }}</a>\n                </div>\n            </div>\n        </div>\n        <div class="col-sm-9">\n            <form ng-submit="ctrl.createCard()">\n                <div class="row">\n                    <div class="col-sm-9">\n                        <div class="form-group">\n                            <input\n                                type="text"\n                                class="form-control"\n                                ng-model="ctrl.newCard.name"\n                                placeholder="Create a task and hit enter...">\n                        </div>\n                    </div>\n                    <div class="col-sm-3">\n                        <select\n                            class="form-control"\n                            ng-options="project.id as project.name for project in ctrl.projects"\n                            ng-model="ctrl.newCard.project_id"\n                            required>\n                            <option value="">Select a project...</option>\n                        </select>\n                    </div>\n                </div>\n            </form>\n            <div class="list-group">\n                <a\n                    class="list-group-item pointer"\n                    ng-repeat="card in ctrl.cards"\n                    ng-class="{\'list-group-item-danger\': card.blocked }"\n                    ui-sref="tasklist.card({ cardId: card.id })">\n                    {{ card.name }}\n\n                    <span title="Users assigned to this card." ng-repeat="user in card.users">\n                        <span class="label label-warning">{{ user.name }}</span>\n                    </span>\n\n                    <span title="Tags attached to this card." ng-repeat="tag in card.tags">\n                        <span class="label label-primary">{{ tag.name }}</span>\n                    </span>\n\n                    <span title="Impact of card on project out of 100." class="badge">{{ card.impact }}</span>\n                </a>\n            </div>\n        </div>\n    </div>\n</div>\n<div ui-view></div>\n';
-},{}],34:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 'use strict';
 angular.module('simple.team.auth', []).service('AuthService', [
   '$http', function($http) {
@@ -44248,7 +41997,7 @@ angular.module('simple.team.auth', []).service('AuthService', [
 ]);
 
 
-},{}],35:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 angular.module('simple.team.bytes', []).filter('bytes', function() {
   return function(bytes, precision) {
     var number, units;
@@ -44265,7 +42014,7 @@ angular.module('simple.team.bytes', []).filter('bytes', function() {
 });
 
 
-},{}],36:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 angular.module('simple.team.focusMe', []).directive('focusMe', [
   '$timeout', function($timeout) {
     return {
@@ -44286,7 +42035,7 @@ angular.module('simple.team.focusMe', []).directive('focusMe', [
 ]);
 
 
-},{}],37:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 'use strict';
 angular.module('simple.team.navbar', []).directive('navbar', function() {
   return {
@@ -44369,9 +42118,9 @@ angular.module('simple.team.navbar', []).directive('navbar', function() {
 });
 
 
-},{"./view.html":38}],38:[function(require,module,exports){
+},{"./view.html":34}],34:[function(require,module,exports){
 module.exports = '<nav class="navbar navbar-default navbar-static-top">\n    <div class="container-fluid">\n        <ul class="nav navbar-nav">\n            <li class="dropdown">\n                <a href="#" class="dropdown-toggle" data-toggle="dropdown">{{ navCtrl.selectedTeam.name || \'Select a team...\' }} <span class="caret"></span></a>\n                <ul class="dropdown-menu">\n                    <li ng-repeat="team in navCtrl.teams" ng-click="navCtrl.setCurrentTeam(team)">\n                        <a href="#">{{ team.name }}</a>\n                    </li>\n                </ul>\n            </li>\n        </ul>\n        <ul class="nav navbar-nav navbar-right">\n            <li class="dropdown">\n                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Menu<span class="caret"></span></a>\n                <ul class="dropdown-menu">\n                    <li><a ui-sref="simple.settings.account">Account</a></li>\n                    <li><a ui-sref="simple.settings.teams">Teams</a></li>\n                    <li class="divider"></li>\n                    <li><a ui-sref="auth.logout">Sign Out</a></li>\n                </ul>\n            </li>\n        </ul>\n    </div>\n</nav>\n';
-},{}],39:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 /**
  * Angular Selectize2
  * https://github.com/machineboy2045/angular-selectize
@@ -44481,7 +42230,7 @@ angular.module('selectize', []).value('selectizeConfig', {}).directive("selectiz
   };
 }]);
 
-},{}],40:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 angular.module('simple.team.sidebar', []).directive('sidebar', function() {
   return {
     restrict: 'E',
@@ -44490,9 +42239,9 @@ angular.module('simple.team.sidebar', []).directive('sidebar', function() {
 });
 
 
-},{"./view.html":41}],41:[function(require,module,exports){
+},{"./view.html":37}],37:[function(require,module,exports){
 module.exports = '<div class="wrapper">\n    <div class="sidebar">\n        <div class="title">simple.team</div>\n        <ul class="side-nav">\n            <li><a ui-sref="simple.projects.kanban">Kanban</a></li>\n            <li><a ui-sref="simple.projects.list">Projects List</a></li>\n            <!-- <li><a ui-sref="chat">Chat</a></li>\n            <li><a ui-sref="timeline">Timeline</a></li>\n            <li><a ui-sref="daily-summary">Daily Summary</a></li>\n            <li><a ui-sref="notes.list">Notes</a></li>\n            <li><a ui-sref="one-use-notes">Secure Notes</a></li>\n            <li><a ui-sref="designer">Designer</a></li>\n            <li><a ui-sref="settings.teams">Settings</a></li> -->\n        </ul>\n    </div>\n</div>\n';
-},{}],42:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 'use strict';
 angular.module('simple.team.tagData', []).service('TagDataService', [
   '$http', function($http) {
@@ -44503,7 +42252,7 @@ angular.module('simple.team.tagData', []).service('TagDataService', [
 ]);
 
 
-},{}],43:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 'use strict';
 angular.module('simple.team.userData', []).service('UserDataService', [
   '$http', function($http) {
@@ -44514,7 +42263,7 @@ angular.module('simple.team.userData', []).service('UserDataService', [
 ]);
 
 
-},{}],44:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 angular.module('simple.team.routes', []).config([
   '$stateProvider', function($stateProvider) {
     return $stateProvider.state('projects', {
@@ -44562,4 +42311,4 @@ angular.module('simple.team.routes', []).config([
 ]);
 
 
-},{"./controllers/card.ctrl.coffee":18,"./controllers/dailySummary.ctrl.coffee":20,"./controllers/projects.ctrl.coffee":21,"./controllers/settings.account.ctrl.coffee":22,"./controllers/settings.ctrl.coffee":23,"./controllers/settings.teams.ctrl.coffee":24,"./controllers/tasklist.ctrl.coffee":25,"./layouts/card.html":26,"./layouts/dailySummary.html":28,"./layouts/projects.html":29,"./layouts/settings.account.html":30,"./layouts/settings.html":31,"./layouts/settings.teams.html":32,"./layouts/tasklist.html":33}]},{},[17]);
+},{"./controllers/card.ctrl.coffee":14,"./controllers/dailySummary.ctrl.coffee":16,"./controllers/projects.ctrl.coffee":17,"./controllers/settings.account.ctrl.coffee":18,"./controllers/settings.ctrl.coffee":19,"./controllers/settings.teams.ctrl.coffee":20,"./controllers/tasklist.ctrl.coffee":21,"./layouts/card.html":22,"./layouts/dailySummary.html":24,"./layouts/projects.html":25,"./layouts/settings.account.html":26,"./layouts/settings.html":27,"./layouts/settings.teams.html":28,"./layouts/tasklist.html":29}]},{},[13]);

@@ -6,6 +6,7 @@
   },
   "dependencies": {
     "angular": "^1.4.6",
+    "angular-bootstrap-npm": "^0.13.4",
     "angular-elastic": "^2.5.0",
     "angular-gantt": "^1.2.7",
     "angular-gravatar": "^0.4.1",

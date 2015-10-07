@@ -89,23 +89,21 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.5/angular.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.13.4/ui-bootstrap-tpls.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/js/standalone/selectize.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/danialfarid-angular-file-upload/9.0.7/ng-file-upload-all.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular-loading-bar/0.8.0/loading-bar.min.js"></script>
 
     <script>
-        angular
-            .module('simple.team.init', [])
-            .service('InitService', function() {
-                return {
-                    authUser: {
-                        id: <?php echo Auth::user()->id ?>,
-                        team: <?php echo json_encode(Auth::user()->team) ?>,
-                        name: <?php echo json_encode(Auth::user()->name) ?>,
-                        email: <?php echo json_encode(Auth::user()->email) ?>
-                    },
-                    teams: <?php echo json_encode(Auth::user()->teams) ?>
-                }
-            })
+        var ENV = {
+            authUser: {
+                id: <?php echo Auth::user()->id ?>,
+                team: <?php echo json_encode(Auth::user()->team) ?>,
+                name: <?php echo json_encode(Auth::user()->name) ?>,
+                email: <?php echo json_encode(Auth::user()->email) ?>
+            },
+            teams: <?php echo json_encode(Auth::user()->teams) ?>
+        }
     </script>
     <script src="/js/app.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/js/standalone/selectize.min.js"></script>
 </body>
 </html>

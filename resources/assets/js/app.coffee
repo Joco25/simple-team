@@ -7,8 +7,6 @@ require 'angular-sanitize'
 require 'angular-gravatar'
 require 'angular-elastic'
 require 'angular-local-storage'
-require 'angular-loading-bar'
-require 'ng-file-upload'
 require 'ng-showdown'
 
 require './routes.coffee'
@@ -23,18 +21,17 @@ require './modules/navbar/index.coffee'
 
 angular
     .module 'simple.team', [
+        'ngFileUpload'
         'ngSanitize'
         'ui.router'
         'ui.sortable'
         'ui.gravatar'
         'ui.bootstrap'
         'selectize'
-        'ngFileUpload'
+        'angular-loading-bar'
         'ng-showdown'
         'LocalStorageModule'
-        'angular-loading-bar'
         'monospaced.elastic'
-        'simple.team.init'
         'simple.team.routes'
         'simple.team.focusMe'
         'simple.team.bytes'
@@ -51,9 +48,9 @@ angular
         return
     ]
 
-    .controller 'AppCtrl', ['$state', '$http', 'InitService', '$rootScope', ($state, $http, Init, $rootScope) ->
-        $rootScope.teams = angular.copy Init.teams
-        $rootScope.authUser = angular.copy Init.authUser
+    .controller 'AppCtrl', ['$state', '$http', '$rootScope', ($state, $http, $rootScope) ->
+        $rootScope.teams = angular.copy ENV.teams
+        $rootScope.authUser = angular.copy ENV.authUser
         @state = $state
 
         @teams = $rootScope.teams

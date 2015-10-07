@@ -181,35 +181,28 @@ module.exports = ($state, $stateParams, $scope, $http, $rootScope, TagDataServic
 
     # upload on file select or drop
     @upload = (file) =>
-        console.log 'file', file
         Upload
             .upload
-                url: 'api/attachments'
+                url: '/api/attachments'
                 fields: 'card_id': cardId
                 file: file
             .progress (evt) ->
                 progressPercentage = parseInt(100.0 * evt.loaded / evt.total)
-                console.log 'progress: ' + progressPercentage + '% ' + evt.config.file.name
+                # console.log 'progress: ' + progressPercentage + '% ' + evt.config.file.name
             .success (data, status, headers, config) =>
-                console.log 'file ' + config.file.name + 'uploaded. Response: ' + data
-                console.log data
+                # console.log 'file ' + config.file.name + 'uploaded. Response: ' + data
                 @selectedCard.attachments.push(data.attachment)
             .error (data, status, headers, config) ->
                 console.log 'error status: ' + status
 
     # for multiple files:
-    @uploadFiles = (files) ->
+    @uploadFiles = (files) =>
         console.log 'files', files
         if files and files.length
             i = 0
             while i < files.length
-                Upload.upload
-                    file: files[i]
-                    url: 'api/attachments'
-                    fields: 'card_id': cardId
+                @upload(files[i])
                 i++
-        # or send them all together for HTML5 browsers:
-        Upload.upload file: files
 
     @deleteAttachment = (attachment) =>
         if ! confirm('Delete this attachment?') then return
