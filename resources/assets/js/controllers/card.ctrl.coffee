@@ -8,7 +8,6 @@ module.exports = ($state, $stateParams, $modal) ->
 
     @openModal = (size) ->
         modalInstance = $modal.open({
-            animation: false
             template: require '../layouts/card.modal.html'
             controller: require './card.modal.ctrl.coffee'
             controllerAs: 'ctrl'
