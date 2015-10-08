@@ -39,12 +39,16 @@ module.exports = ($state, $stateParams, $scope, $http, $rootScope, TagDataServic
             .post '/api/cards/tags',
                 tags: tags
                 card_id: @selectedCard.id
+            .success ->
+                $rootScope.$emit 'projects:reload'
 
     updateCardUsers = (userIds) =>
         $http
             .post '/api/cards/users',
                 user_ids: userIds
                 card_id: @selectedCard.id
+            .success ->
+                $rootScope.$emit 'projects:reload'
 
     @loadTags = =>
         TagDataService
@@ -73,17 +77,16 @@ module.exports = ($state, $stateParams, $scope, $http, $rootScope, TagDataServic
                 description: @selectedCard.description
                 blocked: @selectedCard.blocked
                 impact: @selectedCard.impact
-            .success (data) =>
-                $rootScope.$broadcast 'card:updated', @selectedCard
+            .success ->
+                $rootScope.$emit 'projects:reload'
 
     @deleteCard = =>
         if ! confirm 'Delete this card?' then return
 
-        $rootScope.$broadcast 'card:deleted', @selectedCard
-
         $http
             .delete '/api/cards/' + @selectedCard.id
-            .success (data) =>
+            .success (data) ->
+                $rootScope.$emit 'projects:reload'
                 @ok()
 
     @updateCardName = =>
@@ -104,13 +107,15 @@ module.exports = ($state, $stateParams, $scope, $http, $rootScope, TagDataServic
         @updateCard()
 
     @createSubtask = =>
+        @newSubtaskBody = @newSubtaskBody.replace("\n", '')
         $http
             .post '/api/subtasks',
-                body: angular.copy @newSubtaskBody
+                body: @newSubtaskBody
                 checked: false
                 card_id: cardId
             .success (data) =>
                 @selectedCard.subtasks.push data.subtask
+                $rootScope.$emit 'projects:reload'
 
         @newSubtaskBody = ''
 
@@ -120,11 +125,12 @@ module.exports = ($state, $stateParams, $scope, $http, $rootScope, TagDataServic
 
     @updateSubtask = (task) ->
         task.editMode = false
-        task.body = task.newBody
+        task.body = task.newBody.replace("\n", '')
         task.newBody = null
         $http
             .put '/api/subtasks/' + task.id, task
             .success (data) ->
+                $rootScope.$emit 'projects:reload'
 
     @cancelSubtaskEdit = (task) ->
         task.editMode = false
@@ -133,14 +139,20 @@ module.exports = ($state, $stateParams, $scope, $http, $rootScope, TagDataServic
     @deleteSubtask = (task) =>
         if ! confirm 'Delete this subtask?' then return
         _.remove @selectedCard.subtasks, task
-        $http.delete '/api/subtasks/' + task.id
+        $http
+            .delete '/api/subtasks/' + task.id
+            .success ->
+                $rootScope.$emit 'projects:reload'
 
     @toggleSubtask = (task) =>
         task.checked = !task.checked
         @updateTask(task)
 
     @updateTask = (task) ->
-        $http.put '/api/subtasks/' + task.id, task
+        $http
+            .put '/api/subtasks/' + task.id, task
+            .success ->
+                $rootScope.$emit 'projects:reload'
 
     @createComment = =>
         if ! @newCommentBody then return
@@ -151,12 +163,17 @@ module.exports = ($state, $stateParams, $scope, $http, $rootScope, TagDataServic
                 card_id: @selectedCard.id
             .success (data) =>
                 @selectedCard.comments.push data.comment
+                $rootScope.$emit 'projects:reload'
         @newCommentBody = ''
 
     @deleteComment = (comment) =>
         if ! confirm 'Delete this comment?' then return
 
-        $http.delete '/api/comments/' + comment.id
+        $http
+            .delete '/api/comments/' + comment.id
+            .success ->
+                $rootScope.$emit 'projects:reload'
+
         _.remove @selectedCard.comments, comment
 
     @cancelCommentEdit = (comment) ->

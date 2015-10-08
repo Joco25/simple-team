@@ -11,14 +11,6 @@ module.exports = ($http, $state, $rootScope) ->
     @selectedStage = null
     @selectedCommentBody = ''
     @selectedTaskBody = ''
-    @priorities = [
-        { priority: 5, name: 'Very High' },
-        { priority: 4, name: 'High' },
-        { priority: 3, name: 'Medium' },
-        { priority: 2, name: 'Low' },
-        { priority: 1, name: 'Very Low' },
-        { priority: 0, name: 'None' }
-    ]
 
     @sortableOptions = {
         stop: (evt, ui) ->
@@ -29,15 +21,7 @@ module.exports = ($http, $state, $rootScope) ->
         connectWith: ".sortable"
     }
 
-    @subTaskSortableOptions = {
-        start: =>
-
-        update: =>
-
-        placeholder: "subtask-placeholder"
-    }
-
-    $rootScope.$on 'card:updated', =>
+    $rootScope.$on 'projects:reload', =>
         @loadProjects()
 
     updateStageCards = (stage) ->
@@ -114,8 +98,10 @@ module.exports = ($http, $state, $rootScope) ->
         if (! newStageName) then return
         stage.name = newStageName
 
-    @archiveAllCardsInStage = (stage) ->
+    @deleteAllCardsInStage = (stage) ->
+        if ! confirm('Delete all cards in this stage?') then return
         stage.cards = []
+        $http.delete '/api/stages/' + stage.id + '/cards'
 
     @createStage = =>
         stageName = prompt("Stage name")
@@ -143,7 +129,7 @@ module.exports = ($http, $state, $rootScope) ->
                 name: @newCardName
                 addOnTop: !!@openTopCreateCards[stage.id]
             .success (data) ->
-                stage.cards = data.cards
+                stage.cards.push data.card
 
         @newCardName = ''
 

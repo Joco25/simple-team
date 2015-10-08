@@ -9,6 +9,17 @@ use App\Http\Controllers\Controller;
 
 class ApiStageController extends Controller
 {
+    public function deleteAllCards($id)
+    {
+        $success = \App\Card::whereStageId($id)
+            ->whereTeamId(\Auth::user()->team_id)
+            ->delete();
+
+        return response()->json([
+            'success' => $success
+        ]);
+    }
+
     /**
      * Display a listing of the resource.
      *

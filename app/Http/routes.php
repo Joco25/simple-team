@@ -35,6 +35,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('/api/attachments', 'ApiAttachmentController');
     Route::resource('/api/teams', 'ApiTeamController');
     Route::resource('/api/projects', 'ApiProjectController');
+
+    Route::delete('/api/stages/{id}/cards', 'ApiStageController@deleteAllCards');
     Route::resource('/api/stages', 'ApiStageController');
 
     Route::post('/api/cards/tags', 'ApiCardController@updateTags');

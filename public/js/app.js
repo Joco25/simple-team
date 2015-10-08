@@ -41220,6 +41220,8 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
       return $http.post('/api/cards/tags', {
         tags: tags,
         card_id: _this.selectedCard.id
+      }).success(function() {
+        return $rootScope.$emit('projects:reload');
       });
     };
   })(this);
@@ -41228,6 +41230,8 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
       return $http.post('/api/cards/users', {
         user_ids: userIds,
         card_id: _this.selectedCard.id
+      }).success(function() {
+        return $rootScope.$emit('projects:reload');
       });
     };
   })(this);
@@ -41261,8 +41265,8 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
         description: _this.selectedCard.description,
         blocked: _this.selectedCard.blocked,
         impact: _this.selectedCard.impact
-      }).success(function(data) {
-        return $rootScope.$broadcast('card:updated', _this.selectedCard);
+      }).success(function() {
+        return $rootScope.$emit('projects:reload');
       });
     };
   })(this);
@@ -41271,9 +41275,9 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
       if (!confirm('Delete this card?')) {
         return;
       }
-      $rootScope.$broadcast('card:deleted', _this.selectedCard);
       return $http["delete"]('/api/cards/' + _this.selectedCard.id).success(function(data) {
-        return _this.ok();
+        $rootScope.$emit('projects:reload');
+        return this.ok();
       });
     };
   })(this);
@@ -41304,12 +41308,14 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
   })(this);
   this.createSubtask = (function(_this) {
     return function() {
+      _this.newSubtaskBody = _this.newSubtaskBody.replace("\n", '');
       $http.post('/api/subtasks', {
-        body: angular.copy(_this.newSubtaskBody),
+        body: _this.newSubtaskBody,
         checked: false,
         card_id: cardId
       }).success(function(data) {
-        return _this.selectedCard.subtasks.push(data.subtask);
+        _this.selectedCard.subtasks.push(data.subtask);
+        return $rootScope.$emit('projects:reload');
       });
       return _this.newSubtaskBody = '';
     };
@@ -41320,9 +41326,11 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
   };
   this.updateSubtask = function(task) {
     task.editMode = false;
-    task.body = task.newBody;
+    task.body = task.newBody.replace("\n", '');
     task.newBody = null;
-    return $http.put('/api/subtasks/' + task.id, task).success(function(data) {});
+    return $http.put('/api/subtasks/' + task.id, task).success(function(data) {
+      return $rootScope.$emit('projects:reload');
+    });
   };
   this.cancelSubtaskEdit = function(task) {
     task.editMode = false;
@@ -41334,7 +41342,9 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
         return;
       }
       _.remove(_this.selectedCard.subtasks, task);
-      return $http["delete"]('/api/subtasks/' + task.id);
+      return $http["delete"]('/api/subtasks/' + task.id).success(function() {
+        return $rootScope.$emit('projects:reload');
+      });
     };
   })(this);
   this.toggleSubtask = (function(_this) {
@@ -41344,7 +41354,9 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
     };
   })(this);
   this.updateTask = function(task) {
-    return $http.put('/api/subtasks/' + task.id, task);
+    return $http.put('/api/subtasks/' + task.id, task).success(function() {
+      return $rootScope.$emit('projects:reload');
+    });
   };
   this.createComment = (function(_this) {
     return function() {
@@ -41355,7 +41367,8 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
         body: _this.newCommentBody,
         card_id: _this.selectedCard.id
       }).success(function(data) {
-        return _this.selectedCard.comments.push(data.comment);
+        _this.selectedCard.comments.push(data.comment);
+        return $rootScope.$emit('projects:reload');
       });
       return _this.newCommentBody = '';
     };
@@ -41365,7 +41378,9 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
       if (!confirm('Delete this comment?')) {
         return;
       }
-      $http["delete"]('/api/comments/' + comment.id);
+      $http["delete"]('/api/comments/' + comment.id).success(function() {
+        return $rootScope.$emit('projects:reload');
+      });
       return _.remove(_this.selectedCard.comments, comment);
     };
   })(this);
@@ -41547,27 +41562,6 @@ module.exports = function($http, $state, $rootScope) {
   this.selectedStage = null;
   this.selectedCommentBody = '';
   this.selectedTaskBody = '';
-  this.priorities = [
-    {
-      priority: 5,
-      name: 'Very High'
-    }, {
-      priority: 4,
-      name: 'High'
-    }, {
-      priority: 3,
-      name: 'Medium'
-    }, {
-      priority: 2,
-      name: 'Low'
-    }, {
-      priority: 1,
-      name: 'Very Low'
-    }, {
-      priority: 0,
-      name: 'None'
-    }
-  ];
   this.sortableOptions = {
     stop: function(evt, ui) {
       var stage;
@@ -41579,16 +41573,7 @@ module.exports = function($http, $state, $rootScope) {
     placeholder: "app",
     connectWith: ".sortable"
   };
-  this.subTaskSortableOptions = {
-    start: (function(_this) {
-      return function() {};
-    })(this),
-    update: (function(_this) {
-      return function() {};
-    })(this),
-    placeholder: "subtask-placeholder"
-  };
-  $rootScope.$on('card:updated', (function(_this) {
+  $rootScope.$on('projects:reload', (function(_this) {
     return function() {
       return _this.loadProjects();
     };
@@ -41688,8 +41673,12 @@ module.exports = function($http, $state, $rootScope) {
     }
     return stage.name = newStageName;
   };
-  this.archiveAllCardsInStage = function(stage) {
-    return stage.cards = [];
+  this.deleteAllCardsInStage = function(stage) {
+    if (!confirm('Delete all cards in this stage?')) {
+      return;
+    }
+    stage.cards = [];
+    return $http["delete"]('/api/stages/' + stage.id + '/cards');
   };
   this.createStage = (function(_this) {
     return function() {
@@ -41722,7 +41711,7 @@ module.exports = function($http, $state, $rootScope) {
         name: _this.newCardName,
         addOnTop: !!_this.openTopCreateCards[stage.id]
       }).success(function(data) {
-        return stage.cards = data.cards;
+        return stage.cards.push(data.card);
       });
       return _this.newCardName = '';
     };
@@ -41982,7 +41971,7 @@ module.exports = '<div class="modal-header">\n    <button\n        ng-click="ctr
 },{}],24:[function(require,module,exports){
 module.exports = '<div class="container-fluid">\n    <div class="row">\n        <div class="col-sm-12">\n            <div class="row">\n                <div class="col-sm-6">\n                    Saturday, 25 Jul 2015\n                </div>\n                <div class="col-sm-6 text-right">\n                    <div class="btn-group">\n                        <button class="btn btn-default">&lt;</button>\n                        <button class="btn btn-default">Today</button>\n                        <button class="btn btn-default">&gt;</button>\n                    </div>\n\n                    <input type="date">\n                </div>\n            </div>\n\n            <div class="panel">\n                <div class="panel-heading">{{ ctrl.authUser.name }}</div>\n                <div class="panel-body">\n                    <div class="form-group">\n                        <form ng-submit="ctrl.createDailySummary()">\n                            <input\n                                type="text"\n                                class="form-control"\n                                ng-model="ctrl.dailySummaryBody"\n                                placeholder="Today I...">\n                        </form>\n                    </div>\n                    <table class="table">\n                        <tr ng-repeat="dailySummary in ctrl.selectedDailySummaries">\n                            <td>\n                                <div\n                                    ng-show="dailySummary != dailySummaryCopy"\n                                    v-on="dblclick: editDailySummary(dailySummary)">\n                                    {{ dailySummary.body }}\n                                </div>\n\n                                <div ng-show="dailySummary == dailySummaryCopy">\n                                    <input\n                                        type="text"\n                                        class="form-control"\n                                        ng-model="dailySummaryCopy.body"\n                                        v-on="\n                                            blur: updateDailySummary(dailySummary),\n                                            keyup: updateDailySummary(dailySummary) | key \'enter\',\n                                            keyup: cancelDailySummary(dailySummary) | key \'esc\'\n                                        ">\n                                </div>\n                            </td>\n                            <td class="text-right">\n                                <button\n                                    class="btn btn-primary"\n                                    ng-click="ctrl.editDailySummary(dailySummary)">\n                                    Edit\n                                </button>\n                                <button\n                                    class="btn btn-danger"\n                                    ng-click="ctrl.deleteDailySummary(userId, dailySummary)">\n                                    Delete\n                                </button>\n                            </td>\n                        </tr>\n                    </table>\n                </div>\n            </div>\n\n            <div\n                class="panel"\n                ng-repeat="(userId, dailySummaries) in ctrl.dailySummaries"\n                ng-hide="userId == ctrl.authUser.id">\n                <div class="panel-heading">{{ ctrl.usersById[userId].name }}</div>\n                <div class="panel-body">\n                    <table class="table">\n                        <tbody>\n                            <tr ng-repeat="dailySummary in dailySummaries">\n                                <td>{{ dailySummary.body }}</td>\n                            </tr>\n                        </tbody>\n                    </table>\n                </div>\n            </div>\n        </div>\n    </div>\n</div>\n';
 },{}],25:[function(require,module,exports){
-module.exports = '<div class="container-fluid">\n    <div class="row" style="margin-bottom: 20px;">\n        <div class="col-sm-12">\n            <button\n                class="btn btn-success pull-right"\n                ng-click="ctrl.createProject()">\n                Create Active Project\n            </button>\n\n            <div class="btn-group pull-left" style="margin-right: 10px;">\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        Tags <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li><a href="#">filmsupply.com</a></li>\n                        <li><a href="#">musicbed.com</a></li>\n                    </ul>\n                </div>\n\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        Assigned to <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li><a href="#">Me</a></li>\n                        <li><a href="#">Everyone</a></li>\n                        <li><a href="#">No One Assigned</a></li>\n                        <li><a href="#">Andrew Del Prete</a></li>\n                        <li><a href="#">Jaymes</a></li>\n                    </ul>\n                </div>\n\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        Quick Filters <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li><a href="#">Action</a></li>\n                        <li><a href="#">Active</a></li>\n                        <li><a href="#">Completed</a></li>\n                        <li><a href="#">Due today</a></li>\n                        <li><a href="#">Late</a></li>\n                        <li><a href="#">All</a></li>\n                        <li><a href="#">Hide done</a></li>\n                        <li><a href="#">Due This Week</a></li>\n                        <li><a href="#">Created by me</a></li>\n                        <li><a href="#">With files attached</a></li>\n                        <li><a href="#">Tasks blocked</a></li>\n                        <li><a href="#">Tasks in progress</a></li>\n                    </ul>\n                </div>\n            </div>\n\n            <form class="form-inline pull-left">\n                <div class="form-group">\n                    <div class="input-group">\n                        <input\n                            type="text"\n                            class="form-control"\n                            placeholder="Search cards..."\n                            ng-model="ctrl.searchInput">\n                        <div class="input-group-addon btn btn-default" ng-if="ctrl.searchInput" ng-click="ctrl.searchInput = \'\'">\n                            <i class="fa fa-times"></i>\n                        </div>\n                    </div>\n                </div>\n            </form>\n        </div>\n    </div>\n</div>\n<div class="projects-container">\n    <div class="panel panel-default" ng-repeat="project in ctrl.projects" style="border: 0; margin: 0; border-radius: 0;">\n        <div class="panel-heading clearfix" style="border-radius: 0; border: 0; background: #137FA8; color: white">\n            <h5 class="panel-title pull-left" style="padding-top: 7.5px;">{{ project.name }}</h5>\n\n            <div class="btn-group pull-right">\n                <button class="btn btn-default btn-sm" type="submit" ng-click="ctrl.toggleProjectVisibility(project)">\n                    {{ project.hidden ? \'Show\' : \'Hide\' }}\n                </button>\n                <button type="button" class="btn btn-default dropdown-toggle btn-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">\n                    <span class="fa fa-cog"></span>\n                </button>\n                <ul class="dropdown-menu">\n                    <li ng-click="ctrl.editProject(project)"><a href="#">Rename</a></li>\n                    <li role="separator" class="divider"></li>\n                    <li ng-click="ctrl.deleteProject(project)"><a href="#">Delete</a></li>\n                </ul>\n            </div>\n        </div>\n        <table class="table stage-container" style="table-layout: fixed; background: #F9F8F8" ng-hide="project.hidden">\n            <tr>\n                <td ng-repeat="(stageIndex, stage) in project.stages">\n                    <div class="stage-column">\n                        <div class="btn-group" style="width: 100%; border-bottom: 5px solid #d6cfcf">\n                            <strong style="text-transform: uppercase; color: #929292">{{ stage.name }}</strong>\n\n                            <button\n                                type="button"\n                                class="btn btn-link btn-sm dropdown-toggle pull-right"\n                                data-toggle="dropdown">\n                                <span class="fa fa-cog"></span>\n                            </button>\n                            <ul class="dropdown-menu dropdown-menu-right">\n                                <li>\n                                    <a ng-click="ctrl.editStage(stage)">Rename</a>\n                                </li>\n                                <li>\n                                    <a ng-click="ctrl.archiveAllCardsInStage(stage)">Archive All Cards</a>\n                                </li>\n                                <li role="separator" class="divider"></li>\n                                <li>\n                                    <a ng-click="ctrl.deleteStage(project, stageIndex)">Delete</a>\n                                </li>\n                            </ul>\n\n                            <button\n                                type="button"\n                                class="btn btn-sm pull-right btn-link"\n                                ng-click="ctrl.openTopCreateCard(stage)">Add a Card</button>\n                        </div>\n\n                        <div ng-show="ctrl.openTopCreateCards[stage.id]">\n                            <textarea\n                                msd-elastic\n                                ng-keyup="$event.keyCode == 13 && ctrl.createCard(stage)"\n                                ng-model="ctrl.newCardName"\n                                class="form-control"\n                                focus-me="ctrl.openTopCreateCards[stage.id]"\n                                ng-blur="ctrl.hideCreateCard()"\n                                ></textarea>\n                            <a class="btn btn-link btn-sm" ng-click="ctrl.hideCreateCard()">Cancel</a>\n                        </div>\n\n                        <div class="clearfix"></div>\n\n                        <ul\n                            class="sortable"\n                            ui-sortable="ctrl.sortableOptions"\n                            ng-model="stage.cards">\n                            <li\n                                ng-click="ctrl.openEditCard(card)"\n                                ng-repeat="(cardIndex, card) in stage.cards | filter:ctrl.searchInput"\n                                ng-class="{ \'card-blocked\': card.blocked }">\n                                <div class="row">\n                                    <div class="col-sm-12">\n                                        {{ card.name }}\n                                    </div>\n                                </div>\n                                <div class="row" ng-hide="card.tags.length == 0">\n                                    <div class="col-sm-12">\n                                        <p style="margin: 5px 0">\n                                            <span ng-repeat="tag in card.tags">\n                                                <span class="label label-primary">{{ tag.name }}</span>\n                                            </span>\n                                        </p>\n                                    </div>\n                                </div>\n                                <div class="row text-center text-muted">\n                                    <div class="col-sm-3" title="{{ card.comments.length }} comment(s)">\n                                        <span ng-show="card.comments.length">\n                                            <i class="fa fa-comments"></i> {{ card.comments.length }}\n                                        </span>\n                                    </div>\n                                    <div class="col-sm-3" title="{{ card.users.length }} user(s) assigned to this card">\n                                        <span ng-show="card.users.length">\n                                            <i class="fa fa-user"></i> {{ card.users.length }}\n                                        </span>\n                                    </div>\n                                    <div class="col-sm-3" title="{{ card.subtasks.length }} subtask(s)">\n                                        <span ng-show="card.subtasks.length">\n                                            <i class="fa fa-check"></i> {{ card.subtasks.length }}\n                                        </span>\n                                    </div>\n                                    <div class="col-sm-3" title="Has a description">\n                                        <span ng-show="card.description">\n                                            <i class="fa fa-align-left"></i>\n                                        </span>\n                                    </div>\n                                </div>\n                            </li>\n                        </ul>\n                    </div>\n                </td>\n            </tr>\n        </table>\n    </div>\n</div>\n<div ui-view></div>\n';
+module.exports = '<div class="container-fluid">\n    <div class="row" style="margin-bottom: 20px;">\n        <div class="col-sm-12">\n            <button\n                class="btn btn-success pull-right"\n                ng-click="ctrl.createProject()">\n                Create Active Project\n            </button>\n\n            <div class="btn-group pull-left" style="margin-right: 10px;">\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        Tags <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li><a href="#">filmsupply.com</a></li>\n                        <li><a href="#">musicbed.com</a></li>\n                    </ul>\n                </div>\n\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        Assigned to <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li><a href="#">Me</a></li>\n                        <li><a href="#">Everyone</a></li>\n                        <li><a href="#">No One Assigned</a></li>\n                        <li><a href="#">Andrew Del Prete</a></li>\n                        <li><a href="#">Jaymes</a></li>\n                    </ul>\n                </div>\n\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        Quick Filters <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li><a href="#">Action</a></li>\n                        <li><a href="#">Active</a></li>\n                        <li><a href="#">Completed</a></li>\n                        <li><a href="#">Due today</a></li>\n                        <li><a href="#">Late</a></li>\n                        <li><a href="#">All</a></li>\n                        <li><a href="#">Hide done</a></li>\n                        <li><a href="#">Due This Week</a></li>\n                        <li><a href="#">Created by me</a></li>\n                        <li><a href="#">With files attached</a></li>\n                        <li><a href="#">Tasks blocked</a></li>\n                        <li><a href="#">Tasks in progress</a></li>\n                    </ul>\n                </div>\n            </div>\n\n            <form class="form-inline pull-left">\n                <div class="form-group">\n                    <div class="input-group">\n                        <input\n                            type="text"\n                            class="form-control"\n                            placeholder="Search cards..."\n                            ng-model="ctrl.searchInput">\n                        <div class="input-group-addon btn btn-default" ng-if="ctrl.searchInput" ng-click="ctrl.searchInput = \'\'">\n                            <i class="fa fa-times"></i>\n                        </div>\n                    </div>\n                </div>\n            </form>\n        </div>\n    </div>\n</div>\n<div class="projects-container">\n    <div class="panel panel-default" ng-repeat="project in ctrl.projects" style="border: 0; margin: 0; border-radius: 0;">\n        <div class="panel-heading clearfix" style="border-radius: 0; border: 0; background: #137FA8; color: white">\n            <h5 class="panel-title pull-left" style="padding-top: 7.5px;">{{ project.name }}</h5>\n\n            <div class="btn-group pull-right">\n                <button class="btn btn-default btn-sm" type="submit" ng-click="ctrl.toggleProjectVisibility(project)">\n                    {{ project.hidden ? \'Show\' : \'Hide\' }}\n                </button>\n                <button type="button" class="btn btn-default dropdown-toggle btn-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">\n                    <span class="fa fa-cog"></span>\n                </button>\n                <ul class="dropdown-menu">\n                    <li ng-click="ctrl.editProject(project)"><a href="#">Rename</a></li>\n                    <li role="separator" class="divider"></li>\n                    <li ng-click="ctrl.deleteProject(project)"><a href="#">Delete</a></li>\n                </ul>\n            </div>\n        </div>\n        <table class="table stage-container" style="table-layout: fixed; background: #F9F8F8" ng-hide="project.hidden">\n            <tr>\n                <td ng-repeat="(stageIndex, stage) in project.stages">\n                    <div class="stage-column">\n                        <div class="btn-group" style="width: 100%; border-bottom: 5px solid #d6cfcf">\n                            <strong style="text-transform: uppercase; color: #929292">{{ stage.name }}</strong>\n\n                            <button\n                                type="button"\n                                class="btn btn-link btn-sm dropdown-toggle pull-right"\n                                data-toggle="dropdown">\n                                <span class="fa fa-cog"></span>\n                            </button>\n                            <ul class="dropdown-menu dropdown-menu-right">\n                                <li>\n                                    <a class="pointer" ng-click="ctrl.editStage(stage)">Rename</a>\n                                </li>\n                                <li>\n                                    <a class="pointer" ng-click="ctrl.deleteAllCardsInStage(stage)">Delete All Cards</a>\n                                </li>\n                                <li role="separator" class="divider"></li>\n                                <li>\n                                    <a ng-click="ctrl.deleteStage(project, stageIndex)">Delete</a>\n                                </li>\n                            </ul>\n\n                            <button\n                                type="button"\n                                class="btn btn-sm pull-right btn-link"\n                                ng-click="ctrl.openTopCreateCard(stage)">Add a Card</button>\n                        </div>\n\n                        <div ng-show="ctrl.openTopCreateCards[stage.id]">\n                            <textarea\n                                msd-elastic\n                                ng-keyup="$event.keyCode == 13 && ctrl.createCard(stage)"\n                                ng-model="ctrl.newCardName"\n                                class="form-control"\n                                focus-me="ctrl.openTopCreateCards[stage.id]"\n                                ng-blur="ctrl.hideCreateCard()"\n                                ></textarea>\n                            <a class="btn btn-link btn-sm" ng-click="ctrl.hideCreateCard()">Cancel</a>\n                        </div>\n\n                        <div class="clearfix"></div>\n\n                        <ul\n                            class="sortable"\n                            ui-sortable="ctrl.sortableOptions"\n                            ng-model="stage.cards">\n                            <li\n                                ng-click="ctrl.openEditCard(card)"\n                                ng-repeat="(cardIndex, card) in stage.cards | filter:ctrl.searchInput"\n                                ng-class="{ \'card-blocked\': card.blocked }">\n                                <div class="row">\n                                    <div class="col-sm-12">\n                                        {{ card.name }}\n                                    </div>\n                                </div>\n                                <div class="row" ng-hide="card.tags.length == 0">\n                                    <div class="col-sm-12">\n                                        <p style="margin: 5px 0">\n                                            <span ng-repeat="tag in card.tags">\n                                                <span class="label label-primary">{{ tag.name }}</span>\n                                            </span>\n                                        </p>\n                                    </div>\n                                </div>\n                                <div class="row text-center text-muted">\n                                    <div class="col-sm-3" title="{{ card.comments.length }} comment(s)">\n                                        <span ng-show="card.comments.length">\n                                            <i class="fa fa-comments"></i> {{ card.comments.length }}\n                                        </span>\n                                    </div>\n                                    <div class="col-sm-3" title="{{ card.users.length }} user(s) assigned to this card">\n                                        <span ng-show="card.users.length">\n                                            <i class="fa fa-user"></i> {{ card.users.length }}\n                                        </span>\n                                    </div>\n                                    <div class="col-sm-3" title="{{ card.subtasks.length }} subtask(s)">\n                                        <span ng-show="card.subtasks.length">\n                                            <i class="fa fa-check"></i> {{ card.subtasks.length }}\n                                        </span>\n                                    </div>\n                                    <div class="col-sm-3" title="Has a description">\n                                        <span ng-show="card.description">\n                                            <i class="fa fa-align-left"></i>\n                                        </span>\n                                    </div>\n                                </div>\n                            </li>\n                        </ul>\n                    </div>\n                </td>\n            </tr>\n        </table>\n    </div>\n</div>\n<div ui-view></div>\n';
 },{}],26:[function(require,module,exports){
 module.exports = '<div class="row">\n    <div class="col-sm-6">\n        <div class="panel panel-default">\n            <div class="panel-heading">\n                <h5 class="panel-title">Your info</h5>\n            </div>\n            <div class="panel-body">\n                <form>\n                    <div class="form-group">\n                        <label>Name</label>\n                        <input type="text" class="form-control" ng-model="ctrl.authUser.name">\n                    </div>\n                    <div class="form-group">\n                        <label>Email</label>\n                        <input type="email" class="form-control" ng-model="ctrl.authUser.email">\n                    </div>\n                    <button class="btn btn-primary">Submit</button>\n                </form>\n            </div>\n        </div>\n    </div>\n    <div class="col-sm-6">\n        <div class="panel panel-default">\n            <div class="panel-heading">\n                <h5 class="panel-title">Change your password</h5>\n            </div>\n            <div class="panel-body">\n                <form>\n                    <div class="form-group">\n                        <label>Password</label>\n                        <input type="text" class="form-control">\n                    </div>\n                    <div class="form-group">\n                        <label>Password Confirmation</label>\n                        <input type="email" class="form-control">\n                    </div>\n                    <button class="btn btn-primary">Submit</button>\n                </form>\n            </div>\n        </div>\n    </div>\n</div>\n';
 },{}],27:[function(require,module,exports){

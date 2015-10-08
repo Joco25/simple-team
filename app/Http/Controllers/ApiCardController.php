@@ -24,6 +24,8 @@ class ApiCardController extends Controller
 
         foreach ($tags as $tagName)
         {
+            if (empty($tagName)) continue;
+
             $tag = \App\Tag::whereName($tagName)
                 ->whereTeamId(\Auth::user()->team_id)
                 ->first();
@@ -148,16 +150,17 @@ class ApiCardController extends Controller
             ->whereTeamId(\Auth::user()->team_id)
             ->first();
 
-        $success = \App\Card::create([
+        $card = \App\Card::create([
             'stage_id' => $stage->id,
             'name' => $cardName,
             'user_id' => \Auth::user()->id,
-            'team_id' => $stage->team_id
+            'team_id' => $stage->team_id,
+            'priority' => count($stage->cards)
         ]);
 
         return response()->json([
-            'success' => (bool) $success,
-            'cards' => $stage->cards
+            'success' => (bool) $card,
+            'card' => $card
         ]);
     }
 
