@@ -15,8 +15,16 @@ class ApiDailySummaryController extends Controller
      */
     public function index()
     {
+        $date = \Input::get('date');
+        $datetime = strtotime($date);
+
+        $from = date('Y-m-d 00:00:00', $datetime);
+        $to = date('Y-m-d 24:60:60', $datetime);
+        
         $dailySummaries = \App\DailySummary::with('user')
             ->whereTeamId(\Auth::user()->team_id)
+            ->where('created_at', '>', $from)
+            ->where('created_at', '<', $to)
             ->get();
 
         return response()->json([

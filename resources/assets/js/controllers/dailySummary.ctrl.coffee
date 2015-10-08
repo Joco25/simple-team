@@ -1,9 +1,12 @@
 'use strict'
 
+moment = require 'moment'
+
 module.exports = ['$http', '$rootScope', ($http, $rootScope) ->
     @dailySummaryBody = ''
     @dailySummaries = []
     @dailySummaryCopy = {}
+    @filterDate = new Date()
     @usersById = {}
 
     init = =>
@@ -18,7 +21,7 @@ module.exports = ['$http', '$rootScope', ($http, $rootScope) ->
 
     @loadDailySummaries = ->
         $http
-            .get '/api/dailySummaries'
+            .get '/api/dailySummaries?date=' + moment(@filterDate).format("YYYY-MM-DD")
             .success (data) ->
                 groupDailySummariesUser(data.dailySummaries)
 
