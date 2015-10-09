@@ -19,6 +19,19 @@ module.exports = ['$http', '$rootScope', ($http, $rootScope) ->
             summary.user_id
         @selectedDailySummaries = @dailySummaries[@authUser.id]
 
+    @addDay = =>
+        @filterDate = moment(@filterDate).add(1, 'days').toDate()
+        console.log @filterDate
+        @loadDailySummaries()
+
+    @subtractDay = =>
+        @filterDate = moment(@filterDate).subtract(1, 'days').toDate()
+        @loadDailySummaries()
+
+    @goToToday = =>
+        @filterDate = moment().subtract(1, 'days').toDate()
+        @loadDailySummaries()
+
     @loadDailySummaries = ->
         $http
             .get '/api/dailySummaries?date=' + moment(@filterDate).format("YYYY-MM-DD")

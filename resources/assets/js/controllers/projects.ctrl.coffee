@@ -1,6 +1,6 @@
 'use strict'
 
-module.exports = ($http, $state, $rootScope) ->
+module.exports = ($http, $state, $rootScope, $modal) ->
     @isEditCardOpen = false
     @isCreateCardOpen = false
     @projects = []
@@ -34,6 +34,32 @@ module.exports = ($http, $state, $rootScope) ->
 
     init = =>
         @loadProjects()
+
+    updateProjectOrder = (projects) ->
+        projectIds = _.pluck projects, 'id'
+        $http
+            .post '/api/projects/order',
+                project_ids: projectIds
+            .success (data) ->
+                console.log data
+
+    @openSortableProjects = ->
+        $modal
+            .open({
+                template: require '../layouts/sortableProjects.modal.html'
+                controller: require './sortableProjects.modal.ctrl.coffee'
+                controllerAs: 'ctrl'
+                size: 'md'
+                resolve: {
+                    projects: =>
+                        @projects
+                }
+            })
+            .result
+            .then (projects) =>
+                console.log projects
+                @projects = projects
+                updateProjectOrder(projects)
 
     @loadProjects = ->
         $http
