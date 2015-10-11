@@ -2232,6 +2232,9 @@ Copyright (c) 2015 Daniel Eden
   background: #f05f40;
   opacity: .8; }
 
+.table tbody > tr > td.vert-align {
+  vertical-align: middle; }
+
 .panel-heading h3 {
   white-space: nowrap;
   overflow: hidden;

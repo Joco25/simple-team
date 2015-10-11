@@ -4,11 +4,69 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+use Auth;
+use Input;
+use App\User;
+use App\Team;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 
 class ApiTeamController extends Controller
 {
+    public function deleteUser($id)
+    {
+        $userId = Input::get('user_id');
+
+        $team = Team::whereId($id)
+            ->whereUserId(Auth::user()->id)
+            ->first();
+
+        $success = $team->users()->detach($userId);
+
+        $team = Team::with('users')
+            ->whereId($id)
+            ->whereUserId(Auth::user()->id)
+            ->first();
+
+        return response()->json([
+            'success' => (bool) $success,
+            'team' => $team
+        ]);
+    }
+
+    public function createUser()
+    {
+        $email = Input::get('email');
+        $teamId = Input::get('team_id');
+
+        $team = Team::whereId($teamId)
+            ->whereUserId(Auth::user()->id)
+            ->first();
+
+        $user = User::whereEmail($email)
+            ->first();
+
+        if (! $user)
+        {
+            $user = User::create([
+                'email' => $email,
+                'team_id' => $team->id
+            ]);
+        }
+
+        $success = $team->users()->attach($user->id);
+
+        $team = Team::with('users')
+            ->whereId($teamId)
+            ->whereUserId(Auth::user()->id)
+            ->first();
+
+        return response()->json([
+            'success' => (bool) $success,
+            'team' => $team
+        ]);
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -18,6 +76,7 @@ class ApiTeamController extends Controller
     {
         //
         $teams = \Auth::user()->teams;
+
         return response()->json([
             'teams' => $teams
         ]);

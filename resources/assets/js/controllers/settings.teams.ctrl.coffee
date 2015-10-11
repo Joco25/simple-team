@@ -1,6 +1,6 @@
 'use strict'
 
-module.exports = ['$rootScope', '$http', ($rootScope, $http) ->
+module.exports = ['$rootScope', '$http', '$modal', ($rootScope, $http, $modal) ->
     @teams = []
 
     init = =>
@@ -12,6 +12,22 @@ module.exports = ['$rootScope', '$http', ($rootScope, $http) ->
             .get '/api/teams'
             .success (data) =>
                 @teams = data.teams
+
+    @openTeamUsers = (team) ->
+        $modal
+            .open({
+                template: require '../layouts/settings.teams.users.modal.html'
+                controller: require './settings.teams.users.modal.ctrl.coffee'
+                controllerAs: 'ctrl'
+                size: 'md'
+                resolve: {
+                    team: ->
+                        team
+                }
+            })
+            .result
+            .then (team) ->
+                console.log team
 
     @deleteTeam = (team) =>
         if ! confirm 'Delete this team and all it\'s data?' then return

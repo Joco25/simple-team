@@ -4,16 +4,48 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+use Hash;
+use Auth;
+use Input;
+use App\Team;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 
 class ApiUserController extends Controller
 {
+    public function updateMe()
+    {
+        Auth::user()->name = Input::get('name');
+        Auth::user()->email = Input::get('email');
+        $success = Auth::user()->save();
+
+        return response()->json([
+            'success' => $success
+        ]);
+    }
+
+    public function updatePassword()
+    {
+        if (Input::get('password') != Input::get('password_confirm'))
+        {
+            return response()->json([
+                'error' => "Passwords don't match."
+            ]);
+        }
+
+        Auth::user()->password = Hash::make(Input::get('password'));
+        $success = Auth::user()->save();
+
+        return response()->json([
+            'success' => $success
+        ]);
+    }
+
     public function updateTeam()
     {
-        $teamId = \Input::get('team_id');
-        \Auth::user()->team_id = $teamId;
-        $success = \Auth::user()->save();
+        $teamId = Input::get('team_id');
+        Auth::user()->team_id = $teamId;
+        $success = Auth::user()->save();
 
         return response()->json([
             'success' => $success
@@ -27,8 +59,8 @@ class ApiUserController extends Controller
      */
     public function index()
     {
-        $team = \App\Team::with('users')
-            ->whereId(\Auth::user()->team_id)
+        $team = Team::with('users')
+            ->whereId(Auth::user()->team_id)
             ->first();
 
         return response()->json([

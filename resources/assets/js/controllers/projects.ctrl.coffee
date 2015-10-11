@@ -57,7 +57,6 @@ module.exports = ($http, $state, $rootScope, $modal) ->
             })
             .result
             .then (projects) =>
-                console.log projects
                 @projects = projects
                 updateProjectOrder(projects)
 
