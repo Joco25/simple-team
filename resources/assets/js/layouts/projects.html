@@ -7,10 +7,16 @@
                         type="button"
                         class="btn btn-default dropdown-toggle"
                         data-toggle="dropdown">
-                        Tags <span class="caret"></span>
+                        {{ ctrl.filters.tag.name || 'Tags' }} <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu">
-                        <li ng-repeat="tag in ctrl.tags">
+                        <li ng-click="ctrl.selectTagFilter(null)">
+                            <a href="#">Show All Tags</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li
+                            ng-click="ctrl.selectTagFilter(tag)"
+                            ng-repeat="tag in ctrl.tags">
                             <a href="#">{{ tag.name }}</a>
                         </li>
                     </ul>
@@ -24,11 +30,15 @@
                         Assigned to <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu">
-                        <li><a href="#">Me</a></li>
-                        <li><a href="#">Everyone</a></li>
-                        <li><a href="#">No One Assigned</a></li>
-                        <li><a href="#">Andrew Del Prete</a></li>
-                        <li><a href="#">Jaymes</a></li>
+                        <li ng-click="ctrl.selectAssignedToFilter(ctrl.authUser)"><a href="#">Me</a></li>
+                        <li ng-click="ctrl.selectAssignedToFilter(null)"><a href="#">Everyone</a></li>
+                        <li ng-click="ctrl.selectAssignedToFilter('no one')"><a href="#">No One Assigned</a></li>
+                        <li
+                            ng-click="ctrl.selectAssignedToFilter(user)"
+                            ng-hide="user.id == ctrl.authUser.id"
+                            ng-repeat="user in ctrl.team.users">
+                            <a href="#">{{ user.name }}</a>
+                        </li>
                     </ul>
                 </div>
 
@@ -40,7 +50,6 @@
                         Quick Filters <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu">
-                        <li><a href="#">Action</a></li>
                         <li><a href="#">Active</a></li>
                         <li><a href="#">Completed</a></li>
                         <li><a href="#">Due today</a></li>
@@ -159,7 +168,7 @@
                             ng-model="stage.cards">
                             <li
                                 ng-click="ctrl.openEditCard(card)"
-                                ng-repeat="(cardIndex, card) in stage.cards | filter:ctrl.searchInput"
+                                ng-repeat="(cardIndex, card) in stage.cards | filter:ctrl.searchInput | filter:ctrl.appliedFilters"
                                 ng-class="{ 'card-blocked': card.blocked }">
                                 <div class="row">
                                     <div class="col-sm-12">

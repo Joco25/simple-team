@@ -12,6 +12,11 @@ module.exports = ($http, $state, $rootScope, $modal) ->
     @selectedStage = null
     @selectedCommentBody = ''
     @selectedTaskBody = ''
+    @authUser = $rootScope.authUser
+    @team = $rootScope.authUser.team
+    @filters =
+        tag: null
+        assignedTo: null
 
     @sortableOptions = {
         stop: (evt, ui) ->
@@ -41,6 +46,21 @@ module.exports = ($http, $state, $rootScope, $modal) ->
         $http
             .post '/api/projects/order',
                 project_ids: projectIds
+
+    @selectAssignedToFilter = (newFilter) =>
+        @filters.assignedTo = newFilter
+
+    @selectTagFilter = (newFilter) =>
+        @filters.tag = newFilter
+
+    @appliedFilters = (card) =>
+        if @filters.tag isnt null and _.findIndex(card.tags, { id: @filters.tag.id }) is -1
+            return false
+
+        if @filters.assignedTo isnt null and _.findIndex(card.users, { id: @filters.assignedTo.id }) is -1
+            return false
+
+        true
 
     @loadTags = =>
         $http
@@ -82,13 +102,8 @@ module.exports = ($http, $state, $rootScope, $modal) ->
 
     @deleteProject = (project) =>
         if ! confirm("Delete '" + project.name + "' and all it's contents?") then return
-
         _.remove @projects, project
-
-        $http
-            .delete '/api/projects/' + project.id
-            .success (data) ->
-                @projects = data.projects
+        $http.delete '/api/projects/' + project.id
 
     @createProject = ->
         projectName = prompt("New Project Name")
