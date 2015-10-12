@@ -4,6 +4,7 @@ module.exports = ($http, $state, $rootScope, $modal) ->
     @isEditCardOpen = false
     @isCreateCardOpen = false
     @projects = []
+    @tags = []
     @newCardName = ''
     @openTopCreateCards = {}
     @openBottomCreateCards = {}
@@ -24,24 +25,28 @@ module.exports = ($http, $state, $rootScope, $modal) ->
     $rootScope.$on 'projects:reload', =>
         @loadProjects()
 
+    init = =>
+        @loadProjects()
+        @loadTags()
+
     updateStageCards = (stage) ->
         cardIds = _.pluck stage.cards, 'id'
         $http
             .put '/api/cards/stageOrder',
                 card_ids: cardIds
                 stage_id: stage.id
-            .success (data) ->
-
-    init = =>
-        @loadProjects()
 
     updateProjectOrder = (projects) ->
         projectIds = _.pluck projects, 'id'
         $http
             .post '/api/projects/order',
                 project_ids: projectIds
-            .success (data) ->
-                console.log data
+
+    @loadTags = =>
+        $http
+            .get '/api/tags'
+            .success (data) =>
+                @tags = data.tags
 
     @openSortableProjects = ->
         $modal
@@ -66,13 +71,8 @@ module.exports = ($http, $state, $rootScope, $modal) ->
             .success (data) =>
                 @projects = data.projects
 
-    @editProject = (project) ->
-        newProjectName = prompt('Edit project name', project.name)
-        if (! newProjectName) then return
-        project.name = newProjectName
-
     @openSortStagesModal = =>
-        @stagesCopy = angular.copy(@stages)
+        @stagesCopy = angular.copy @stages
 
     @updateStagesOrder = (stagesCopy) =>
         _.each stagesCopy, (stage, key) =>
@@ -167,7 +167,7 @@ module.exports = ($http, $state, $rootScope, $modal) ->
         @openTopCreateCards = {}
 
     @editProject = (project) ->
-        projectName = prompt("Project name")
+        projectName = prompt("Project name", project.name)
         if (projectName is null) then return
 
         project.name = projectName

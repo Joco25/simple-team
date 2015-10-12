@@ -1,18 +1,6 @@
 <div class="container-fluid">
     <div class="row" style="margin-bottom: 20px;">
-        <div class="col-sm-12">
-            <button
-                class="btn btn-success pull-right"
-                ng-click="ctrl.createProject()">
-                Create Active Project
-            </button>
-
-            <button
-                class="btn btn-success pull-right"
-                ng-click="ctrl.openSortableProjects()">
-                Sort Project
-            </button>
-
+        <div class="col-sm-6">
             <div class="btn-group pull-left" style="margin-right: 10px;">
                 <div class="btn-group">
                     <button
@@ -22,8 +10,9 @@
                         Tags <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu">
-                        <li><a href="#">filmsupply.com</a></li>
-                        <li><a href="#">musicbed.com</a></li>
+                        <li ng-repeat="tag in ctrl.tags">
+                            <a href="#">{{ tag.name }}</a>
+                        </li>
                     </ul>
                 </div>
 
@@ -67,20 +56,35 @@
                 </div>
             </div>
 
-            <form class="form-inline pull-left">
+            <form class="form-inline">
                 <div class="form-group">
-                    <div class="input-group">
+                    <div ng-class="{ 'input-group': ctrl.searchInput }">
                         <input
                             type="text"
                             class="form-control"
                             placeholder="Search cards..."
                             ng-model="ctrl.searchInput">
-                        <div class="input-group-addon btn btn-default" ng-if="ctrl.searchInput" ng-click="ctrl.searchInput = ''">
+                        <div
+                            class="input-group-addon btn btn-default"
+                            ng-show="ctrl.searchInput"
+                            ng-click="ctrl.searchInput = ''">
                             <i class="fa fa-times"></i>
                         </div>
                     </div>
                 </div>
             </form>
+        </div>
+        <div class="col-sm-6 text-right">
+            <button
+                class="btn btn-default"
+                ng-click="ctrl.openSortableProjects()">
+                Sort Projects
+            </button>
+            <button
+                class="btn btn-success"
+                ng-click="ctrl.createProject()">
+                Create Active Project
+            </button>
         </div>
     </div>
 </div>
