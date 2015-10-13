@@ -1156,6 +1156,642 @@ angularLocalStorage.provider('localStorageService', function() {
 });
 })( window, window.angular );
 },{}],4:[function(require,module,exports){
+(function (global){
+/* angular-moment.js / v0.10.3 / (c) 2013, 2014, 2015 Uri Shaked / MIT Licence */
+
+'format amd';
+/* global define */
+
+(function () {
+	'use strict';
+
+	function angularMoment(angular, moment) {
+
+		/**
+		 * @ngdoc overview
+		 * @name angularMoment
+		 *
+		 * @description
+		 * angularMoment module provides moment.js functionality for angular.js apps.
+		 */
+		return angular.module('angularMoment', [])
+
+		/**
+		 * @ngdoc object
+		 * @name angularMoment.config:angularMomentConfig
+		 *
+		 * @description
+		 * Common configuration of the angularMoment module
+		 */
+			.constant('angularMomentConfig', {
+				/**
+				 * @ngdoc property
+				 * @name angularMoment.config.angularMomentConfig#preprocess
+				 * @propertyOf angularMoment.config:angularMomentConfig
+				 * @returns {string} The default preprocessor to apply
+				 *
+				 * @description
+				 * Defines a default preprocessor to apply (e.g. 'unix', 'etc', ...). The default value is null,
+				 * i.e. no preprocessor will be applied.
+				 */
+				preprocess: null, // e.g. 'unix', 'utc', ...
+
+				/**
+				 * @ngdoc property
+				 * @name angularMoment.config.angularMomentConfig#timezone
+				 * @propertyOf angularMoment.config:angularMomentConfig
+				 * @returns {string} The default timezone
+				 *
+				 * @description
+				 * The default timezone (e.g. 'Europe/London'). Empty string by default (does not apply
+				 * any timezone shift).
+				 */
+				timezone: '',
+
+				/**
+				 * @ngdoc property
+				 * @name angularMoment.config.angularMomentConfig#format
+				 * @propertyOf angularMoment.config:angularMomentConfig
+				 * @returns {string} The pre-conversion format of the date
+				 *
+				 * @description
+				 * Specify the format of the input date. Essentially it's a
+				 * default and saves you from specifying a format in every
+				 * element. Overridden by element attr. Null by default.
+				 */
+				format: null,
+
+				/**
+				 * @ngdoc property
+				 * @name angularMoment.config.angularMomentConfig#statefulFilters
+				 * @propertyOf angularMoment.config:angularMomentConfig
+				 * @returns {boolean} Whether angular-moment filters should be stateless (or not)
+				 *
+				 * @description
+				 * Specifies whether the filters included with angular-moment are stateful.
+				 * Stateful filters will automatically re-evaluate whenever you change the timezone
+				 * or language settings, but may negatively impact performance. true by default.
+				 */
+				statefulFilters: true
+			})
+
+		/**
+		 * @ngdoc object
+		 * @name angularMoment.object:moment
+		 *
+		 * @description
+		 * moment global (as provided by the moment.js library)
+		 */
+			.constant('moment', moment)
+
+		/**
+		 * @ngdoc object
+		 * @name angularMoment.config:amTimeAgoConfig
+		 * @module angularMoment
+		 *
+		 * @description
+		 * configuration specific to the amTimeAgo directive
+		 */
+			.constant('amTimeAgoConfig', {
+				/**
+				 * @ngdoc property
+				 * @name angularMoment.config.amTimeAgoConfig#withoutSuffix
+				 * @propertyOf angularMoment.config:amTimeAgoConfig
+				 * @returns {boolean} Whether to include a suffix in am-time-ago directive
+				 *
+				 * @description
+				 * Defaults to false.
+				 */
+				withoutSuffix: false,
+
+				/**
+				 * @ngdoc property
+				 * @name angularMoment.config.amTimeAgoConfig#serverTime
+				 * @propertyOf angularMoment.config:amTimeAgoConfig
+				 * @returns {number} Server time in milliseconds since the epoch
+				 *
+				 * @description
+				 * If set, time ago will be calculated relative to the given value.
+				 * If null, local time will be used. Defaults to null.
+				 */
+				serverTime: null,
+
+				/**
+				 * @ngdoc property
+				 * @name angularMoment.config.amTimeAgoConfig#titleFormat
+				 * @propertyOf angularMoment.config:amTimeAgoConfig
+				 * @returns {string} The format of the date to be displayed in the title of the element. If null,
+				 *        the directive set the title of the element.
+				 *
+				 * @description
+				 * The format of the date used for the title of the element. null by default.
+				 */
+				titleFormat: null,
+
+				/**
+				 * @ngdoc property
+				 * @name angularMoment.config.amTimeAgoConfig#fullDateThreshold
+				 * @propertyOf angularMoment.config:amTimeAgoConfig
+				 * @returns {number} The minimum number of days for showing a full date instead of relative time
+				 *
+				 * @description
+				 * The threshold for displaying a full date. The default is null, which means the date will always
+				 * be relative, and full date will never be displayed.
+				 */
+				fullDateThreshold: null,
+
+				/**
+				 * @ngdoc property
+				 * @name angularMoment.config.amTimeAgoConfig#fullDateFormat
+				 * @propertyOf angularMoment.config:amTimeAgoConfig
+				 * @returns {string} The format to use when displaying a full date.
+				 *
+				 * @description
+				 * Specify the format of the date when displayed as full date. null by default.
+				 */
+				fullDateFormat: null
+			})
+
+		/**
+		 * @ngdoc directive
+		 * @name angularMoment.directive:amTimeAgo
+		 * @module angularMoment
+		 *
+		 * @restrict A
+		 */
+			.directive('amTimeAgo', ['$window', 'moment', 'amMoment', 'amTimeAgoConfig', 'angularMomentConfig', function ($window, moment, amMoment, amTimeAgoConfig, angularMomentConfig) {
+
+				return function (scope, element, attr) {
+					var activeTimeout = null;
+					var currentValue;
+					var currentFormat = angularMomentConfig.format;
+					var withoutSuffix = amTimeAgoConfig.withoutSuffix;
+					var titleFormat = amTimeAgoConfig.titleFormat;
+					var fullDateThreshold = amTimeAgoConfig.fullDateThreshold;
+					var fullDateFormat = amTimeAgoConfig.fullDateFormat;
+					var localDate = new Date().getTime();
+					var preprocess = angularMomentConfig.preprocess;
+					var modelName = attr.amTimeAgo;
+					var currentFrom;
+					var isTimeElement = ('TIME' === element[0].nodeName.toUpperCase());
+
+					function getNow() {
+						var now;
+						if (currentFrom) {
+							now = currentFrom;
+						} else if (amTimeAgoConfig.serverTime) {
+							var localNow = new Date().getTime();
+							var nowMillis = localNow - localDate + amTimeAgoConfig.serverTime;
+							now = moment(nowMillis);
+						}
+						else {
+							now = moment();
+						}
+						return now;
+					}
+
+					function cancelTimer() {
+						if (activeTimeout) {
+							$window.clearTimeout(activeTimeout);
+							activeTimeout = null;
+						}
+					}
+
+					function updateTime(momentInstance) {
+						var daysAgo = getNow().diff(momentInstance, 'day');
+						var showFullDate = fullDateThreshold && daysAgo >= fullDateThreshold;
+
+						if (showFullDate) {
+							element.text(momentInstance.format(fullDateFormat));
+						} else {
+							element.text(momentInstance.from(getNow(), withoutSuffix));
+						}
+
+						if (titleFormat && !element.attr('title')) {
+							element.attr('title', momentInstance.local().format(titleFormat));
+						}
+
+						if (!showFullDate) {
+							var howOld = Math.abs(getNow().diff(momentInstance, 'minute'));
+							var secondsUntilUpdate = 3600;
+							if (howOld < 1) {
+								secondsUntilUpdate = 1;
+							} else if (howOld < 60) {
+								secondsUntilUpdate = 30;
+							} else if (howOld < 180) {
+								secondsUntilUpdate = 300;
+							}
+
+							activeTimeout = $window.setTimeout(function () {
+								updateTime(momentInstance);
+							}, secondsUntilUpdate * 1000);
+						}
+					}
+
+					function updateDateTimeAttr(value) {
+						if (isTimeElement) {
+							element.attr('datetime', value);
+						}
+					}
+
+					function updateMoment() {
+						cancelTimer();
+						if (currentValue) {
+							var momentValue = amMoment.preprocessDate(currentValue, preprocess, currentFormat);
+							updateTime(momentValue);
+							updateDateTimeAttr(momentValue.toISOString());
+						}
+					}
+
+					scope.$watch(modelName, function (value) {
+						if ((typeof value === 'undefined') || (value === null) || (value === '')) {
+							cancelTimer();
+							if (currentValue) {
+								element.text('');
+								updateDateTimeAttr('');
+								currentValue = null;
+							}
+							return;
+						}
+
+						currentValue = value;
+						updateMoment();
+					});
+
+					if (angular.isDefined(attr.amFrom)) {
+						scope.$watch(attr.amFrom, function (value) {
+							if ((typeof value === 'undefined') || (value === null) || (value === '')) {
+								currentFrom = null;
+							} else {
+								currentFrom = moment(value);
+							}
+							updateMoment();
+						});
+					}
+
+					if (angular.isDefined(attr.amWithoutSuffix)) {
+						scope.$watch(attr.amWithoutSuffix, function (value) {
+							if (typeof value === 'boolean') {
+								withoutSuffix = value;
+								updateMoment();
+							} else {
+								withoutSuffix = amTimeAgoConfig.withoutSuffix;
+							}
+						});
+					}
+
+					attr.$observe('amFormat', function (format) {
+						if (typeof format !== 'undefined') {
+							currentFormat = format;
+							updateMoment();
+						}
+					});
+
+					attr.$observe('amPreprocess', function (newValue) {
+						preprocess = newValue;
+						updateMoment();
+					});
+
+					attr.$observe('amFullDateThreshold', function (newValue) {
+						fullDateThreshold = newValue;
+						updateMoment();
+					});
+
+					attr.$observe('amFullDateFormat', function (newValue) {
+						fullDateFormat = newValue;
+						updateMoment();
+					});
+
+					scope.$on('$destroy', function () {
+						cancelTimer();
+					});
+
+					scope.$on('amMoment:localeChanged', function () {
+						updateMoment();
+					});
+				};
+			}])
+
+		/**
+		 * @ngdoc service
+		 * @name angularMoment.service.amMoment
+		 * @module angularMoment
+		 */
+			.service('amMoment', ['moment', '$rootScope', '$log', 'angularMomentConfig', function (moment, $rootScope, $log, angularMomentConfig) {
+				/**
+				 * @ngdoc property
+				 * @name angularMoment:amMoment#preprocessors
+				 * @module angularMoment
+				 *
+				 * @description
+				 * Defines the preprocessors for the preprocessDate method. By default, the following preprocessors
+				 * are defined: utc, unix.
+				 */
+				this.preprocessors = {
+					utc: moment.utc,
+					unix: moment.unix
+				};
+
+				/**
+				 * @ngdoc function
+				 * @name angularMoment.service.amMoment#changeLocale
+				 * @methodOf angularMoment.service.amMoment
+				 *
+				 * @description
+				 * Changes the locale for moment.js and updates all the am-time-ago directive instances
+				 * with the new locale. Also broadcasts an `amMoment:localeChanged` event on $rootScope.
+				 *
+				 * @param {string} locale Locale code (e.g. en, es, ru, pt-br, etc.)
+				 * @param {object} customization object of locale strings to override
+				 */
+				this.changeLocale = function (locale, customization) {
+					var result = moment.locale(locale, customization);
+					if (angular.isDefined(locale)) {
+						$rootScope.$broadcast('amMoment:localeChanged');
+
+					}
+					return result;
+				};
+
+				/**
+				 * @ngdoc function
+				 * @name angularMoment.service.amMoment#changeTimezone
+				 * @methodOf angularMoment.service.amMoment
+				 *
+				 * @description
+				 * Changes the default timezone for amCalendar, amDateFormat and amTimeAgo. Also broadcasts an
+				 * `amMoment:timezoneChanged` event on $rootScope.
+				 *
+				 * @param {string} timezone Timezone name (e.g. UTC)
+				 */
+				this.changeTimezone = function (timezone) {
+					angularMomentConfig.timezone = timezone;
+					$rootScope.$broadcast('amMoment:timezoneChanged');
+				};
+
+				/**
+				 * @ngdoc function
+				 * @name angularMoment.service.amMoment#preprocessDate
+				 * @methodOf angularMoment.service.amMoment
+				 *
+				 * @description
+				 * Preprocess a given value and convert it into a Moment instance appropriate for use in the
+				 * am-time-ago directive and the filters.
+				 *
+				 * @param {*} value The value to be preprocessed
+				 * @param {string} preprocess The name of the preprocessor the apply (e.g. utc, unix)
+				 * @param {string=} format Specifies how to parse the value (see {@link http://momentjs.com/docs/#/parsing/string-format/})
+				 * @return {Moment} A value that can be parsed by the moment library
+				 */
+				this.preprocessDate = function (value, preprocess, format) {
+					if (angular.isUndefined(preprocess)) {
+						preprocess = angularMomentConfig.preprocess;
+					}
+					if (this.preprocessors[preprocess]) {
+						return this.preprocessors[preprocess](value, format);
+					}
+					if (preprocess) {
+						$log.warn('angular-moment: Ignoring unsupported value for preprocess: ' + preprocess);
+					}
+					if (!isNaN(parseFloat(value)) && isFinite(value)) {
+						// Milliseconds since the epoch
+						return moment(parseInt(value, 10));
+					}
+					// else just returns the value as-is.
+					return moment(value, format);
+				};
+
+				/**
+				 * @ngdoc function
+				 * @name angularMoment.service.amMoment#applyTimezone
+				 * @methodOf angularMoment.service.amMoment
+				 *
+				 * @description
+				 * Apply a timezone onto a given moment object. It can be a named timezone (e.g. 'America/Phoenix') or an offset from UTC (e.g. '+0300')
+				 * moment-timezone.js is needed when a named timezone is used, otherwise, it'll not apply any timezone shift.
+				 *
+				 * @param {Moment} aMoment a moment() instance to apply the timezone shift to
+				 * @param {string=} timezone The timezone to apply. If none given, will apply the timezone
+				 *        configured in angularMomentConfig.timezone. It can be a named timezone (e.g. 'America/Phoenix') or an offset from UTC (e.g. '+0300')
+				 *
+				 * @returns {Moment} The given moment with the timezone shift applied
+				 */
+				this.applyTimezone = function (aMoment, timezone) {
+					timezone = timezone || angularMomentConfig.timezone;
+					if (!timezone) {
+						return aMoment;
+					}
+
+					if (timezone.match(/^Z|[+-]\d\d:?\d\d$/i)) {
+						aMoment = aMoment.utcOffset(timezone);
+					} else if (aMoment.tz) {
+						aMoment = aMoment.tz(timezone);
+					} else {
+						$log.warn('angular-moment: named timezone specified but moment.tz() is undefined. Did you forget to include moment-timezone.js?');
+					}
+
+					return aMoment;
+				};
+			}])
+
+		/**
+		 * @ngdoc filter
+		 * @name angularMoment.filter:amCalendar
+		 * @module angularMoment
+		 */
+			.filter('amCalendar', ['moment', 'amMoment', 'angularMomentConfig', function (moment, amMoment, angularMomentConfig) {
+				function amCalendarFilter(value, preprocess, timezone) {
+					if (typeof value === 'undefined' || value === null) {
+						return '';
+					}
+
+					value = amMoment.preprocessDate(value, preprocess);
+					var date = moment(value);
+					if (!date.isValid()) {
+						return '';
+					}
+
+					return amMoment.applyTimezone(date, timezone).calendar();
+				}
+
+				// Since AngularJS 1.3, filters have to explicitly define being stateful
+				// (this is no longer the default).
+				amCalendarFilter.$stateful = angularMomentConfig.statefulFilters;
+
+				return amCalendarFilter;
+			}])
+
+		/**
+		 * @ngdoc filter
+		 * @name angularMoment.filter:amDifference
+		 * @module angularMoment
+		 */
+			.filter('amDifference', ['moment', 'amMoment', 'angularMomentConfig', function (moment, amMoment, angularMomentConfig) {
+				function amDifferenceFilter(value, otherValue, unit, usePrecision, preprocessValue, preprocessOtherValue) {
+					if (typeof value === 'undefined' || value === null) {
+						return '';
+					}
+
+					value = amMoment.preprocessDate(value, preprocessValue);
+					var date = moment(value);
+					if (!date.isValid()) {
+						return '';
+					}
+
+					var date2;
+					if (typeof otherValue === 'undefined' || otherValue === null) {
+						date2 = moment();
+					} else {
+						otherValue = amMoment.preprocessDate(otherValue, preprocessOtherValue);
+						date2 = moment(otherValue);
+						if (!date2.isValid()) {
+							return '';
+						}
+					}
+
+					return amMoment.applyTimezone(date).diff(amMoment.applyTimezone(date2), unit, usePrecision);
+				}
+
+				amDifferenceFilter.$stateful = angularMomentConfig.statefulFilters;
+
+				return amDifferenceFilter;
+			}])
+
+		/**
+		 * @ngdoc filter
+		 * @name angularMoment.filter:amDateFormat
+		 * @module angularMoment
+		 * @function
+		 */
+			.filter('amDateFormat', ['moment', 'amMoment', 'angularMomentConfig', function (moment, amMoment, angularMomentConfig) {
+				function amDateFormatFilter(value, format, preprocess, timezone, inputFormat) {
+					var currentFormat = inputFormat || angularMomentConfig.format;
+					if (typeof value === 'undefined' || value === null) {
+						return '';
+					}
+
+					value = amMoment.preprocessDate(value, preprocess, currentFormat);
+					var date = moment(value);
+					if (!date.isValid()) {
+						return '';
+					}
+
+					return amMoment.applyTimezone(date, timezone).format(format);
+				}
+
+				amDateFormatFilter.$stateful = angularMomentConfig.statefulFilters;
+
+				return amDateFormatFilter;
+			}])
+
+		/**
+		 * @ngdoc filter
+		 * @name angularMoment.filter:amDurationFormat
+		 * @module angularMoment
+		 * @function
+		 */
+			.filter('amDurationFormat', ['moment', 'angularMomentConfig', function (moment, angularMomentConfig) {
+				function amDurationFormatFilter(value, format, suffix) {
+					if (typeof value === 'undefined' || value === null) {
+						return '';
+					}
+
+					return moment.duration(value, format).humanize(suffix);
+				}
+
+				amDurationFormatFilter.$stateful = angularMomentConfig.statefulFilters;
+
+				return amDurationFormatFilter;
+			}])
+
+		/**
+		 * @ngdoc filter
+		 * @name angularMoment.filter:amTimeAgo
+		 * @module angularMoment
+		 * @function
+		 */
+			.filter('amTimeAgo', ['moment', 'amMoment', 'angularMomentConfig', function (moment, amMoment, angularMomentConfig) {
+				function amTimeAgoFilter(value, preprocess, suffix, from) {
+					var date, dateFrom;
+
+					if (typeof value === 'undefined' || value === null) {
+						return '';
+					}
+
+					value = amMoment.preprocessDate(value, preprocess);
+					date = moment(value);
+					if (!date.isValid()) {
+						return '';
+					}
+
+					dateFrom = moment(from);
+					if (typeof from !== 'undefined' && dateFrom.isValid()) {
+						return amMoment.applyTimezone(date).from(dateFrom, suffix);
+					}
+
+					return amMoment.applyTimezone(date).fromNow(suffix);
+				}
+
+				amTimeAgoFilter.$stateful = angularMomentConfig.statefulFilters;
+
+				return amTimeAgoFilter;
+			}])
+
+		/**
+		 * @ngdoc filter
+		 * @name angularMoment.filter:amSubtract
+		 * @module angularMoment
+		 * @function
+		 */
+			.filter('amSubtract', ['moment', 'angularMomentConfig', function (moment, angularMomentConfig) {
+				function amSubtractFilter(value, amount, type) {
+
+					if (typeof value === 'undefined' || value === null) {
+						return '';
+					}
+
+					return moment(value).subtract(parseInt(amount, 10), type);
+				}
+
+				amSubtractFilter.$stateful = angularMomentConfig.statefulFilters;
+
+				return amSubtractFilter;
+			}])
+
+		/**
+		 * @ngdoc filter
+		 * @name angularMoment.filter:amAdd
+		 * @module angularMoment
+		 * @function
+		 */
+			.filter('amAdd', ['moment', 'angularMomentConfig', function (moment, angularMomentConfig) {
+				function amAddFilter(value, amount, type) {
+
+					if (typeof value === 'undefined' || value === null) {
+						return '';
+					}
+
+					return moment(value).add(parseInt(amount, 10), type);
+				}
+
+				amAddFilter.$stateful = angularMomentConfig.statefulFilters;
+
+				return amAddFilter;
+			}]);
+	}
+
+	if (typeof define === 'function' && define.amd) {
+		define(['angular', 'moment'], angularMoment);
+	} else if (typeof module !== 'undefined' && module && module.exports) {
+		angularMoment(angular, require('moment'));
+		module.exports = 'angularMoment';
+	} else {
+		angularMoment(angular, (typeof global !== 'undefined' ? global : window).moment);
+	}
+})();
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"moment":9}],5:[function(require,module,exports){
 /**
  * @license AngularJS v1.4.6
  * (c) 2010-2015 Google, Inc. http://angularjs.org
@@ -1840,11 +2476,11 @@ angular.module('ngSanitize').filter('linky', ['$sanitize', function($sanitize) {
 
 })(window, window.angular);
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 require('./angular-sanitize');
 module.exports = 'ngSanitize';
 
-},{"./angular-sanitize":4}],6:[function(require,module,exports){
+},{"./angular-sanitize":5}],7:[function(require,module,exports){
 /**
  * State-based routing for AngularJS
  * @version v0.2.15
@@ -6215,7 +6851,7 @@ angular.module('ui.router.state')
   .filter('isState', $IsStateFilter)
   .filter('includedByState', $IncludedByStateFilter);
 })(window, window.angular);
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 /*
  jQuery UI Sortable plugin wrapper
 
@@ -6567,7 +7203,7 @@ angular.module('ui.sortable', [])
     }
   ]);
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 //! moment.js
 //! version : 2.10.6
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
@@ -9763,7 +10399,7 @@ angular.module('ui.sortable', [])
     return _moment;
 
 }));
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 ;/*! ng-showdown 18-07-2015 */
 (function (angular, showdown) {
   // Conditional load for NodeJS
@@ -9918,7 +10554,7 @@ angular.module('ui.sortable', [])
 })(angular, showdown);
 
 
-},{"angular":11,"showdown":12}],10:[function(require,module,exports){
+},{"angular":12,"showdown":13}],11:[function(require,module,exports){
 /**
  * @license AngularJS v1.4.6
  * (c) 2010-2015 Google, Inc. http://angularjs.org
@@ -38745,11 +39381,11 @@ $provide.value("$locale", {
 })(window, document);
 
 !window.angular.$$csp().noInlineStyle && window.angular.element(document.head).prepend('<style type="text/css">@charset "UTF-8";[ng\\:cloak],[ng-cloak],[data-ng-cloak],[x-ng-cloak],.ng-cloak,.x-ng-cloak,.ng-hide:not(.ng-hide-animate){display:none !important;}ng\\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:absolute;}</style>');
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 require('./angular');
 module.exports = angular;
 
-},{"./angular":10}],12:[function(require,module,exports){
+},{"./angular":11}],13:[function(require,module,exports){
 ;/*! showdown 27-08-2015 */
 (function(){
 /**
@@ -41045,7 +41681,7 @@ if (typeof module !== 'undefined' && module.exports) {
 }
 }).call(this);
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 'use strict';
 require('moment');
 
@@ -41060,6 +41696,8 @@ require('angular-gravatar');
 require('angular-elastic');
 
 require('angular-local-storage');
+
+require('angular-moment');
 
 require('ng-showdown');
 
@@ -41081,7 +41719,7 @@ require('./modules/sidebar/index.coffee');
 
 require('./modules/navbar/index.coffee');
 
-angular.module('simple.team', ['ngFileUpload', 'ngSanitize', 'ui.router', 'ui.sortable', 'ui.gravatar', 'ui.bootstrap', 'selectize', 'angular-loading-bar', 'ng-showdown', 'LocalStorageModule', 'monospaced.elastic', 'simple.team.routes', 'simple.team.focusMe', 'simple.team.bytes', 'simple.team.sidebar', 'simple.team.navbar', 'simple.team.auth', 'simple.team.tagData', 'simple.team.userData']).config([
+angular.module('simple.team', ['ngFileUpload', 'ngSanitize', 'ui.router', 'ui.sortable', 'ui.gravatar', 'ui.bootstrap', 'selectize', 'angularMoment', 'angular-loading-bar', 'ng-showdown', 'LocalStorageModule', 'monospaced.elastic', 'simple.team.routes', 'simple.team.focusMe', 'simple.team.bytes', 'simple.team.sidebar', 'simple.team.navbar', 'simple.team.auth', 'simple.team.tagData', 'simple.team.userData']).config([
   '$urlRouterProvider', 'cfpLoadingBarProvider', function($urlRouterProvider, cfpLoadingBarProvider) {
     $urlRouterProvider.otherwise('/projects');
     cfpLoadingBarProvider.includeSpinner = false;
@@ -41132,7 +41770,7 @@ angular.module('simple.team', ['ngFileUpload', 'ngSanitize', 'ui.router', 'ui.so
 ]);
 
 
-},{"./modules/auth/index.coffee":34,"./modules/bytes/index.coffee":35,"./modules/focusMe/index.coffee":36,"./modules/navbar/index.coffee":37,"./modules/selectize":39,"./modules/sidebar/index.coffee":40,"./modules/tagData/index.coffee":42,"./modules/userData/index.coffee":43,"./routes.coffee":44,"angular-elastic":1,"angular-gravatar":2,"angular-local-storage":3,"angular-sanitize":5,"angular-ui-router":6,"angular-ui-sortable":7,"moment":8,"ng-showdown":9}],14:[function(require,module,exports){
+},{"./modules/auth/index.coffee":35,"./modules/bytes/index.coffee":36,"./modules/focusMe/index.coffee":37,"./modules/navbar/index.coffee":38,"./modules/selectize":40,"./modules/sidebar/index.coffee":41,"./modules/tagData/index.coffee":43,"./modules/userData/index.coffee":44,"./routes.coffee":45,"angular-elastic":1,"angular-gravatar":2,"angular-local-storage":3,"angular-moment":4,"angular-sanitize":6,"angular-ui-router":7,"angular-ui-sortable":8,"moment":9,"ng-showdown":10}],15:[function(require,module,exports){
 'use strict';
 module.exports = function($state, $stateParams, $modal) {
   var cardId, init;
@@ -41175,7 +41813,7 @@ module.exports = function($state, $stateParams, $modal) {
 };
 
 
-},{"../layouts/card.modal.html":25,"./card.modal.ctrl.coffee":15}],15:[function(require,module,exports){
+},{"../layouts/card.modal.html":26,"./card.modal.ctrl.coffee":16}],16:[function(require,module,exports){
 'use strict';
 module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDataService, Upload, $modalInstance, cardId) {
   var init, projectId, stageId, updateCardTags, updateCardUsers;
@@ -41474,7 +42112,7 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
 };
 
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 'use strict';
 var moment;
 
@@ -41572,7 +42210,7 @@ module.exports = [
 ];
 
 
-},{"moment":8}],17:[function(require,module,exports){
+},{"moment":9}],18:[function(require,module,exports){
 'use strict';
 module.exports = function($http, $state, $rootScope, $modal) {
   var init, updateProjectOrder, updateStageCards;
@@ -41839,7 +42477,7 @@ module.exports = function($http, $state, $rootScope, $modal) {
 };
 
 
-},{"../layouts/sortableProjects.modal.html":32,"./sortableProjects.modal.ctrl.coffee":22}],18:[function(require,module,exports){
+},{"../layouts/sortableProjects.modal.html":33,"./sortableProjects.modal.ctrl.coffee":23}],19:[function(require,module,exports){
 'use strict';
 module.exports = [
   '$http', '$rootScope', function($http, $rootScope) {
@@ -41870,11 +42508,11 @@ module.exports = [
 ];
 
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 module.exports = function() {};
 
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 'use strict';
 module.exports = [
   '$rootScope', '$http', '$modal', function($rootScope, $http, $modal) {
@@ -41933,7 +42571,7 @@ module.exports = [
 ];
 
 
-},{"../layouts/settings.teams.users.modal.html":31,"./settings.teams.users.modal.ctrl.coffee":21}],21:[function(require,module,exports){
+},{"../layouts/settings.teams.users.modal.html":32,"./settings.teams.users.modal.ctrl.coffee":22}],22:[function(require,module,exports){
 'use strict';
 module.exports = function($modalInstance, team, $http) {
   var init;
@@ -41973,7 +42611,7 @@ module.exports = function($modalInstance, team, $http) {
 };
 
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 'use strict';
 module.exports = function($modalInstance, projects) {
   var init;
@@ -41992,7 +42630,7 @@ module.exports = function($modalInstance, projects) {
 };
 
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 'use strict';
 module.exports = [
   '$http', '$rootScope', 'TagDataService', function($http, $rootScope, TagData) {
@@ -42127,27 +42765,27 @@ module.exports = [
 ];
 
 
-},{}],24:[function(require,module,exports){
-module.exports = '<!-- <div\n    class="modal fade in"\n    style="display: block; position: absolute; overflow: auto; bottom: auto">\n    <div class="modal-dialog modal-lg">\n        <div class="modal-content">\n            <div class="modal-header">\n                <button\n                    ng-click="ctrl.closeEditCard()"\n                    type="button"\n                    class="close"\n                    data-dismiss="modal"\n                    aria-label="Close"><span aria-hidden="true">&times;</span></button>\n                <h4\n                    ng-click="ctrl.selectedCard.editName = !ctrl.selectedCard.editName; ctrl.selectedCardName = ctrl.selectedCard.name"\n                    ng-hide="ctrl.selectedCard.editName"\n                    class="modal-title">{{ ctrl.selectedCard.name || \'Edit card name...\' }}</h4>\n                <div ng-show="ctrl.selectedCard.editName">\n                    <div class="form-group">\n                        <textarea\n                            class="form-control"\n                            ng-keydown="$event.keyCode == 13 && ctrl.updateCardName()"\n                            ng-blur="ctrl.updateCardName()"\n                            msd-elastic\n                            ng-model="ctrl.selectedCardName"></textarea>\n                    </div>\n                    <button\n                        class="btn btn-success btn-sm"\n                        ng-click="ctrl.updateCardName()">\n                        Save\n                    </button>\n                    <button\n                        class="btn btn-link btn-sm"\n                        ng-click="ctrl.selectedCard.editName = false">\n                        Cancel\n                    </button>\n                </div>\n            </div>\n            <div class="modal-body">\n                <span\n                    ng-hide="ctrl.showCardDescription"\n                    ng-click="ctrl.selectCardDescription()"\n                    ng-class="{ \'text-muted\': !ctrl.selectedCard.description }">{{ ctrl.selectedCard.description || \'Edit the description...\' }}</span>\n\n                <div ng-show="ctrl.showCardDescription">\n                    <div class="form-group">\n                        <textarea\n                            class="form-control"\n                            msd-elastic\n                            placeholder="Describe what\'s happening here..."\n                            ng-blur="ctrl.updateCardDescription()"\n                            ng-model="ctrl.selectedCardDescription"></textarea>\n                    </div>\n                    <button\n                        class="btn btn-success btn-sm"\n                        ng-click="ctrl.updateCardDescription()">\n                        Save\n                    </button>\n                    <button\n                        class="btn btn-link btn-sm"\n                        ng-click="ctrl.showCardDescription = false">\n                        Cancel\n                    </button>\n                </div>\n            </div>\n\n            <hr style="margin: 0;">\n\n            <div class="modal-body">\n                <h4>Assignees</h4>\n                <selectize\n                    config="ctrl.usersConfig"\n                    options="ctrl.users"\n                    ng-model="ctrl.selectedCard.userIds"></selectize>\n            </div>\n\n            <hr style="margin: 0;">\n\n            <div class="modal-body">\n                <h4>Subtasks</h4>\n                <div class="form-group">\n                    <textarea\n                        placeholder="Create a subtask..."\n                        class="form-control"\n                        rows="1"\n                        msd-elastic\n                        ng-model="ctrl.newSubtaskBody"\n                        ng-keyup="$event.keyCode == 13 && ctrl.createSubtask()"></textarea>\n                </div>\n                <div\n                    ui-sortable="ctrl.subTaskSortableOptions"\n                    ng-model="ctrl.selectedCard.subtasks">\n                    <div\n                        class="media"\n                        ng-repeat="task in ctrl.selectedCard.subtasks">\n                        <div class="media-left">\n                            <i\n                                class="fa fa-2 pointer"\n                                ng-click="ctrl.toggleSubtask(task)"\n                                ng-class="{ \'fa-square-o\': task.checked != true, \'fa-check-square-o\': task.checked == true }"></i>\n                        </div>\n                        <div class="media-body">\n                            <div ng-click="ctrl.editSubtask(task)" ng-hide="task.editMode">{{ task.body || \'Click to edit subtask...\' }}</div>\n                            <span ng-show="task.editMode">\n                                <div class="form-group">\n                                    <textarea\n                                        type="text"\n                                        class="form-control"\n                                        msd-elastic\n                                        ng-model="task.newBody"\n                                        ng-keyup="$event.keyCode == 13 && ctrl.updateSubtask(task)"></textarea>\n                                </div>\n                                <button class="btn btn-success btn-sm" ng-click="ctrl.updateSubtask(task)">Save</button>\n                                <button class="btn btn-link btn-sm" ng-click="ctrl.cancelSubtaskEdit(task)">Cancel</button>\n                                <button class="btn btn-link btn-sm pull-right" ng-click="ctrl.deleteSubtask(task)">Delete</button>\n                            </span>\n                        </div>\n                    </div>\n                </div>\n            </div>\n\n            <hr style="margin: 0;">\n\n            <div class="modal-body">\n                <h4>Impact</h4>\n                <p>By adding an impact value we can determine the priority of tasks against others.</p>\n                <input\n                    type="range"\n                    min="0"\n                    max="100"\n                    ng-model="ctrl.selectedCard.impact"\n                    ng-change="ctrl.updateCard()">\n            </div>\n\n            <hr style="margin: 0;">\n\n            <div class="modal-body">\n                <h4>Attachments</h4>\n                <div ngf-no-file-drop>File Drag/Drop is not supported for this browser</div>\n                <div\n                    ngf-drop\n                    ngf-select\n                    ng-model="ctrl.files"\n                    class="dropbox"\n                    ngf-drag-over-class="dragover"\n                    ngf-multiple="true"\n                    ngf-allow-dir="false">\n                    <div class="drag-overlay">Drop files here or <span>Browse<span></div>\n                </div>\n            </div>\n\n            <hr style="margin: 0;">\n\n            <div class="modal-body">\n                <h4>Tags</h4>\n                <selectize\n                    config="ctrl.tagsConfig"\n                    options="ctrl.tags"\n                    ng-model="ctrl.selectedCard.tagNames"></selectize>\n            </div>\n\n            <hr style="margin: 0;">\n\n            <div class="modal-body">\n                <h4>Comments</h4>\n                <div class="form-group">\n                    <textarea\n                        msd-elastic\n                        class="form-control"\n                        placeholder="What\'s on your mind?"\n                        ng-model="ctrl.newCommentBody"></textarea>\n                </div>\n                <button\n                    class="btn btn-success btn-sm"\n                    ng-click="ctrl.createComment()">Comment</button>\n\n                <div\n                    class="media"\n                    ng-repeat="comment in ctrl.selectedCard.comments">\n                    <div class="media-left">\n                        <a href="#">\n                            <img class="media-object" gravatar-src="comment.user.email" gravatar-size="45">\n                        </a>\n                    </div>\n                    <div class="media-body">\n                        <div ng-hide="comment.editMode">\n                            <p ng-bind="comment.body"></p>\n                            yesterday at 9:38am -\n                            <a class="pointer" ng-click="ctrl.editComment(comment)">Edit</a> -\n                            <a class="pointer" ng-click="ctrl.deleteComment(comment)">Delete</a>\n                        </div>\n                        <div ng-show="comment.editMode">\n                            <div class="form-group">\n                                <textarea\n                                    msd-elastic\n                                    type="text"\n                                    class="form-control"\n                                    ng-model="comment.newBody"></textarea>\n                            </div>\n                            <button\n                                class="btn btn-success btn-sm"\n                                ng-click="ctrl.updateComment(comment)">Save</button>\n                            <button\n                                class="btn btn-link btn-sm"\n                                ng-click="ctrl.cancelCommentEdit(comment)">Cancel</button>\n                        </div>\n                    </div>\n                </div>\n            </div>\n            <div class="modal-footer">\n                <button\n                    class="pull-left btn btn-danger"\n                    ng-click="ctrl.deleteCard()">\n                    Delete\n                </button>\n                <button\n                    ng-class="{\n                        \'btn-danger\': ctrl.selectedCard.blocked,\n                        \'btn-primary\': !ctrl.selectedCard.blocked\n                    }"\n                    class="btn" ng-click="ctrl.blockToggleSelectedCard()">\n                    {{ ctrl.selectedCard.blocked ? \'Unblock\' : \'Blocked\' }}\n                </button>\n                <button\n                    type="button"\n                    class="btn btn-default"\n                    data-dismiss="modal"\n                    ng-click="ctrl.closeEditCard()">Close</button>\n            </div>\n        </div>\n    </div>\n</div>\n<div class="modal-backdrop fade in" ng-click="ctrl.closeEditCard()"></div> -->\n';
 },{}],25:[function(require,module,exports){
-module.exports = '<div class="modal-header">\n    <button\n        ng-click="ctrl.ok()"\n        type="button"\n        class="close"\n        data-dismiss="modal"\n        aria-label="Close"><span aria-hidden="true">&times;</span></button>\n    <h4\n        ng-click="ctrl.selectedCard.editName = !ctrl.selectedCard.editName; ctrl.selectedCardName = ctrl.selectedCard.name"\n        ng-hide="ctrl.selectedCard.editName"\n        class="modal-title">{{ ctrl.selectedCard.name || \'Edit card name...\' }}</h4>\n    <div ng-show="ctrl.selectedCard.editName">\n        <div class="form-group">\n            <textarea\n                class="form-control"\n                ng-keydown="$event.keyCode == 13 && ctrl.updateCardName()"\n                ng-blur="ctrl.updateCardName()"\n                msd-elastic\n                ng-model="ctrl.selectedCardName"></textarea>\n        </div>\n        <button\n            class="btn btn-success btn-sm"\n            ng-click="ctrl.updateCardName()">\n            Save\n        </button>\n        <button\n            class="btn btn-link btn-sm"\n            ng-click="ctrl.selectedCard.editName = false">\n            Cancel\n        </button>\n    </div>\n</div>\n<div class="modal-body">\n    <span\n        ng-hide="ctrl.showCardDescription"\n        ng-click="ctrl.selectCardDescription()"\n        ng-class="{ \'text-muted\': !ctrl.selectedCard.description }">{{ ctrl.selectedCard.description || \'Edit the description...\' }}</span>\n\n    <div ng-show="ctrl.showCardDescription">\n        <div class="form-group">\n            <textarea\n                class="form-control"\n                msd-elastic\n                placeholder="Describe what\'s happening here..."\n                ng-blur="ctrl.updateCardDescription()"\n                ng-model="ctrl.selectedCardDescription"></textarea>\n        </div>\n        <button\n            class="btn btn-success btn-sm"\n            ng-click="ctrl.updateCardDescription()">\n            Save\n        </button>\n        <button\n            class="btn btn-link btn-sm"\n            ng-click="ctrl.showCardDescription = false">\n            Cancel\n        </button>\n    </div>\n</div>\n\n<hr style="margin: 0;">\n\n<div class="modal-body">\n    <h4>Assignees</h4>\n    <selectize\n        config="ctrl.usersConfig"\n        options="ctrl.users"\n        ng-model="ctrl.selectedCard.userIds"></selectize>\n</div>\n\n<hr style="margin: 0;">\n\n<div class="modal-body">\n    <h4>Subtasks</h4>\n    <div class="form-group">\n        <textarea\n            placeholder="Create a subtask..."\n            class="form-control"\n            rows="1"\n            msd-elastic\n            ng-model="ctrl.newSubtaskBody"\n            ng-keyup="$event.keyCode == 13 && ctrl.createSubtask()"></textarea>\n    </div>\n    <div\n        ui-sortable="ctrl.subTaskSortableOptions"\n        ng-model="ctrl.selectedCard.subtasks">\n        <div\n            class="media"\n            ng-repeat="task in ctrl.selectedCard.subtasks">\n            <div class="media-left">\n                <i\n                    class="fa fa-2 pointer"\n                    ng-click="ctrl.toggleSubtask(task)"\n                    ng-class="{ \'fa-square-o\': task.checked != true, \'fa-check-square-o\': task.checked == true }"></i>\n            </div>\n            <div class="media-body">\n                <div ng-click="ctrl.editSubtask(task)" ng-hide="task.editMode">{{ task.body || \'Click to edit subtask...\' }}</div>\n                <span ng-show="task.editMode">\n                    <div class="form-group">\n                        <textarea\n                            type="text"\n                            class="form-control"\n                            msd-elastic\n                            ng-model="task.newBody"\n                            ng-keyup="$event.keyCode == 13 && ctrl.updateSubtask(task)"></textarea>\n                    </div>\n                    <button class="btn btn-success btn-sm" ng-click="ctrl.updateSubtask(task)">Save</button>\n                    <button class="btn btn-link btn-sm" ng-click="ctrl.cancelSubtaskEdit(task)">Cancel</button>\n                    <button class="btn btn-link btn-sm pull-right" ng-click="ctrl.deleteSubtask(task)">Delete</button>\n                </span>\n            </div>\n        </div>\n    </div>\n</div>\n\n<hr style="margin: 0;">\n\n<div class="modal-body">\n    <h4>Impact</h4>\n    <p>By adding an impact value we can determine the priority of tasks against others.</p>\n    <input\n        type="range"\n        min="0"\n        max="100"\n        ng-model="ctrl.selectedCard.impact"\n        ng-change="ctrl.updateCard()">\n</div>\n\n<hr style="margin: 0;">\n\n<div class="modal-body">\n    <h4>Attachments</h4>\n    <div ngf-no-file-drop>File Drag/Drop is not supported for this browser</div>\n    <div\n        class="dropbox"\n        ng-model="ctrl.files"\n        ngf-drop="ctrl.upload($file)"\n        ngf-select="ctrl.uploadFiles($files)"\n        ngf-drag-over-class="{accept:\'dragover\'}"\n        ngf-multiple="true"\n        ngf-allow-dir="false">\n        <div class="drag-overlay" ng-hide="ctrl.states.uploading">Drop files here or <span>Browse<span></div>\n        <div class="drag-overlay" ng-show="ctrl.states.uploading">Uploading...</div>\n    </div>\n    <table class="table" style="margin: 10px 0 0">\n        <tr ng-repeat="attachment in ctrl.selectedCard.attachments">\n            <td ng-click="ctrl.downloadAttachment(attachment)" class="pointer" style="vertical-align: middle">\n                <strong>{{ attachment.original_filename }}</strong> <span class="text-muted">({{ attachment.file_size | bytes }})</span>\n            </td>\n            <td class="text-right">\n                <button class="btn btn-danger btn-sm" type="button" ng-click="ctrl.deleteAttachment(attachment)">\n                    Delete\n                </button>\n            </td>\n        </tr>\n    </table>\n</div>\n\n<hr style="margin: 0;">\n\n<div class="modal-body">\n    <h4>Tags</h4>\n    <selectize\n        config="ctrl.tagsConfig"\n        options="ctrl.tags"\n        ng-model="ctrl.selectedCard.tagNames"></selectize>\n</div>\n\n<hr style="margin: 0;">\n\n<div class="modal-body">\n    <h4>Comments</h4>\n    <div class="form-group">\n        <textarea\n            msd-elastic\n            class="form-control"\n            placeholder="What\'s on your mind?"\n            ng-model="ctrl.newCommentBody"></textarea>\n    </div>\n    <button\n        class="btn btn-success btn-sm"\n        ng-click="ctrl.createComment()">Comment</button>\n\n    <div\n        class="media"\n        ng-repeat="comment in ctrl.selectedCard.comments">\n        <div class="media-left">\n            <a href="#">\n                <img class="media-object" gravatar-src="comment.user.email" gravatar-size="45">\n            </a>\n        </div>\n        <div class="media-body">\n            <div ng-hide="comment.editMode">\n                <p ng-bind="comment.body"></p>\n                yesterday at 9:38am -\n                <a class="pointer" ng-click="ctrl.editComment(comment)">Edit</a> -\n                <a class="pointer" ng-click="ctrl.deleteComment(comment)">Delete</a>\n            </div>\n            <div ng-show="comment.editMode">\n                <div class="form-group">\n                    <textarea\n                        msd-elastic\n                        type="text"\n                        class="form-control"\n                        ng-model="comment.newBody"></textarea>\n                </div>\n                <button\n                    class="btn btn-success btn-sm"\n                    ng-click="ctrl.updateComment(comment)">Save</button>\n                <button\n                    class="btn btn-link btn-sm"\n                    ng-click="ctrl.cancelCommentEdit(comment)">Cancel</button>\n            </div>\n        </div>\n    </div>\n</div>\n<div class="modal-footer">\n    <button\n        class="pull-left btn btn-danger"\n        ng-click="ctrl.deleteCard()">\n        Delete\n    </button>\n    <button\n        ng-class="{\n            \'btn-danger\': ctrl.selectedCard.blocked,\n            \'btn-primary\': !ctrl.selectedCard.blocked\n        }"\n        class="btn" ng-click="ctrl.blockToggleSelectedCard()">\n        {{ ctrl.selectedCard.blocked ? \'Unblock\' : \'Blocked\' }}\n    </button>\n    <button\n        type="button"\n        class="btn btn-default"\n        data-dismiss="modal"\n        ng-click="ctrl.ok()">Close</button>\n</div>\n';
+module.exports = '<!-- <div\n    class="modal fade in"\n    style="display: block; position: absolute; overflow: auto; bottom: auto">\n    <div class="modal-dialog modal-lg">\n        <div class="modal-content">\n            <div class="modal-header">\n                <button\n                    ng-click="ctrl.closeEditCard()"\n                    type="button"\n                    class="close"\n                    data-dismiss="modal"\n                    aria-label="Close"><span aria-hidden="true">&times;</span></button>\n                <h4\n                    ng-click="ctrl.selectedCard.editName = !ctrl.selectedCard.editName; ctrl.selectedCardName = ctrl.selectedCard.name"\n                    ng-hide="ctrl.selectedCard.editName"\n                    class="modal-title">{{ ctrl.selectedCard.name || \'Edit card name...\' }}</h4>\n                <div ng-show="ctrl.selectedCard.editName">\n                    <div class="form-group">\n                        <textarea\n                            class="form-control"\n                            ng-keydown="$event.keyCode == 13 && ctrl.updateCardName()"\n                            ng-blur="ctrl.updateCardName()"\n                            msd-elastic\n                            ng-model="ctrl.selectedCardName"></textarea>\n                    </div>\n                    <button\n                        class="btn btn-success btn-sm"\n                        ng-click="ctrl.updateCardName()">\n                        Save\n                    </button>\n                    <button\n                        class="btn btn-link btn-sm"\n                        ng-click="ctrl.selectedCard.editName = false">\n                        Cancel\n                    </button>\n                </div>\n            </div>\n            <div class="modal-body">\n                <span\n                    ng-hide="ctrl.showCardDescription"\n                    ng-click="ctrl.selectCardDescription()"\n                    ng-class="{ \'text-muted\': !ctrl.selectedCard.description }">{{ ctrl.selectedCard.description || \'Edit the description...\' }}</span>\n\n                <div ng-show="ctrl.showCardDescription">\n                    <div class="form-group">\n                        <textarea\n                            class="form-control"\n                            msd-elastic\n                            placeholder="Describe what\'s happening here..."\n                            ng-blur="ctrl.updateCardDescription()"\n                            ng-model="ctrl.selectedCardDescription"></textarea>\n                    </div>\n                    <button\n                        class="btn btn-success btn-sm"\n                        ng-click="ctrl.updateCardDescription()">\n                        Save\n                    </button>\n                    <button\n                        class="btn btn-link btn-sm"\n                        ng-click="ctrl.showCardDescription = false">\n                        Cancel\n                    </button>\n                </div>\n            </div>\n\n            <hr style="margin: 0;">\n\n            <div class="modal-body">\n                <h4>Assignees</h4>\n                <selectize\n                    config="ctrl.usersConfig"\n                    options="ctrl.users"\n                    ng-model="ctrl.selectedCard.userIds"></selectize>\n            </div>\n\n            <hr style="margin: 0;">\n\n            <div class="modal-body">\n                <h4>Subtasks</h4>\n                <div class="form-group">\n                    <textarea\n                        placeholder="Create a subtask..."\n                        class="form-control"\n                        rows="1"\n                        msd-elastic\n                        ng-model="ctrl.newSubtaskBody"\n                        ng-keyup="$event.keyCode == 13 && ctrl.createSubtask()"></textarea>\n                </div>\n                <div\n                    ui-sortable="ctrl.subTaskSortableOptions"\n                    ng-model="ctrl.selectedCard.subtasks">\n                    <div\n                        class="media"\n                        ng-repeat="task in ctrl.selectedCard.subtasks">\n                        <div class="media-left">\n                            <i\n                                class="fa fa-2 pointer"\n                                ng-click="ctrl.toggleSubtask(task)"\n                                ng-class="{ \'fa-square-o\': task.checked != true, \'fa-check-square-o\': task.checked == true }"></i>\n                        </div>\n                        <div class="media-body">\n                            <div ng-click="ctrl.editSubtask(task)" ng-hide="task.editMode">{{ task.body || \'Click to edit subtask...\' }}</div>\n                            <span ng-show="task.editMode">\n                                <div class="form-group">\n                                    <textarea\n                                        type="text"\n                                        class="form-control"\n                                        msd-elastic\n                                        ng-model="task.newBody"\n                                        ng-keyup="$event.keyCode == 13 && ctrl.updateSubtask(task)"></textarea>\n                                </div>\n                                <button class="btn btn-success btn-sm" ng-click="ctrl.updateSubtask(task)">Save</button>\n                                <button class="btn btn-link btn-sm" ng-click="ctrl.cancelSubtaskEdit(task)">Cancel</button>\n                                <button class="btn btn-link btn-sm pull-right" ng-click="ctrl.deleteSubtask(task)">Delete</button>\n                            </span>\n                        </div>\n                    </div>\n                </div>\n            </div>\n\n            <hr style="margin: 0;">\n\n            <div class="modal-body">\n                <h4>Impact</h4>\n                <p>By adding an impact value we can determine the priority of tasks against others.</p>\n                <input\n                    type="range"\n                    min="0"\n                    max="100"\n                    ng-model="ctrl.selectedCard.impact"\n                    ng-change="ctrl.updateCard()">\n            </div>\n\n            <hr style="margin: 0;">\n\n            <div class="modal-body">\n                <h4>Attachments</h4>\n                <div ngf-no-file-drop>File Drag/Drop is not supported for this browser</div>\n                <div\n                    ngf-drop\n                    ngf-select\n                    ng-model="ctrl.files"\n                    class="dropbox"\n                    ngf-drag-over-class="dragover"\n                    ngf-multiple="true"\n                    ngf-allow-dir="false">\n                    <div class="drag-overlay">Drop files here or <span>Browse<span></div>\n                </div>\n            </div>\n\n            <hr style="margin: 0;">\n\n            <div class="modal-body">\n                <h4>Tags</h4>\n                <selectize\n                    config="ctrl.tagsConfig"\n                    options="ctrl.tags"\n                    ng-model="ctrl.selectedCard.tagNames"></selectize>\n            </div>\n\n            <hr style="margin: 0;">\n\n            <div class="modal-body">\n                <h4>Comments</h4>\n                <div class="form-group">\n                    <textarea\n                        msd-elastic\n                        class="form-control"\n                        placeholder="What\'s on your mind?"\n                        ng-model="ctrl.newCommentBody"></textarea>\n                </div>\n                <button\n                    class="btn btn-success btn-sm"\n                    ng-click="ctrl.createComment()">Comment</button>\n\n                <div\n                    class="media"\n                    ng-repeat="comment in ctrl.selectedCard.comments">\n                    <div class="media-left">\n                        <a href="#">\n                            <img class="media-object" gravatar-src="comment.user.email" gravatar-size="45">\n                        </a>\n                    </div>\n                    <div class="media-body">\n                        <div ng-hide="comment.editMode">\n                            <p ng-bind="comment.body"></p>\n                            yesterday at 9:38am -\n                            <a class="pointer" ng-click="ctrl.editComment(comment)">Edit</a> -\n                            <a class="pointer" ng-click="ctrl.deleteComment(comment)">Delete</a>\n                        </div>\n                        <div ng-show="comment.editMode">\n                            <div class="form-group">\n                                <textarea\n                                    msd-elastic\n                                    type="text"\n                                    class="form-control"\n                                    ng-model="comment.newBody"></textarea>\n                            </div>\n                            <button\n                                class="btn btn-success btn-sm"\n                                ng-click="ctrl.updateComment(comment)">Save</button>\n                            <button\n                                class="btn btn-link btn-sm"\n                                ng-click="ctrl.cancelCommentEdit(comment)">Cancel</button>\n                        </div>\n                    </div>\n                </div>\n            </div>\n            <div class="modal-footer">\n                <button\n                    class="pull-left btn btn-danger"\n                    ng-click="ctrl.deleteCard()">\n                    Delete\n                </button>\n                <button\n                    ng-class="{\n                        \'btn-danger\': ctrl.selectedCard.blocked,\n                        \'btn-primary\': !ctrl.selectedCard.blocked\n                    }"\n                    class="btn" ng-click="ctrl.blockToggleSelectedCard()">\n                    {{ ctrl.selectedCard.blocked ? \'Unblock\' : \'Blocked\' }}\n                </button>\n                <button\n                    type="button"\n                    class="btn btn-default"\n                    data-dismiss="modal"\n                    ng-click="ctrl.closeEditCard()">Close</button>\n            </div>\n        </div>\n    </div>\n</div>\n<div class="modal-backdrop fade in" ng-click="ctrl.closeEditCard()"></div> -->\n';
 },{}],26:[function(require,module,exports){
-module.exports = '<div class="container-fluid">\n    <div class="row">\n        <div class="col-sm-12">\n            <div class="row" style="margin-bottom: 10px">\n                <div class="col-sm-6">\n                    Saturday, 25 Jul 2015\n                </div>\n                <div class="col-sm-6 text-right">\n                    <div class="btn-group">\n                        <button class="btn btn-default" ng-click="ctrl.addDay()">&lt;</button>\n                        <button class="btn btn-default" ng-click="ctrl.goToToday()">Today</button>\n                        <button class="btn btn-default" ng-click="ctrl.substractDay()">&gt;</button>\n                    </div>\n\n                    <div class="form-inline pull-right">\n                        <input class="form-control" type="date" ng-model="ctrl.filterDate" ng-click="ctrl.loadDailySummaries()">\n                    </div>\n                </div>\n            </div>\n\n            <div class="panel">\n                <div class="panel-heading">{{ ctrl.authUser.name }}</div>\n                <div class="panel-body">\n                    <div class="form-group">\n                        <form ng-submit="ctrl.createDailySummary()">\n                            <input\n                                type="text"\n                                class="form-control"\n                                ng-model="ctrl.dailySummaryBody"\n                                placeholder="Today I...">\n                        </form>\n                    </div>\n                    <table class="table">\n                        <tr ng-repeat="dailySummary in ctrl.selectedDailySummaries">\n                            <td>\n                                <div\n                                    ng-show="dailySummary != dailySummaryCopy"\n                                    v-on="dblclick: editDailySummary(dailySummary)">\n                                    {{ dailySummary.body }}\n                                </div>\n\n                                <div ng-show="dailySummary == dailySummaryCopy">\n                                    <input\n                                        type="text"\n                                        class="form-control"\n                                        ng-model="dailySummaryCopy.body"\n                                        v-on="\n                                            blur: updateDailySummary(dailySummary),\n                                            keyup: updateDailySummary(dailySummary) | key \'enter\',\n                                            keyup: cancelDailySummary(dailySummary) | key \'esc\'\n                                        ">\n                                </div>\n                            </td>\n                            <td class="text-right">\n                                <button\n                                    class="btn btn-primary"\n                                    ng-click="ctrl.editDailySummary(dailySummary)">\n                                    Edit\n                                </button>\n                                <button\n                                    class="btn btn-danger"\n                                    ng-click="ctrl.deleteDailySummary(userId, dailySummary)">\n                                    Delete\n                                </button>\n                            </td>\n                        </tr>\n                    </table>\n                </div>\n            </div>\n\n            <div\n                class="panel"\n                ng-repeat="user in ctrl.authUser.team.users"\n                ng-hide="user.id == ctrl.authUser.id">\n                <div class="panel-heading">{{ user.name }}</div>\n                <div class="panel-body">\n                    <table class="table">\n                        <tbody>\n                            <tr ng-repeat="dailySummary in ctrl.dailySummaries[user.id]">\n                                <td>{{ dailySummary.body }}</td>\n                            </tr>\n                        </tbody>\n                    </table>\n                </div>\n            </div>\n        </div>\n    </div>\n</div>\n';
+module.exports = '<div class="modal-header">\n    <button\n        ng-click="ctrl.ok()"\n        type="button"\n        class="close"\n        data-dismiss="modal"\n        aria-label="Close"><span aria-hidden="true">&times;</span></button>\n    <h4\n        ng-click="ctrl.selectedCard.editName = !ctrl.selectedCard.editName; ctrl.selectedCardName = ctrl.selectedCard.name"\n        ng-hide="ctrl.selectedCard.editName"\n        class="modal-title">{{ ctrl.selectedCard.name || \'Edit card name...\' }}</h4>\n    <div ng-show="ctrl.selectedCard.editName">\n        <div class="form-group">\n            <textarea\n                class="form-control"\n                ng-keydown="$event.keyCode == 13 && ctrl.updateCardName()"\n                ng-blur="ctrl.updateCardName()"\n                msd-elastic\n                ng-model="ctrl.selectedCardName"></textarea>\n        </div>\n        <button\n            class="btn btn-success btn-sm"\n            ng-click="ctrl.updateCardName()">\n            Save\n        </button>\n        <button\n            class="btn btn-link btn-sm"\n            ng-click="ctrl.selectedCard.editName = false">\n            Cancel\n        </button>\n    </div>\n</div>\n<div class="modal-body">\n    <span\n        ng-hide="ctrl.showCardDescription"\n        ng-click="ctrl.selectCardDescription()"\n        ng-class="{ \'text-muted\': !ctrl.selectedCard.description }">{{ ctrl.selectedCard.description || \'Edit the description...\' }}</span>\n\n    <div ng-show="ctrl.showCardDescription">\n        <div class="form-group">\n            <textarea\n                class="form-control"\n                msd-elastic\n                placeholder="Describe what\'s happening here..."\n                ng-blur="ctrl.updateCardDescription()"\n                ng-model="ctrl.selectedCardDescription"></textarea>\n        </div>\n        <button\n            class="btn btn-success btn-sm"\n            ng-click="ctrl.updateCardDescription()">\n            Save\n        </button>\n        <button\n            class="btn btn-link btn-sm"\n            ng-click="ctrl.showCardDescription = false">\n            Cancel\n        </button>\n    </div>\n</div>\n\n<hr style="margin: 0;">\n\n<div class="modal-body">\n    <h4>Assignees</h4>\n    <selectize\n        config="ctrl.usersConfig"\n        options="ctrl.users"\n        ng-model="ctrl.selectedCard.userIds"></selectize>\n</div>\n\n<hr style="margin: 0;">\n\n<div class="modal-body">\n    <h4>Subtasks</h4>\n    <div class="form-group">\n        <textarea\n            placeholder="Create a subtask..."\n            class="form-control"\n            rows="1"\n            msd-elastic\n            ng-model="ctrl.newSubtaskBody"\n            ng-keyup="$event.keyCode == 13 && ctrl.createSubtask()"></textarea>\n    </div>\n    <div\n        ui-sortable="ctrl.subTaskSortableOptions"\n        ng-model="ctrl.selectedCard.subtasks">\n        <div\n            class="media"\n            ng-repeat="task in ctrl.selectedCard.subtasks">\n            <div class="media-left">\n                <i\n                    class="fa fa-2 pointer"\n                    ng-click="ctrl.toggleSubtask(task)"\n                    ng-class="{ \'fa-square-o\': task.checked != true, \'fa-check-square-o\': task.checked == true }"></i>\n            </div>\n            <div class="media-body">\n                <div ng-click="ctrl.editSubtask(task)" ng-hide="task.editMode">{{ task.body || \'Click to edit subtask...\' }}</div>\n                <span ng-show="task.editMode">\n                    <div class="form-group">\n                        <textarea\n                            type="text"\n                            class="form-control"\n                            msd-elastic\n                            ng-model="task.newBody"\n                            ng-keyup="$event.keyCode == 13 && ctrl.updateSubtask(task)"></textarea>\n                    </div>\n                    <button class="btn btn-success btn-sm" ng-click="ctrl.updateSubtask(task)">Save</button>\n                    <button class="btn btn-link btn-sm" ng-click="ctrl.cancelSubtaskEdit(task)">Cancel</button>\n                    <button class="btn btn-link btn-sm pull-right" ng-click="ctrl.deleteSubtask(task)">Delete</button>\n                </span>\n            </div>\n        </div>\n    </div>\n</div>\n\n<hr style="margin: 0;">\n\n<div class="modal-body">\n    <h4>Impact</h4>\n    <p>By adding an impact value we can determine the priority of tasks against others.</p>\n    <input\n        type="range"\n        min="0"\n        max="100"\n        ng-model="ctrl.selectedCard.impact"\n        ng-change="ctrl.updateCard()">\n</div>\n\n<hr style="margin: 0;">\n\n<div class="modal-body">\n    <h4>Attachments</h4>\n    <div ngf-no-file-drop>File Drag/Drop is not supported for this browser</div>\n    <div\n        class="dropbox"\n        ng-model="ctrl.files"\n        ngf-drop="ctrl.upload($file)"\n        ngf-select="ctrl.uploadFiles($files)"\n        ngf-drag-over-class="{accept:\'dragover\'}"\n        ngf-multiple="true"\n        ngf-allow-dir="false">\n        <div class="drag-overlay" ng-hide="ctrl.states.uploading">Drop files here or <span>Browse<span></div>\n        <div class="drag-overlay" ng-show="ctrl.states.uploading">Uploading...</div>\n    </div>\n    <table class="table" style="margin: 10px 0 0">\n        <tr ng-repeat="attachment in ctrl.selectedCard.attachments">\n            <td ng-click="ctrl.downloadAttachment(attachment)" class="pointer" style="vertical-align: middle">\n                <strong>{{ attachment.original_filename }}</strong> <span class="text-muted">({{ attachment.file_size | bytes }})</span>\n            </td>\n            <td class="text-right">\n                <button class="btn btn-danger btn-sm" type="button" ng-click="ctrl.deleteAttachment(attachment)">\n                    Delete\n                </button>\n            </td>\n        </tr>\n    </table>\n</div>\n\n<hr style="margin: 0;">\n\n<div class="modal-body">\n    <h4>Tags</h4>\n    <selectize\n        config="ctrl.tagsConfig"\n        options="ctrl.tags"\n        ng-model="ctrl.selectedCard.tagNames"></selectize>\n</div>\n\n<hr style="margin: 0;">\n\n<div class="modal-body">\n    <h4>Comments</h4>\n    <div class="form-group">\n        <textarea\n            msd-elastic\n            class="form-control"\n            placeholder="What\'s on your mind?"\n            ng-model="ctrl.newCommentBody"></textarea>\n    </div>\n    <button\n        class="btn btn-success btn-sm"\n        ng-click="ctrl.createComment()">Comment</button>\n\n    <div\n        class="media"\n        ng-repeat="comment in ctrl.selectedCard.comments">\n        <div class="media-left">\n            <a href="#">\n                <img class="media-object" gravatar-src="comment.user.email" gravatar-size="45">\n            </a>\n        </div>\n        <div class="media-body">\n            <div ng-hide="comment.editMode">\n                <strong>{{ comment.user.name }}</strong>\n                <p>{{ comment.body }}</p>\n                <span am-time-ago="comment.created_at"></span> -\n                <a class="pointer" ng-click="ctrl.editComment(comment)">Edit</a> -\n                <a class="pointer" ng-click="ctrl.deleteComment(comment)">Delete</a>\n            </div>\n            <div ng-show="comment.editMode">\n                <div class="form-group">\n                    <textarea\n                        msd-elastic\n                        type="text"\n                        class="form-control"\n                        ng-model="comment.newBody"></textarea>\n                </div>\n                <button\n                    class="btn btn-success btn-sm"\n                    ng-click="ctrl.updateComment(comment)">Save</button>\n                <button\n                    class="btn btn-link btn-sm"\n                    ng-click="ctrl.cancelCommentEdit(comment)">Cancel</button>\n            </div>\n        </div>\n    </div>\n</div>\n<div class="modal-footer">\n    <button\n        class="pull-left btn btn-danger"\n        ng-click="ctrl.deleteCard()">\n        Delete\n    </button>\n    <button\n        ng-class="{\n            \'btn-danger\': ctrl.selectedCard.blocked,\n            \'btn-primary\': !ctrl.selectedCard.blocked\n        }"\n        class="btn" ng-click="ctrl.blockToggleSelectedCard()">\n        {{ ctrl.selectedCard.blocked ? \'Unblock\' : \'Blocked\' }}\n    </button>\n    <button\n        type="button"\n        class="btn btn-default"\n        data-dismiss="modal"\n        ng-click="ctrl.ok()">Close</button>\n</div>\n';
 },{}],27:[function(require,module,exports){
-module.exports = '<div class="container-fluid">\n    <div class="row" style="margin-bottom: 20px;">\n        <div class="col-sm-6">\n            <div class="btn-group pull-left" style="margin-right: 10px;">\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        {{ ctrl.filters.tag.name || \'Tags\' }} <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li ng-click="ctrl.selectTagFilter(null)">\n                            <a href="#">Show All Tags</a>\n                        </li>\n                        <li class="divider"></li>\n                        <li\n                            ng-click="ctrl.selectTagFilter(tag)"\n                            ng-repeat="tag in ctrl.tags">\n                            <a href="#">{{ tag.name }}</a>\n                        </li>\n                    </ul>\n                </div>\n\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        Assigned to <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li ng-click="ctrl.selectAssignedToFilter(ctrl.authUser)"><a href="#">Me</a></li>\n                        <li ng-click="ctrl.selectAssignedToFilter(null)"><a href="#">Everyone</a></li>\n                        <li ng-click="ctrl.selectAssignedToFilter(\'no one\')"><a href="#">No One Assigned</a></li>\n                        <li\n                            ng-click="ctrl.selectAssignedToFilter(user)"\n                            ng-hide="user.id == ctrl.authUser.id"\n                            ng-repeat="user in ctrl.team.users">\n                            <a href="#">{{ user.name }}</a>\n                        </li>\n                    </ul>\n                </div>\n\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        Quick Filters <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li><a href="#">Active</a></li>\n                        <li><a href="#">Completed</a></li>\n                        <li><a href="#">Due today</a></li>\n                        <li><a href="#">Late</a></li>\n                        <li><a href="#">All</a></li>\n                        <li><a href="#">Hide done</a></li>\n                        <li><a href="#">Due This Week</a></li>\n                        <li><a href="#">Created by me</a></li>\n                        <li><a href="#">With files attached</a></li>\n                        <li><a href="#">Tasks blocked</a></li>\n                        <li><a href="#">Tasks in progress</a></li>\n                    </ul>\n                </div>\n            </div>\n\n            <form class="form-inline">\n                <div class="form-group">\n                    <div ng-class="{ \'input-group\': ctrl.searchInput }">\n                        <input\n                            type="text"\n                            class="form-control"\n                            placeholder="Search cards..."\n                            ng-model="ctrl.searchInput">\n                        <div\n                            class="input-group-addon btn btn-default"\n                            ng-show="ctrl.searchInput"\n                            ng-click="ctrl.searchInput = \'\'">\n                            <i class="fa fa-times"></i>\n                        </div>\n                    </div>\n                </div>\n            </form>\n        </div>\n        <div class="col-sm-6 text-right">\n            <button\n                class="btn btn-default"\n                ng-click="ctrl.openSortableProjects()">\n                Sort Projects\n            </button>\n            <button\n                class="btn btn-success"\n                ng-click="ctrl.createProject()">\n                Create Active Project\n            </button>\n        </div>\n    </div>\n</div>\n<div class="projects-container">\n    <div class="panel panel-default" ng-repeat="project in ctrl.projects" style="border: 0; margin: 0; border-radius: 0;">\n        <div class="panel-heading clearfix" style="border-radius: 0; border: 0; background: #137FA8; color: white">\n            <h5 class="panel-title pull-left" style="padding-top: 7.5px;">{{ project.name }}</h5>\n\n            <div class="btn-group pull-right">\n                <button class="btn btn-default btn-sm" type="submit" ng-click="ctrl.toggleProjectVisibility(project)">\n                    {{ project.hidden ? \'Show\' : \'Hide\' }}\n                </button>\n                <button type="button" class="btn btn-default dropdown-toggle btn-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">\n                    <span class="fa fa-cog"></span>\n                </button>\n                <ul class="dropdown-menu">\n                    <li ng-click="ctrl.editProject(project)"><a href="#">Rename</a></li>\n                    <li role="separator" class="divider"></li>\n                    <li ng-click="ctrl.deleteProject(project)"><a href="#">Delete</a></li>\n                </ul>\n            </div>\n        </div>\n        <table class="table stage-container" style="table-layout: fixed; background: #F9F8F8" ng-hide="project.hidden">\n            <tr>\n                <td ng-repeat="(stageIndex, stage) in project.stages">\n                    <div class="stage-column">\n                        <div class="btn-group" style="width: 100%; border-bottom: 5px solid #d6cfcf">\n                            <strong style="text-transform: uppercase; color: #929292">{{ stage.name }}</strong>\n\n                            <button\n                                type="button"\n                                class="btn btn-link btn-sm dropdown-toggle pull-right"\n                                data-toggle="dropdown">\n                                <span class="fa fa-cog"></span>\n                            </button>\n                            <ul class="dropdown-menu dropdown-menu-right">\n                                <li>\n                                    <a class="pointer" ng-click="ctrl.editStage(stage)">Rename</a>\n                                </li>\n                                <li>\n                                    <a class="pointer" ng-click="ctrl.deleteAllCardsInStage(stage)">Delete All Cards</a>\n                                </li>\n                                <li role="separator" class="divider"></li>\n                                <li>\n                                    <a ng-click="ctrl.deleteStage(project, stageIndex)">Delete</a>\n                                </li>\n                            </ul>\n\n                            <button\n                                type="button"\n                                class="btn btn-sm pull-right btn-link"\n                                ng-click="ctrl.openTopCreateCard(stage)">Add a Card</button>\n                        </div>\n\n                        <div ng-show="ctrl.openTopCreateCards[stage.id]">\n                            <textarea\n                                msd-elastic\n                                ng-keyup="$event.keyCode == 13 && ctrl.createCard(stage)"\n                                ng-model="ctrl.newCardName"\n                                class="form-control"\n                                focus-me="ctrl.openTopCreateCards[stage.id]"\n                                ng-blur="ctrl.hideCreateCard()"\n                                ></textarea>\n                            <a class="btn btn-link btn-sm" ng-click="ctrl.hideCreateCard()">Cancel</a>\n                        </div>\n\n                        <div class="clearfix"></div>\n\n                        <ul\n                            class="sortable"\n                            ui-sortable="ctrl.sortableOptions"\n                            ng-model="stage.cards">\n                            <li\n                                ng-click="ctrl.openEditCard(card)"\n                                ng-repeat="(cardIndex, card) in stage.cards | filter:ctrl.searchInput | filter:ctrl.appliedFilters"\n                                ng-class="{ \'card-blocked\': card.blocked }">\n                                <div class="row">\n                                    <div class="col-sm-12">\n                                        {{ card.name }}\n                                    </div>\n                                </div>\n                                <div class="row" ng-hide="card.tags.length == 0">\n                                    <div class="col-sm-12">\n                                        <p style="margin: 5px 0">\n                                            <span ng-repeat="tag in card.tags">\n                                                <span class="label label-primary">{{ tag.name }}</span>\n                                            </span>\n                                        </p>\n                                    </div>\n                                </div>\n                                <div class="row text-center text-muted">\n                                    <div class="col-sm-3" title="{{ card.comments.length }} comment(s)">\n                                        <span ng-show="card.comments.length">\n                                            <i class="fa fa-comments"></i> {{ card.comments.length }}\n                                        </span>\n                                    </div>\n                                    <div class="col-sm-3" title="{{ card.users.length }} user(s) assigned to this card">\n                                        <span ng-show="card.users.length">\n                                            <i class="fa fa-user"></i> {{ card.users.length }}\n                                        </span>\n                                    </div>\n                                    <div class="col-sm-3" title="{{ card.subtasks.length }} subtask(s)">\n                                        <span ng-show="card.subtasks.length">\n                                            <i class="fa fa-check"></i> {{ card.subtasks.length }}\n                                        </span>\n                                    </div>\n                                    <div class="col-sm-3" title="Has a description">\n                                        <span ng-show="card.description">\n                                            <i class="fa fa-align-left"></i>\n                                        </span>\n                                    </div>\n                                </div>\n                            </li>\n                        </ul>\n                    </div>\n                </td>\n            </tr>\n        </table>\n    </div>\n</div>\n<div ui-view></div>\n';
+module.exports = '<div class="container-fluid">\n    <div class="row">\n        <div class="col-sm-12">\n            <div class="row" style="margin-bottom: 10px">\n                <div class="col-sm-6">\n                    Saturday, 25 Jul 2015\n                </div>\n                <div class="col-sm-6 text-right">\n                    <div class="btn-group">\n                        <button class="btn btn-default" ng-click="ctrl.addDay()">&lt;</button>\n                        <button class="btn btn-default" ng-click="ctrl.goToToday()">Today</button>\n                        <button class="btn btn-default" ng-click="ctrl.substractDay()">&gt;</button>\n                    </div>\n\n                    <div class="form-inline pull-right">\n                        <input class="form-control" type="date" ng-model="ctrl.filterDate" ng-click="ctrl.loadDailySummaries()">\n                    </div>\n                </div>\n            </div>\n\n            <div class="panel">\n                <div class="panel-heading">{{ ctrl.authUser.name }}</div>\n                <div class="panel-body">\n                    <div class="form-group">\n                        <form ng-submit="ctrl.createDailySummary()">\n                            <input\n                                type="text"\n                                class="form-control"\n                                ng-model="ctrl.dailySummaryBody"\n                                placeholder="Today I...">\n                        </form>\n                    </div>\n                    <table class="table">\n                        <tr ng-repeat="dailySummary in ctrl.selectedDailySummaries">\n                            <td>\n                                <div\n                                    ng-show="dailySummary != dailySummaryCopy"\n                                    v-on="dblclick: editDailySummary(dailySummary)">\n                                    {{ dailySummary.body }}\n                                </div>\n\n                                <div ng-show="dailySummary == dailySummaryCopy">\n                                    <input\n                                        type="text"\n                                        class="form-control"\n                                        ng-model="dailySummaryCopy.body"\n                                        v-on="\n                                            blur: updateDailySummary(dailySummary),\n                                            keyup: updateDailySummary(dailySummary) | key \'enter\',\n                                            keyup: cancelDailySummary(dailySummary) | key \'esc\'\n                                        ">\n                                </div>\n                            </td>\n                            <td class="text-right">\n                                <button\n                                    class="btn btn-primary"\n                                    ng-click="ctrl.editDailySummary(dailySummary)">\n                                    Edit\n                                </button>\n                                <button\n                                    class="btn btn-danger"\n                                    ng-click="ctrl.deleteDailySummary(userId, dailySummary)">\n                                    Delete\n                                </button>\n                            </td>\n                        </tr>\n                    </table>\n                </div>\n            </div>\n\n            <div\n                class="panel"\n                ng-repeat="user in ctrl.authUser.team.users"\n                ng-hide="user.id == ctrl.authUser.id">\n                <div class="panel-heading">{{ user.name }}</div>\n                <div class="panel-body">\n                    <table class="table">\n                        <tbody>\n                            <tr ng-repeat="dailySummary in ctrl.dailySummaries[user.id]">\n                                <td>{{ dailySummary.body }}</td>\n                            </tr>\n                        </tbody>\n                    </table>\n                </div>\n            </div>\n        </div>\n    </div>\n</div>\n';
 },{}],28:[function(require,module,exports){
-module.exports = '<div class="row">\n    <div class="col-sm-6">\n        <div class="panel panel-default">\n            <div class="panel-heading">\n                <h5 class="panel-title">Your info</h5>\n            </div>\n            <div class="panel-body">\n                <form ng-submit="ctrl.updateUser()">\n                    <div class="form-group">\n                        <label>Name</label>\n                        <input\n                            type="text"\n                            class="form-control"\n                            ng-model="ctrl.authUser.name">\n                    </div>\n                    <div class="form-group">\n                        <label>Email</label>\n                        <input\n                            type="email"\n                            class="form-control"\n                            ng-model="ctrl.authUser.email">\n                    </div>\n                    <button\n                        type="submit"\n                        class="btn btn-primary">Submit</button>\n                </form>\n            </div>\n        </div>\n    </div>\n    <div class="col-sm-6">\n        <div class="panel panel-default">\n            <div class="panel-heading">\n                <h5 class="panel-title">Change your password</h5>\n            </div>\n            <div class="panel-body">\n                <form ng-submit="ctrl.updatePassword()">\n                    <div class="form-group">\n                        <label>Password</label>\n                        <input\n                            type="password"\n                            class="form-control"\n                            ng-model="ctrl.password">\n                    </div>\n                    <div class="form-group">\n                        <label>Password Confirmation</label>\n                        <input\n                            type="password"\n                            class="form-control"\n                            ng-model="ctrl.passwordConfirm">\n                    </div>\n                    <button class="btn btn-primary">Submit</button>\n                </form>\n            </div>\n        </div>\n    </div>\n</div>\n';
+module.exports = '<div class="container-fluid">\n    <div class="row" style="margin-bottom: 20px;">\n        <div class="col-sm-6">\n            <div class="btn-group pull-left" style="margin-right: 10px;">\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        {{ ctrl.filters.tag.name || \'Tags\' }} <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li ng-click="ctrl.selectTagFilter(null)">\n                            <a href="#">Show All Tags</a>\n                        </li>\n                        <li class="divider"></li>\n                        <li\n                            ng-click="ctrl.selectTagFilter(tag)"\n                            ng-repeat="tag in ctrl.tags">\n                            <a href="#">{{ tag.name }}</a>\n                        </li>\n                    </ul>\n                </div>\n\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        Assigned to <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li ng-click="ctrl.selectAssignedToFilter(ctrl.authUser)"><a href="#">Me</a></li>\n                        <li ng-click="ctrl.selectAssignedToFilter(null)"><a href="#">Everyone</a></li>\n                        <li ng-click="ctrl.selectAssignedToFilter(\'no one\')"><a href="#">No One Assigned</a></li>\n                        <li\n                            ng-click="ctrl.selectAssignedToFilter(user)"\n                            ng-hide="user.id == ctrl.authUser.id"\n                            ng-repeat="user in ctrl.team.users">\n                            <a href="#">{{ user.name }}</a>\n                        </li>\n                    </ul>\n                </div>\n\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        Quick Filters <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li><a href="#">Active</a></li>\n                        <li><a href="#">Completed</a></li>\n                        <li><a href="#">Due today</a></li>\n                        <li><a href="#">Late</a></li>\n                        <li><a href="#">All</a></li>\n                        <li><a href="#">Hide done</a></li>\n                        <li><a href="#">Due This Week</a></li>\n                        <li><a href="#">Created by me</a></li>\n                        <li><a href="#">With files attached</a></li>\n                        <li><a href="#">Tasks blocked</a></li>\n                        <li><a href="#">Tasks in progress</a></li>\n                    </ul>\n                </div>\n            </div>\n\n            <form class="form-inline">\n                <div class="form-group">\n                    <div ng-class="{ \'input-group\': ctrl.searchInput }">\n                        <input\n                            type="text"\n                            class="form-control"\n                            placeholder="Search cards..."\n                            ng-model="ctrl.searchInput">\n                        <div\n                            class="input-group-addon btn btn-default"\n                            ng-show="ctrl.searchInput"\n                            ng-click="ctrl.searchInput = \'\'">\n                            <i class="fa fa-times"></i>\n                        </div>\n                    </div>\n                </div>\n            </form>\n        </div>\n        <div class="col-sm-6 text-right">\n            <button\n                class="btn btn-primary"\n                ng-click="ctrl.openSortableProjects()">\n                Sort Projects\n            </button>\n            <button\n                class="btn btn-success"\n                ng-click="ctrl.createProject()">\n                Create Active Project\n            </button>\n        </div>\n    </div>\n</div>\n<div class="projects-container">\n    <div class="panel panel-default" ng-repeat="project in ctrl.projects" style="border: 0; margin: 0; border-radius: 0;">\n        <div class="panel-heading clearfix" style="border-radius: 0; border: 0; background: #137FA8; color: white">\n            <h5 class="panel-title pull-left" style="padding-top: 7.5px;">{{ project.name }}</h5>\n            <div class="btn-group pull-right">\n                <button class="btn btn-default btn-sm" type="submit" ng-click="ctrl.toggleProjectVisibility(project)">\n                    {{ project.hidden ? \'Show\' : \'Hide\' }}\n                </button>\n                <button type="button" class="btn btn-default dropdown-toggle btn-sm" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">\n                    <span class="fa fa-cog"></span>\n                </button>\n                <ul class="dropdown-menu">\n                    <li ng-click="ctrl.editProject(project)"><a href="#">Rename</a></li>\n                    <li role="separator" class="divider"></li>\n                    <li ng-click="ctrl.deleteProject(project)"><a href="#">Delete</a></li>\n                </ul>\n            </div>\n        </div>\n        <table class="table stage-container" style="table-layout: fixed; background: #F9F8F8" ng-hide="project.hidden">\n            <tr>\n                <td ng-repeat="(stageIndex, stage) in project.stages">\n                    <div class="stage-column">\n                        <div class="btn-group" style="width: 100%; border-bottom: 5px solid #d6cfcf">\n                            <strong style="text-transform: uppercase; color: #929292">{{ stage.name }}</strong>\n                            <button\n                                type="button"\n                                class="btn btn-link btn-sm dropdown-toggle pull-right"\n                                data-toggle="dropdown">\n                                <span class="fa fa-cog"></span>\n                            </button>\n                            <ul class="dropdown-menu dropdown-menu-right">\n                                <li>\n                                    <a class="pointer" ng-click="ctrl.editStage(stage)">Rename</a>\n                                </li>\n                                <li>\n                                    <a class="pointer" ng-click="ctrl.deleteAllCardsInStage(stage)">Delete All Cards</a>\n                                </li>\n                                <li role="separator" class="divider"></li>\n                                <li>\n                                    <a ng-click="ctrl.deleteStage(project, stageIndex)">Delete</a>\n                                </li>\n                            </ul>\n\n                            <button\n                                type="button"\n                                class="btn btn-sm pull-right btn-link"\n                                ng-click="ctrl.openTopCreateCard(stage)">Add a Card</button>\n                        </div>\n\n                        <div ng-show="ctrl.openTopCreateCards[stage.id]">\n                            <textarea\n                                msd-elastic\n                                ng-keyup="$event.keyCode == 13 && ctrl.createCard(stage)"\n                                ng-model="ctrl.newCardName"\n                                class="form-control"\n                                focus-me="ctrl.openTopCreateCards[stage.id]"\n                                ng-blur="ctrl.hideCreateCard()"\n                                ></textarea>\n                            <a class="btn btn-link btn-sm" ng-click="ctrl.hideCreateCard()">Cancel</a>\n                        </div>\n\n                        <div class="clearfix"></div>\n\n                        <ul\n                            class="sortable"\n                            ui-sortable="ctrl.sortableOptions"\n                            ng-model="stage.cards">\n                            <li\n                                ng-click="ctrl.openEditCard(card)"\n                                ng-repeat="(cardIndex, card) in stage.cards | filter:ctrl.searchInput | filter:ctrl.appliedFilters"\n                                ng-class="{ \'card-blocked\': card.blocked }">\n                                <div class="row">\n                                    <div class="col-sm-12">\n                                        {{ card.name }}\n                                    </div>\n                                </div>\n                                <div class="row" ng-hide="card.tags.length == 0">\n                                    <div class="col-sm-12">\n                                        <p style="margin: 5px 0">\n                                            <span ng-repeat="tag in card.tags">\n                                                <span class="label label-primary">{{ tag.name }}</span>\n                                            </span>\n                                        </p>\n                                    </div>\n                                </div>\n                                <div class="row text-center text-muted">\n                                    <div class="col-sm-3" title="{{ card.comments.length }} comment(s)">\n                                        <span ng-show="card.comments.length">\n                                            <i class="fa fa-comments"></i> {{ card.comments.length }}\n                                        </span>\n                                    </div>\n                                    <div class="col-sm-3" title="{{ card.users.length }} user(s) assigned to this card">\n                                        <span ng-show="card.users.length">\n                                            <i class="fa fa-user"></i> {{ card.users.length }}\n                                        </span>\n                                    </div>\n                                    <div class="col-sm-3" title="{{ card.subtasks.length }} subtask(s)">\n                                        <span ng-show="card.subtasks.length">\n                                            <i class="fa fa-check"></i> {{ card.subtasks.length }}\n                                        </span>\n                                    </div>\n                                    <div class="col-sm-3" title="Has a description">\n                                        <span ng-show="card.description">\n                                            <i class="fa fa-align-left"></i>\n                                        </span>\n                                    </div>\n                                </div>\n                                <div\n                                    ng-show="card.impact"\n                                    style="position: absolute; bottom: 0; left: 0; right: 0; height: 4px; margin: 0; border-radius: 0 0 3px 3px"\n                                    title="Impact this card has on the project"\n                                    class="progress">\n                                    <div class="progress-bar progress-bar-success" style="width: {{ card.impact }}%"></div>\n                                </div>\n                            </li>\n                        </ul>\n                    </div>\n                </td>\n            </tr>\n        </table>\n    </div>\n</div>\n<div ui-view></div>\n';
 },{}],29:[function(require,module,exports){
-module.exports = '<div class="container-fluid">\n    <div class="row">\n        <div class="col-sm-3">\n            <div class="list-group">\n                <a class="list-group-item" ui-sref="settings.account">Account</a>\n                <a class="list-group-item" ui-sref="settings.teams" href="#">Teams</a>\n            </div>\n        </div>\n        <div class="col-sm-9">\n            <div ui-view></div>\n        </div>\n    </div>\n</div>\n';
+module.exports = '<div class="row">\n    <div class="col-sm-6">\n        <div class="panel panel-default">\n            <div class="panel-heading">\n                <h5 class="panel-title">Your info</h5>\n            </div>\n            <div class="panel-body">\n                <form ng-submit="ctrl.updateUser()">\n                    <div class="form-group">\n                        <label>Name</label>\n                        <input\n                            type="text"\n                            class="form-control"\n                            ng-model="ctrl.authUser.name">\n                    </div>\n                    <div class="form-group">\n                        <label>Email</label>\n                        <input\n                            type="email"\n                            class="form-control"\n                            ng-model="ctrl.authUser.email">\n                    </div>\n                    <button\n                        type="submit"\n                        class="btn btn-primary">Submit</button>\n                </form>\n            </div>\n        </div>\n    </div>\n    <div class="col-sm-6">\n        <div class="panel panel-default">\n            <div class="panel-heading">\n                <h5 class="panel-title">Change your password</h5>\n            </div>\n            <div class="panel-body">\n                <form ng-submit="ctrl.updatePassword()">\n                    <div class="form-group">\n                        <label>Password</label>\n                        <input\n                            type="password"\n                            class="form-control"\n                            ng-model="ctrl.password">\n                    </div>\n                    <div class="form-group">\n                        <label>Password Confirmation</label>\n                        <input\n                            type="password"\n                            class="form-control"\n                            ng-model="ctrl.passwordConfirm">\n                    </div>\n                    <button class="btn btn-primary">Submit</button>\n                </form>\n            </div>\n        </div>\n    </div>\n</div>\n';
 },{}],30:[function(require,module,exports){
-module.exports = '<div class="panel panel-default">\n    <div class="panel-heading">\n        <h3 class="panel-title pull-left">Teams</h3>\n        <button class="pull-right btn btn-sm btn-success" ng-click="ctrl.createTeam()">\n            Create Team\n        </button>\n        <div class="clearfix"></div>\n    </div>\n    <table class="table">\n        <thead>\n            <tr>\n                <th>Name</th>\n                <th>Number of Members</th>\n                <th></th>\n            </tr>\n        </thead>\n        <tr ng-repeat="team in ctrl.teams">\n            <td class="vert-align">\n                {{ team.name || \'Unamed team\' }}\n            </td>\n            <td class="vert-align">\n                {{ team.users.length }}\n            </td>\n            <td class="text-right">\n                <button ng-click="ctrl.openTeamUsers(team)" class="btn btn-default" type="button">\n                    Users\n                </button>\n                <button ng-click="ctrl.deleteTeam(team)" class="btn btn-danger" type="button">\n                    Delete\n                </button>\n            </td>\n        </tr>\n    </table>\n</div>\n';
+module.exports = '<div class="container-fluid">\n    <div class="row">\n        <div class="col-sm-3">\n            <div class="list-group">\n                <a class="list-group-item" ui-sref="settings.account">Account</a>\n                <a class="list-group-item" ui-sref="settings.teams" href="#">Teams</a>\n            </div>\n        </div>\n        <div class="col-sm-9">\n            <div ui-view></div>\n        </div>\n    </div>\n</div>\n';
 },{}],31:[function(require,module,exports){
-module.exports = '<div class="modal-header">\n    <button\n        ng-click="ctrl.cancel()"\n        type="button"\n        class="close"\n        data-dismiss="modal"\n        aria-label="Close"><span aria-hidden="true">&times;</span></button>\n    <h4 class="modal-title">Team Users</h4>\n</div>\n<div class="modal-body">\n    <form ng-submit="ctrl.inviteEmail()">\n        <div class="row">\n            <div class="col-sm-10">\n                <div class="form-group">\n                    <input\n                        type="email"\n                        class="form-control"\n                        placeholder="Enter user\'s email and hit enter..."\n                        ng-model="ctrl.newEmail">\n                </div>\n            </div>\n            <div class="col-sm-2">\n                <button type="submit" class="btn btn-success">\n                    Invite\n                </button>\n            </div>\n        </div>\n    </form>\n    <table class="table">\n        <thead>\n            <tr>\n                <th>Name</th>\n                <th>Email</th>\n                <th></th>\n            </tr>\n        </thead>\n        <tr ng-repeat="user in ctrl.team.users">\n            <td class="vert-align">\n                <span ng-show="user.name">{{ user.name }}</span>\n                <span ng-hide="user.name" class="text-muted">No name found</span>\n            </td>\n            <td class="vert-align">{{ user.email }}</td>\n            <td class="text-right">\n                <button class="btn btn-danger btn-sm" ng-click="ctrl.deleteUser(user)">\n                    Delete\n                </button>\n            </td>\n        </tr>\n    </table>\n</div>\n<div class="modal-footer">\n    <button\n        type="button"\n        class="btn btn-link"\n        data-dismiss="modal"\n        ng-click="ctrl.cancel()">\n        Close\n    </button>\n</div>\n';
+module.exports = '<div class="panel panel-default">\n    <div class="panel-heading">\n        <h3 class="panel-title pull-left">Teams</h3>\n        <button class="pull-right btn btn-sm btn-success" ng-click="ctrl.createTeam()">\n            Create Team\n        </button>\n        <div class="clearfix"></div>\n    </div>\n    <table class="table">\n        <thead>\n            <tr>\n                <th>Name</th>\n                <th>Number of Members</th>\n                <th></th>\n            </tr>\n        </thead>\n        <tr ng-repeat="team in ctrl.teams">\n            <td class="vert-align">\n                {{ team.name || \'Unamed team\' }}\n            </td>\n            <td class="vert-align">\n                {{ team.users.length }}\n            </td>\n            <td class="text-right">\n                <button ng-click="ctrl.openTeamUsers(team)" class="btn btn-default" type="button">\n                    Users\n                </button>\n                <button ng-click="ctrl.deleteTeam(team)" class="btn btn-danger" type="button">\n                    Delete\n                </button>\n            </td>\n        </tr>\n    </table>\n</div>\n';
 },{}],32:[function(require,module,exports){
-module.exports = '<div class="modal-header">\n    <button\n        ng-click="ctrl.cancel()"\n        type="button"\n        class="close"\n        data-dismiss="modal"\n        aria-label="Close"><span aria-hidden="true">&times;</span></button>\n    <h4 class="modal-title">Sort Projects</h4>\n</div>\n<div class="modal-body">\n    <ul class="list-group" ng-model="ctrl.projects" ui-sortable>\n        <li ng-repeat="project in ctrl.projects" class="list-group-item">\n            <i class="fa fa-arrows"></i> {{ project.name }}\n        </li>\n    </ul>\n</div>\n<div class="modal-footer">\n    <button\n        type="button"\n        class="btn btn-success"\n        ng-click="ctrl.ok()">\n        Submit\n    </button>\n    <button\n        type="button"\n        class="btn btn-link"\n        data-dismiss="modal"\n        ng-click="ctrl.cancel()">Close</button>\n</div>\n';
+module.exports = '<div class="modal-header">\n    <button\n        ng-click="ctrl.cancel()"\n        type="button"\n        class="close"\n        data-dismiss="modal"\n        aria-label="Close"><span aria-hidden="true">&times;</span></button>\n    <h4 class="modal-title">Team Users</h4>\n</div>\n<div class="modal-body">\n    <form ng-submit="ctrl.inviteEmail()">\n        <div class="row">\n            <div class="col-sm-10">\n                <div class="form-group">\n                    <input\n                        type="email"\n                        class="form-control"\n                        placeholder="Enter user\'s email and hit enter..."\n                        ng-model="ctrl.newEmail">\n                </div>\n            </div>\n            <div class="col-sm-2">\n                <button type="submit" class="btn btn-success">\n                    Invite\n                </button>\n            </div>\n        </div>\n    </form>\n    <table class="table">\n        <thead>\n            <tr>\n                <th>Name</th>\n                <th>Email</th>\n                <th></th>\n            </tr>\n        </thead>\n        <tr ng-repeat="user in ctrl.team.users">\n            <td class="vert-align">\n                <span ng-show="user.name">{{ user.name }}</span>\n                <span ng-hide="user.name" class="text-muted">No name found</span>\n            </td>\n            <td class="vert-align">{{ user.email }}</td>\n            <td class="text-right">\n                <button class="btn btn-danger btn-sm" ng-click="ctrl.deleteUser(user)">\n                    Delete\n                </button>\n            </td>\n        </tr>\n    </table>\n</div>\n<div class="modal-footer">\n    <button\n        type="button"\n        class="btn btn-link"\n        data-dismiss="modal"\n        ng-click="ctrl.cancel()">\n        Close\n    </button>\n</div>\n';
 },{}],33:[function(require,module,exports){
-module.exports = '<div class="container-fluid">\n    <div class="row" style="margin-bottom: 20px;">\n        <div class="col-sm-3">\n            <div class="panel panel-default">\n                <!-- Default panel contents -->\n                <div class="panel-heading">\n                    <h5 class="panel-title">People</h5>\n                </div>\n\n                <!-- List group -->\n                <div class="list-group">\n                    <a\n                        class="list-group-item pointer"\n                        ng-click="ctrl.clearFilters(\'users\')">Show everyone</a>\n                    <a\n                        class="list-group-item pointer"\n                        ng-class="{ active: ctrl.isFilterObjActive(\'users\', user) }"\n                        ng-click="ctrl.toggleFilter(\'users\', user)"\n                        ng-repeat="user in ctrl.users">{{ user.name }}</a>\n                </div>\n            </div>\n\n            <div class="panel panel-default">\n                <!-- Default panel contents -->\n                <div class="panel-heading">\n                    <h5 class="panel-title">Projects</h5>\n                </div>\n\n                <!-- List group -->\n                <div class="list-group">\n                    <a\n                        class="list-group-item pointer"\n                        ng-click="ctrl.clearFilters(\'projects\')">Show all projects</a>\n                    <a\n                        class="list-group-item pointer"\n                        ng-class="{ active: ctrl.isFilterObjActive(\'projects\', project) }"\n                        ng-click="ctrl.toggleFilter(\'projects\', project)"\n                        ng-repeat="project in ctrl.projects">\n                        {{ project.name }}\n                    </a>\n                </div>\n            </div>\n\n            <div class="panel panel-default">\n                <!-- Default panel contents -->\n                <div class="panel-heading">\n                    <h5 class="panel-title">Tags</h5>\n                </div>\n\n                <!-- List group -->\n                <div class="list-group">\n                    <a\n                        class="list-group-item pointer"\n                        ng-click="ctrl.clearFilters(\'tags\')">Show all tags</a>\n                    <a\n                        class="list-group-item pointer"\n                        ng-class="{ active: ctrl.isFilterObjActive(\'tags\', tag) }"\n                        ng-click="ctrl.toggleFilter(\'tags\', tag)"\n                        ng-repeat="tag in ctrl.tags">{{ tag.name }}</a>\n                </div>\n            </div>\n        </div>\n        <div class="col-sm-9">\n            <form ng-submit="ctrl.createCard()">\n                <div class="row">\n                    <div class="col-sm-9">\n                        <div class="form-group">\n                            <input\n                                type="text"\n                                class="form-control"\n                                ng-model="ctrl.newCard.name"\n                                placeholder="Create a task and hit enter...">\n                        </div>\n                    </div>\n                    <div class="col-sm-3">\n                        <select\n                            class="form-control"\n                            ng-options="project.id as project.name for project in ctrl.projects"\n                            ng-model="ctrl.newCard.project_id"\n                            required>\n                            <option value="">Select a project...</option>\n                        </select>\n                    </div>\n                </div>\n            </form>\n            <div class="list-group">\n                <a\n                    class="list-group-item pointer"\n                    ng-repeat="card in ctrl.cards"\n                    ng-class="{\'list-group-item-danger\': card.blocked }"\n                    ui-sref="tasklist.card({ cardId: card.id })">\n                    {{ card.name }}\n\n                    <span title="Users assigned to this card." ng-repeat="user in card.users">\n                        <span class="label label-warning">{{ user.name }}</span>\n                    </span>\n\n                    <span title="Tags attached to this card." ng-repeat="tag in card.tags">\n                        <span class="label label-primary">{{ tag.name }}</span>\n                    </span>\n\n                    <span title="Impact of card on project out of 100." class="badge">{{ card.impact }}</span>\n                </a>\n            </div>\n        </div>\n    </div>\n</div>\n<div ui-view></div>\n';
+module.exports = '<div class="modal-header">\n    <button\n        ng-click="ctrl.cancel()"\n        type="button"\n        class="close"\n        data-dismiss="modal"\n        aria-label="Close"><span aria-hidden="true">&times;</span></button>\n    <h4 class="modal-title">Sort Projects</h4>\n</div>\n<div class="modal-body">\n    <ul class="list-group" ng-model="ctrl.projects" ui-sortable>\n        <li ng-repeat="project in ctrl.projects" class="list-group-item">\n            <i class="fa fa-arrows"></i> {{ project.name }}\n        </li>\n    </ul>\n</div>\n<div class="modal-footer">\n    <button\n        type="button"\n        class="btn btn-success"\n        ng-click="ctrl.ok()">\n        Submit\n    </button>\n    <button\n        type="button"\n        class="btn btn-link"\n        data-dismiss="modal"\n        ng-click="ctrl.cancel()">Close</button>\n</div>\n';
 },{}],34:[function(require,module,exports){
+module.exports = '<div class="container-fluid">\n    <div class="row" style="margin-bottom: 20px;">\n        <div class="col-sm-3">\n            <div class="panel panel-default">\n                <!-- Default panel contents -->\n                <div class="panel-heading">\n                    <h5 class="panel-title">People</h5>\n                </div>\n\n                <!-- List group -->\n                <div class="list-group">\n                    <a\n                        class="list-group-item pointer"\n                        ng-click="ctrl.clearFilters(\'users\')">Show everyone</a>\n                    <a\n                        class="list-group-item pointer"\n                        ng-class="{ active: ctrl.isFilterObjActive(\'users\', user) }"\n                        ng-click="ctrl.toggleFilter(\'users\', user)"\n                        ng-repeat="user in ctrl.users">{{ user.name }}</a>\n                </div>\n            </div>\n\n            <div class="panel panel-default">\n                <!-- Default panel contents -->\n                <div class="panel-heading">\n                    <h5 class="panel-title">Projects</h5>\n                </div>\n\n                <!-- List group -->\n                <div class="list-group">\n                    <a\n                        class="list-group-item pointer"\n                        ng-click="ctrl.clearFilters(\'projects\')">Show all projects</a>\n                    <a\n                        class="list-group-item pointer"\n                        ng-class="{ active: ctrl.isFilterObjActive(\'projects\', project) }"\n                        ng-click="ctrl.toggleFilter(\'projects\', project)"\n                        ng-repeat="project in ctrl.projects">\n                        {{ project.name }}\n                    </a>\n                </div>\n            </div>\n\n            <div class="panel panel-default">\n                <!-- Default panel contents -->\n                <div class="panel-heading">\n                    <h5 class="panel-title">Tags</h5>\n                </div>\n\n                <!-- List group -->\n                <div class="list-group">\n                    <a\n                        class="list-group-item pointer"\n                        ng-click="ctrl.clearFilters(\'tags\')">Show all tags</a>\n                    <a\n                        class="list-group-item pointer"\n                        ng-class="{ active: ctrl.isFilterObjActive(\'tags\', tag) }"\n                        ng-click="ctrl.toggleFilter(\'tags\', tag)"\n                        ng-repeat="tag in ctrl.tags">{{ tag.name }}</a>\n                </div>\n            </div>\n        </div>\n        <div class="col-sm-9">\n            <form ng-submit="ctrl.createCard()">\n                <div class="row">\n                    <div class="col-sm-9">\n                        <div class="form-group">\n                            <input\n                                type="text"\n                                class="form-control"\n                                ng-model="ctrl.newCard.name"\n                                placeholder="Create a task and hit enter...">\n                        </div>\n                    </div>\n                    <div class="col-sm-3">\n                        <select\n                            class="form-control"\n                            ng-options="project.id as project.name for project in ctrl.projects"\n                            ng-model="ctrl.newCard.project_id"\n                            required>\n                            <option value="">Select a project...</option>\n                        </select>\n                    </div>\n                </div>\n            </form>\n            <div class="list-group">\n                <a\n                    class="list-group-item pointer"\n                    ng-repeat="card in ctrl.cards"\n                    ng-class="{\'list-group-item-danger\': card.blocked }"\n                    ui-sref="tasklist.card({ cardId: card.id })">\n                    {{ card.name }}\n\n                    <span title="Users assigned to this card." ng-repeat="user in card.users">\n                        <span class="label label-warning">{{ user.name }}</span>\n                    </span>\n\n                    <span title="Tags attached to this card." ng-repeat="tag in card.tags">\n                        <span class="label label-primary">{{ tag.name }}</span>\n                    </span>\n\n                    <span title="Impact of card on project out of 100." class="badge">{{ card.impact }}</span>\n                </a>\n            </div>\n        </div>\n    </div>\n</div>\n<div ui-view></div>\n';
+},{}],35:[function(require,module,exports){
 'use strict';
 angular.module('simple.team.auth', []).service('AuthService', [
   '$http', function($http) {
@@ -42163,7 +42801,7 @@ angular.module('simple.team.auth', []).service('AuthService', [
 ]);
 
 
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 angular.module('simple.team.bytes', []).filter('bytes', function() {
   return function(bytes, precision) {
     var number, units;
@@ -42180,7 +42818,7 @@ angular.module('simple.team.bytes', []).filter('bytes', function() {
 });
 
 
-},{}],36:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 angular.module('simple.team.focusMe', []).directive('focusMe', [
   '$timeout', function($timeout) {
     return {
@@ -42201,7 +42839,7 @@ angular.module('simple.team.focusMe', []).directive('focusMe', [
 ]);
 
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 'use strict';
 angular.module('simple.team.navbar', []).directive('navbar', function() {
   return {
@@ -42284,9 +42922,9 @@ angular.module('simple.team.navbar', []).directive('navbar', function() {
 });
 
 
-},{"./view.html":38}],38:[function(require,module,exports){
+},{"./view.html":39}],39:[function(require,module,exports){
 module.exports = '<nav class="navbar navbar-default navbar-static-top">\n    <div class="container-fluid">\n        <ul class="nav navbar-nav">\n            <li class="dropdown">\n                <a href="#" class="dropdown-toggle" data-toggle="dropdown">{{ navCtrl.selectedTeam.name || \'Select a team...\' }} <span class="caret"></span></a>\n                <ul class="dropdown-menu">\n                    <li ng-repeat="team in navCtrl.teams" ng-click="navCtrl.setCurrentTeam(team)">\n                        <a href="#">{{ team.name }}</a>\n                    </li>\n                </ul>\n            </li>\n        </ul>\n        <ul class="nav navbar-nav navbar-right">\n            <li class="dropdown">\n                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Menu<span class="caret"></span></a>\n                <ul class="dropdown-menu">\n                    <li><a ui-sref="simple.settings.account">Account</a></li>\n                    <li><a ui-sref="simple.settings.teams">Teams</a></li>\n                    <li class="divider"></li>\n                    <li><a ui-sref="auth.logout">Sign Out</a></li>\n                </ul>\n            </li>\n        </ul>\n    </div>\n</nav>\n';
-},{}],39:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 /**
  * Angular Selectize2
  * https://github.com/machineboy2045/angular-selectize
@@ -42396,7 +43034,7 @@ angular.module('selectize', []).value('selectizeConfig', {}).directive("selectiz
   };
 }]);
 
-},{}],40:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 angular.module('simple.team.sidebar', []).directive('sidebar', function() {
   return {
     restrict: 'E',
@@ -42405,9 +43043,9 @@ angular.module('simple.team.sidebar', []).directive('sidebar', function() {
 });
 
 
-},{"./view.html":41}],41:[function(require,module,exports){
+},{"./view.html":42}],42:[function(require,module,exports){
 module.exports = '<div class="wrapper">\n    <div class="sidebar">\n        <div class="title">simple.team</div>\n        <ul class="side-nav">\n            <li><a ui-sref="simple.projects.kanban">Kanban</a></li>\n            <li><a ui-sref="simple.projects.list">Projects List</a></li>\n            <!-- <li><a ui-sref="chat">Chat</a></li>\n            <li><a ui-sref="timeline">Timeline</a></li>\n            <li><a ui-sref="daily-summary">Daily Summary</a></li>\n            <li><a ui-sref="notes.list">Notes</a></li>\n            <li><a ui-sref="one-use-notes">Secure Notes</a></li>\n            <li><a ui-sref="designer">Designer</a></li>\n            <li><a ui-sref="settings.teams">Settings</a></li> -->\n        </ul>\n    </div>\n</div>\n';
-},{}],42:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 'use strict';
 angular.module('simple.team.tagData', []).service('TagDataService', [
   '$http', function($http) {
@@ -42418,7 +43056,7 @@ angular.module('simple.team.tagData', []).service('TagDataService', [
 ]);
 
 
-},{}],43:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 'use strict';
 angular.module('simple.team.userData', []).service('UserDataService', [
   '$http', function($http) {
@@ -42429,7 +43067,7 @@ angular.module('simple.team.userData', []).service('UserDataService', [
 ]);
 
 
-},{}],44:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 angular.module('simple.team.routes', []).config([
   '$stateProvider', function($stateProvider) {
     return $stateProvider.state('projects', {
@@ -42477,4 +43115,4 @@ angular.module('simple.team.routes', []).config([
 ]);
 
 
-},{"./controllers/card.ctrl.coffee":14,"./controllers/dailySummary.ctrl.coffee":16,"./controllers/projects.ctrl.coffee":17,"./controllers/settings.account.ctrl.coffee":18,"./controllers/settings.ctrl.coffee":19,"./controllers/settings.teams.ctrl.coffee":20,"./controllers/tasklist.ctrl.coffee":23,"./layouts/card.html":24,"./layouts/dailySummary.html":26,"./layouts/projects.html":27,"./layouts/settings.account.html":28,"./layouts/settings.html":29,"./layouts/settings.teams.html":30,"./layouts/tasklist.html":33}]},{},[13]);
+},{"./controllers/card.ctrl.coffee":15,"./controllers/dailySummary.ctrl.coffee":17,"./controllers/projects.ctrl.coffee":18,"./controllers/settings.account.ctrl.coffee":19,"./controllers/settings.ctrl.coffee":20,"./controllers/settings.teams.ctrl.coffee":21,"./controllers/tasklist.ctrl.coffee":24,"./layouts/card.html":25,"./layouts/dailySummary.html":27,"./layouts/projects.html":28,"./layouts/settings.account.html":29,"./layouts/settings.html":30,"./layouts/settings.teams.html":31,"./layouts/tasklist.html":34}]},{},[14]);

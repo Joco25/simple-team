@@ -121,6 +121,7 @@ class ApiCardController extends Controller
         $success = \App\Card::create([
             'stage_id' => $project->stages[0]->id,
             'name' => $cardName,
+            'impact' => 0,
             'user_id' => \Auth::user()->id,
             'team_id' => $project->stages[0]->team_id
         ]);
@@ -153,6 +154,7 @@ class ApiCardController extends Controller
         $card = \App\Card::create([
             'stage_id' => $stage->id,
             'name' => $cardName,
+            'impact' => 0,
             'user_id' => \Auth::user()->id,
             'team_id' => $stage->team_id,
             'priority' => count($stage->cards)

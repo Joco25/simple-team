@@ -20,16 +20,6 @@ class ApiCommentController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  Request  $request
@@ -43,6 +33,8 @@ class ApiCommentController extends Controller
             'body' => \Input::get('body'),
             'card_id' => \Input::get('card_id')
         ]);
+
+        $comment->user;
 
         return response()->json([
             'comment' => $comment
@@ -61,17 +53,6 @@ class ApiCommentController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      *
      * @param  Request  $request
@@ -80,7 +61,6 @@ class ApiCommentController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
         $success = \App\Comment::whereId($id)
             ->whereTeamId($id)
             ->update([

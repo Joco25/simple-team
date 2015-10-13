@@ -191,8 +191,9 @@
         </div>
         <div class="media-body">
             <div ng-hide="comment.editMode">
-                <p ng-bind="comment.body"></p>
-                yesterday at 9:38am -
+                <strong>{{ comment.user.name }}</strong>
+                <p>{{ comment.body }}</p>
+                <span am-time-ago="comment.created_at"></span> -
                 <a class="pointer" ng-click="ctrl.editComment(comment)">Edit</a> -
                 <a class="pointer" ng-click="ctrl.deleteComment(comment)">Delete</a>
             </div>
