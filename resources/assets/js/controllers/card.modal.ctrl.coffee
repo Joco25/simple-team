@@ -7,6 +7,8 @@ module.exports = ($state, $stateParams, $scope, $http, $rootScope, TagDataServic
     @files = null
     @file = null
     @tagData = TagDataService
+    @selectedCard =
+        impact: 0
 
     @states =
         uploading: false
@@ -69,6 +71,7 @@ module.exports = ($state, $stateParams, $scope, $http, $rootScope, TagDataServic
                 @selectedCard = data.card
                 @selectedCard.tagNames = _.pluck data.card.tags, 'name'
                 @selectedCard.userIds = _.pluck data.card.users, 'id'
+                @selectedCard.impact = @selectedCard.impact || 0
 
     @updateCard = =>
         $http

@@ -27,11 +27,15 @@
                         type="button"
                         class="btn btn-default dropdown-toggle"
                         data-toggle="dropdown">
-                        Assigned to <span class="caret"></span>
+                        <span ng-show="ctrl.assignedTo.name">{{ ctrl.assignedTo.name }}</span>
+                        <span ng-show="ctrl.assignedTo == 'no one'">Assigned to no one</span>
+                        <span ng-show="ctrl.assignedTo == null">Assigned to</span>
+                        <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu">
-                        <li ng-click="ctrl.selectAssignedToFilter(ctrl.authUser)"><a href="#">Me</a></li>
                         <li ng-click="ctrl.selectAssignedToFilter(null)"><a href="#">Everyone</a></li>
+                        <li class="divider"></li>
+                        <li ng-click="ctrl.selectAssignedToFilter(ctrl.authUser)"><a href="#">Me</a></li>
                         <li ng-click="ctrl.selectAssignedToFilter('no one')"><a href="#">No One Assigned</a></li>
                         <li
                             ng-click="ctrl.selectAssignedToFilter(user)"
@@ -47,20 +51,18 @@
                         type="button"
                         class="btn btn-default dropdown-toggle"
                         data-toggle="dropdown">
-                        Quick Filters <span class="caret"></span>
+                         {{ ctrl.filters.quick || 'Quick filters' }} <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu">
-                        <li><a href="#">Active</a></li>
-                        <li><a href="#">Completed</a></li>
-                        <li><a href="#">Due today</a></li>
-                        <li><a href="#">Late</a></li>
-                        <li><a href="#">All</a></li>
-                        <li><a href="#">Hide done</a></li>
-                        <li><a href="#">Due This Week</a></li>
-                        <li><a href="#">Created by me</a></li>
-                        <li><a href="#">With files attached</a></li>
-                        <li><a href="#">Tasks blocked</a></li>
-                        <li><a href="#">Tasks in progress</a></li>
+                        <li ng-click="ctrl.selectQuickFilter(null)"><a href="#">Show all</a></li>
+                        <li class="divider"></li>
+                        <li ng-click="ctrl.selectQuickFilter('Created by me')"><a href="#">Created by me</a></li>
+                        <li ng-click="ctrl.selectQuickFilter('With subtasks')"><a href="#">With subtasks</a></li>
+                        <li ng-click="ctrl.selectQuickFilter('With impact')"><a href="#">With impact</a></li>
+                        <li ng-click="ctrl.selectQuickFilter('With comments')"><a href="#">With comments</a></li>
+                        <li ng-click="ctrl.selectQuickFilter('With files attached')"><a href="#">With files attached</a></li>
+                        <li ng-click="ctrl.selectQuickFilter('Tasks blocked')"><a href="#">Tasks blocked</a></li>
+                        <li ng-click="ctrl.selectQuickFilter('Tasks unblocked')"><a href="#">Tasks unblocked</a></li>
                     </ul>
                 </div>
             </div>
@@ -183,9 +185,9 @@
                                     </div>
                                 </div>
                                 <div class="row text-center text-muted">
-                                    <div class="col-sm-3" title="{{ card.comments.length }} comment(s)">
-                                        <span ng-show="card.comments.length">
-                                            <i class="fa fa-comments"></i> {{ card.comments.length }}
+                                    <div class="col-sm-3" title="Has a description">
+                                        <span ng-show="card.description">
+                                            <i class="fa fa-align-left"></i>
                                         </span>
                                     </div>
                                     <div class="col-sm-3" title="{{ card.users.length }} user(s) assigned to this card">
@@ -198,9 +200,9 @@
                                             <i class="fa fa-check"></i> {{ card.subtasks.length }}
                                         </span>
                                     </div>
-                                    <div class="col-sm-3" title="Has a description">
-                                        <span ng-show="card.description">
-                                            <i class="fa fa-align-left"></i>
+                                    <div class="col-sm-3" title="{{ card.comments.length }} comment(s)">
+                                        <span ng-show="card.comments.length">
+                                            <i class="fa fa-comments"></i> {{ card.comments.length }}
                                         </span>
                                     </div>
                                 </div>
