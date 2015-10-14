@@ -74,8 +74,9 @@ class ApiProjectController extends Controller
             ]);
         }
 
-        $projects = Project::with('stages.cards')
+        $projects = Project::with('stages.cards.subtasks', 'stages.cards.comments', 'stages.cards.tags', 'stages.cards.users', 'stages.cards.attachments')
             ->whereTeamId(Auth::user()->team_id)
+            ->orderBy('priority')
             ->get();
 
         return response()->json([
