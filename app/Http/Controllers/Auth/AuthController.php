@@ -68,6 +68,8 @@ class AuthController extends Controller
             'name' => 'My First Team'
         ]);
 
+        $team->users()->attach($user->id);
+
         $user->team_id = $team->id;
         $user->save();
 
