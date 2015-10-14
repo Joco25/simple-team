@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\User;
+use App\Project;
+use App\Card;
+use App\Stage;
 use App\Team;
 use Validator;
 use App\Http\Controllers\Controller;
@@ -67,11 +70,46 @@ class AuthController extends Controller
             'user_id' => $user->id,
             'name' => 'My First Team'
         ]);
-
         $team->users()->attach($user->id);
-
         $user->team_id = $team->id;
         $user->save();
+
+        $project = Project::create([
+            'name' => 'My First Project',
+            'team_id' => $team->id,
+            'user_id' => $user->id
+        ]);
+
+        $stage = Stage::create([
+            'name' => 'In Progress',
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'priority' => 1,
+            'project_id' => $project->id
+        ]);
+
+        $stage = Stage::create([
+            'name' => 'Done',
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'priority' => 2,
+            'project_id' => $project->id
+        ]);
+
+        $stage = Stage::create([
+            'name' => 'New',
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'priority' => 0,
+            'project_id' => $project->id
+        ]);
+
+        $card = Card::create([
+            'name' => 'My first card',
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'stage_id' => $stage->id
+        ]);
 
         return $user;
     }
