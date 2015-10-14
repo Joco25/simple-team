@@ -7,6 +7,7 @@ module.exports = ($state, $stateParams, $scope, $http, $rootScope, TagDataServic
     @files = null
     @file = null
     @tagData = TagDataService
+    @s3BucketAttachmentsUrl = $rootScope.s3BucketAttachmentsUrl
     @selectedCard =
         impact: 0
 

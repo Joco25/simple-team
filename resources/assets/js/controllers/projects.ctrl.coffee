@@ -1,32 +1,28 @@
 'use strict'
 
 module.exports = ($http, $state, $rootScope, $modal) ->
-    @isEditCardOpen = false
-    @isCreateCardOpen = false
+    @s3BucketAttachmentsUrl = $rootScope.s3BucketAttachmentsUrl
+    @authUser = $rootScope.authUser
+    @team = $rootScope.authUser.team
     @projects = []
     @tags = []
-    @newCardName = ''
-    @openTopCreateCards = {}
-    @openBottomCreateCards = {}
     @currentUser = null
     @selectedStage = null
     @selectedCommentBody = ''
     @selectedTaskBody = ''
-    @authUser = $rootScope.authUser
-    @team = $rootScope.authUser.team
+
     @filters =
         tag: null
         assignedTo: null
         quick: null
 
-    @sortableOptions = {
+    @sortableOptions =
+        placeholder: "sortable-preview"
+        connectWith: ".sortable"
         stop: (evt, ui) ->
             if ui.item.sortable.droptarget
                 stage = ui.item.sortable.droptarget.scope().stage
                 updateStageCards stage
-        placeholder: "app"
-        connectWith: ".sortable"
-    }
 
     $rootScope.$on 'projects:reload', =>
         @loadProjects()
@@ -188,26 +184,18 @@ module.exports = ($http, $state, $rootScope, $modal) ->
             project.stages.push(newStage)
             @projects.$save(project)
 
-    @createCard = (stage) =>
-        if @newCardName.length is 0 then return
-        @newCardName = @newCardName.replace("\n", '')
+    @createCard = (project) =>
+        newCardName = prompt 'Task to bedone'
+        if ! newCardName then return
+
         $http
             .post '/api/cards',
-                stage_id: stage.id
-                name: @newCardName
-                addOnTop: !!@openTopCreateCards[stage.id]
+                stage_id: project.stages[0].id
+                name: newCardName
             .success (data) ->
-                stage.cards.push data.card
+                project.stages[0].cards.push data.card
 
         @newCardName = ''
-
-    @openTopCreateCard = (stage, card) =>
-        @openTopCreateCards = {}
-        @openTopCreateCards[stage.id] = @openTopCreateCards[stage.id] || {}
-        @openTopCreateCards[stage.id] = true
-
-    @hideCreateCard = =>
-        @openTopCreateCards = {}
 
     @editProject = (project) ->
         projectName = prompt("Project name", project.name)

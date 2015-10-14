@@ -53,8 +53,10 @@ angular
     .controller 'AppCtrl', ['$state', '$http', '$rootScope', ($state, $http, $rootScope) ->
         $rootScope.teams = angular.copy ENV.teams
         $rootScope.authUser = angular.copy ENV.authUser
+        $rootScope.s3BucketAttachmentsUrl = angular.copy ENV.s3BucketAttachmentsUrl
         @state = $state
 
+        @s3BucketAttachmentsUrl = $rootScope.s3BucketAttachmentsUrl
         @teams = $rootScope.teams
         $rootScope.$broadcast 'teams:loaded', @teams
         @authUser = $rootScope.authUser

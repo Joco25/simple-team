@@ -1,10 +1,18 @@
 <div class="modal-header">
     <button
-        ng-click="ctrl.ok()"
+        ng-click="ctrl.cancel()"
         type="button"
         class="close"
         data-dismiss="modal"
         aria-label="Close"><span aria-hidden="true">&times;</span></button>
+
+    <div class="text-center" ng-show="ctrl.selectedCard.attachments.length > 0">
+        <div
+            class="card-image-background"
+            style="background-image: url(http://res.cloudinary.com/michaeljcalkins/image/fetch/h_170,e_blur:719,w_900,c_fill/{{ ctrl.s3BucketAttachmentsUrl + ctrl.selectedCard.attachments[0].filename }})"></div>
+        <img class="card-image-preview" ng-src="http://res.cloudinary.com/michaeljcalkins/image/fetch/h_170/{{ ctrl.s3BucketAttachmentsUrl + ctrl.selectedCard.attachments[0].filename }}">
+    </div>
+
     <h4
         ng-click="ctrl.selectedCard.editName = !ctrl.selectedCard.editName; ctrl.selectedCardName = ctrl.selectedCard.name"
         ng-hide="ctrl.selectedCard.editName"
@@ -142,18 +150,23 @@
         <div class="drag-overlay" ng-hide="ctrl.states.uploading">Drop files here or <span>Browse<span></div>
         <div class="drag-overlay" ng-show="ctrl.states.uploading">Uploading...</div>
     </div>
-    <table class="table" style="margin: 10px 0 0">
-        <tr ng-repeat="attachment in ctrl.selectedCard.attachments">
-            <td ng-click="ctrl.downloadAttachment(attachment)" class="pointer" style="vertical-align: middle">
-                <strong>{{ attachment.original_filename }}</strong> <span class="text-muted">({{ attachment.file_size | bytes }})</span>
-            </td>
-            <td class="text-right">
-                <button class="btn btn-danger btn-sm" type="button" ng-click="ctrl.deleteAttachment(attachment)">
-                    Delete
-                </button>
-            </td>
-        </tr>
-    </table>
+    <div class="media" ng-repeat="attachment in ctrl.selectedCard.attachments">
+        <div class="media-left" ng-click="ctrl.downloadAttachment(attachment)">
+            <a href="#">
+                <img ng-src="http://res.cloudinary.com/michaeljcalkins/image/fetch/w_110,h_80,c_thumb/{{ ctrl.s3BucketAttachmentsUrl + ctrl.selectedCard.attachments[0].filename }}">
+            </a>
+        </div>
+        <div class="media-body">
+            <h4 class="media-heading" ng-click="ctrl.downloadAttachment(attachment)">{{ attachment.original_filename }}</h4>
+            <p>Added <span am-time-ago="attachment.created_at"></span></p>
+            <button class="btn btn-default btn-sm" ng-click="ctrl.downloadAttachment(attachment)">
+                Download
+            </button>
+            <button class="btn btn-link btn-sm" type="button" ng-click="ctrl.deleteAttachment(attachment)">
+                Delete
+            </button>
+        </div>
+    </div>
 </div>
 
 <hr style="margin: 0;">
