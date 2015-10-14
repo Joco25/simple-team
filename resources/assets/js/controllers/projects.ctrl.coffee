@@ -185,7 +185,7 @@ module.exports = ($http, $state, $rootScope, $modal) ->
             @projects.$save(project)
 
     @createCard = (project) =>
-        newCardName = prompt 'Task to bedone'
+        newCardName = prompt 'Task description'
         if ! newCardName then return
 
         $http

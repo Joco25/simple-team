@@ -42455,7 +42455,7 @@ module.exports = function($http, $state, $rootScope, $modal) {
   this.createCard = (function(_this) {
     return function(project) {
       var newCardName;
-      newCardName = prompt('Task to bedone');
+      newCardName = prompt('Task description');
       if (!newCardName) {
         return;
       }

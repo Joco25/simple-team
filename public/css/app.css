@@ -2325,7 +2325,7 @@ button.close {
   .simple-page .projects-container td {
     padding: 0;
     vertical-align: top;
-    position: relative;
+    position: static;
     border: 0; }
   .simple-page .projects-container td:first-child {
     padding: 10px;
