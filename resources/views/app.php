@@ -100,7 +100,7 @@
                 name: <?php echo json_encode(Auth::user()->name) ?>,
                 email: <?php echo json_encode(Auth::user()->email) ?>
             },
-            s3BucketAttachmentsUrl: <?php echo env('S3_BUCKET_ATTACHMENTS_URL') ?>,
+            s3BucketAttachmentsUrl: <?php echo json_encode(env('S3_BUCKET_ATTACHMENTS_URL')) ?>,
             teams: <?php echo json_encode(Auth::user()->teams) ?>
         }
     </script>
