@@ -12,7 +12,7 @@
     </section>
 
     <section class="section-features">
-        <h2 class="section-feature-heading">Everyone communicates differently</h2>
+        <h2 class="section-feature-heading">Everyone Communicates Differently</h2>
         <p class="section-feature-description">We offer several styles of organization to fit your personal preference.</p>
 
         <div class="row">

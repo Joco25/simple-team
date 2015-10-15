@@ -560,6 +560,9 @@ button.close {
 .selectize-dropdown .optgroup:first-child {
   border-top: 0 none; }
 
+html {
+  overflow-x: hidden; }
+
 .home-page {
   font-family: Merriweather,'Helvetica Neue',Arial,sans-serif;
   text-rendering: optimizelegibility; }
