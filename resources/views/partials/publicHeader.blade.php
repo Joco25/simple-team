@@ -1,4 +1,4 @@
-<nav id="mainNav" class="navbar navbar-default navbar-fixed-top">
+<nav id="mainNav" class="navbar navbar-default navbar-static-top">
     <div class="container-fluid">
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
@@ -15,10 +15,14 @@
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav navbar-right">
                 <li>
-                    <a href="/auth/login">Login</a>
+                    <p class="navbar-btn">
+                        <a class="btn btn-success" href="/auth/register">Create Account</a>
+                    </p>
                 </li>
                 <li>
-                    <a href="/auth/register">Register</a>
+                    <p class="navbar-btn">
+                        <a class="btn btn-link" href="/auth/login">Sign In</a>
+                    </p>
                 </li>
             </ul>
         </div>

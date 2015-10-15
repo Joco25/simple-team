@@ -23,6 +23,7 @@
 .card-image-background {
     background-size: cover;
     position: absolute;
+    border-radius: 5px 5px 0 0;
     padding: 15px;
     width: 100%;
     height: 200px;
@@ -69,7 +70,7 @@ button.close {
             color: #f05f40;
             text-transform: uppercase;
             font-weight: bold;
-            font-family: 'Open Sans';
+            font-family: 'Montserrat';
         }
     }
 
