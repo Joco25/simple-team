@@ -14,7 +14,7 @@
                                 <form method="POST" action="/auth/login">
                                     {!! csrf_field() !!}
 
-                                    <h2>Sign in</h2>
+                                    <h2>Sign In</h2>
 
                                     <div class="form-group">
                                         <label>Email</label>
@@ -22,7 +22,7 @@
                                     </div>
 
                                     <div class="form-group">
-                                        <label>Password</label>
+                                        <label>Password <a href="/password/email">(forgot password)</a></label>
                                         <input type="password" name="password" id="password" class="form-control">
                                     </div>
 
@@ -42,6 +42,6 @@
                 </div>
             </div>
         </div>
-    </div>
+    </header>
 </div>
 @stop
