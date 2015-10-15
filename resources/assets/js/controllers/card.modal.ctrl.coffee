@@ -1,6 +1,6 @@
 'use strict'
 
-module.exports = ($state, $stateParams, $scope, $http, $rootScope, TagDataService, Upload, $modalInstance, cardId) ->
+module.exports = ($state, $stateParams, $scope, $http, $rootScope, TagDataService, Upload, $modalInstance, cardId, $timeout) ->
     stageId = null
     projectId = null
     @selectedCard = null
@@ -74,6 +74,13 @@ module.exports = ($state, $stateParams, $scope, $http, $rootScope, TagDataServic
                 @selectedCard.userIds = _.pluck data.card.users, 'id'
                 @selectedCard.impact = @selectedCard.impact || 0
 
+    cardImpactHandle = null
+    @updateCardImpact = =>
+        $timeout.cancel(cardImpactHandle)
+        cardImpactHandle = $timeout =>
+            @updateCard()
+        , 500
+
     @updateCard = =>
         $http
             .put '/api/cards/' + cardId,
@@ -89,7 +96,7 @@ module.exports = ($state, $stateParams, $scope, $http, $rootScope, TagDataServic
 
         $http
             .delete '/api/cards/' + @selectedCard.id
-            .success (data) ->
+            .success (data) =>
                 $rootScope.$emit 'projects:reload'
                 @ok()
 
