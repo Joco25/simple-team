@@ -41719,9 +41719,7 @@ require('./modules/sidebar/index.coffee');
 
 require('./modules/navbar/index.coffee');
 
-require('./modules/lightbox/index.coffee');
-
-angular.module('simple.team', ['ngFileUpload', 'ngSanitize', 'ui.router', 'ui.sortable', 'ui.gravatar', 'ui.bootstrap', 'selectize', 'angularMoment', 'angular-loading-bar', 'ng-showdown', 'LocalStorageModule', 'monospaced.elastic', 'simple.team.routes', 'simple.team.focusMe', 'simple.team.bytes', 'simple.team.sidebar', 'simple.team.navbar', 'simple.team.auth', 'simple.team.tagData', 'simple.team.userData', 'simple.team.lightbox']).config([
+angular.module('simple.team', ['ngFileUpload', 'ngSanitize', 'ui.router', 'ui.sortable', 'ui.gravatar', 'ui.bootstrap', 'selectize', 'angularMoment', 'angular-loading-bar', 'ng-showdown', 'LocalStorageModule', 'monospaced.elastic', 'simple.team.routes', 'simple.team.focusMe', 'simple.team.bytes', 'simple.team.sidebar', 'simple.team.navbar', 'simple.team.auth', 'simple.team.tagData', 'simple.team.userData']).config([
   '$urlRouterProvider', 'cfpLoadingBarProvider', function($urlRouterProvider, cfpLoadingBarProvider) {
     $urlRouterProvider.otherwise('/projects');
     cfpLoadingBarProvider.includeSpinner = false;
@@ -41774,7 +41772,7 @@ angular.module('simple.team', ['ngFileUpload', 'ngSanitize', 'ui.router', 'ui.so
 ]);
 
 
-},{"./modules/auth/index.coffee":35,"./modules/bytes/index.coffee":36,"./modules/focusMe/index.coffee":37,"./modules/lightbox/index.coffee":38,"./modules/navbar/index.coffee":39,"./modules/selectize":41,"./modules/sidebar/index.coffee":42,"./modules/tagData/index.coffee":44,"./modules/userData/index.coffee":45,"./routes.coffee":46,"angular-elastic":1,"angular-gravatar":2,"angular-local-storage":3,"angular-moment":4,"angular-sanitize":6,"angular-ui-router":7,"angular-ui-sortable":8,"moment":9,"ng-showdown":10}],15:[function(require,module,exports){
+},{"./modules/auth/index.coffee":35,"./modules/bytes/index.coffee":36,"./modules/focusMe/index.coffee":37,"./modules/navbar/index.coffee":38,"./modules/selectize":40,"./modules/sidebar/index.coffee":41,"./modules/tagData/index.coffee":43,"./modules/userData/index.coffee":44,"./routes.coffee":45,"angular-elastic":1,"angular-gravatar":2,"angular-local-storage":3,"angular-moment":4,"angular-sanitize":6,"angular-ui-router":7,"angular-ui-sortable":8,"moment":9,"ng-showdown":10}],15:[function(require,module,exports){
 'use strict';
 module.exports = function($state, $stateParams, $modal) {
   var cardId, init;
@@ -42872,26 +42870,6 @@ angular.module('simple.team.focusMe', []).directive('focusMe', [
 
 
 },{}],38:[function(require,module,exports){
-angular.module('simple.team.lightbox', []).directive('simpleLightbox', function() {
-  var linkFunc;
-  linkFunc = function($scope, $element) {
-    return $element.on('click', function() {
-      var link, src;
-      src = $element.attr('src');
-      console.log(src);
-      link = $('<a href="#_" class="lightbox" id="img1"><img src="https://s3.amazonaws.com/gschierBlog/images/pig-big.jpg"></a>');
-      return $('body').append(link);
-    });
-  };
-  return {
-    restrict: 'A',
-    link: linkFunc,
-    controllerAs: 'ctrl'
-  };
-});
-
-
-},{}],39:[function(require,module,exports){
 'use strict';
 angular.module('simple.team.navbar', []).directive('navbar', function() {
   return {
@@ -42974,9 +42952,9 @@ angular.module('simple.team.navbar', []).directive('navbar', function() {
 });
 
 
-},{"./view.html":40}],40:[function(require,module,exports){
+},{"./view.html":39}],39:[function(require,module,exports){
 module.exports = '<nav class="navbar navbar-default navbar-static-top">\n    <div class="container-fluid">\n        <ul class="nav navbar-nav">\n            <li class="dropdown">\n                <a href="#" class="dropdown-toggle" data-toggle="dropdown">{{ navCtrl.selectedTeam.name || \'Select a team...\' }} <span class="caret"></span></a>\n                <ul class="dropdown-menu">\n                    <li ng-repeat="team in navCtrl.teams" ng-click="navCtrl.setCurrentTeam(team)">\n                        <a href="#">{{ team.name }}</a>\n                    </li>\n                </ul>\n            </li>\n        </ul>\n        <ul class="nav navbar-nav navbar-right">\n            <li class="dropdown">\n                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Menu<span class="caret"></span></a>\n                <ul class="dropdown-menu">\n                    <li><a ui-sref="simple.settings.account">Account</a></li>\n                    <li><a ui-sref="simple.settings.teams">Teams</a></li>\n                    <li class="divider"></li>\n                    <li><a ui-sref="auth.logout">Sign Out</a></li>\n                </ul>\n            </li>\n        </ul>\n    </div>\n</nav>\n';
-},{}],41:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 /**
  * Angular Selectize2
  * https://github.com/machineboy2045/angular-selectize
@@ -43086,7 +43064,7 @@ angular.module('selectize', []).value('selectizeConfig', {}).directive("selectiz
   };
 }]);
 
-},{}],42:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 angular.module('simple.team.sidebar', []).directive('sidebar', function() {
   return {
     restrict: 'E',
@@ -43095,9 +43073,9 @@ angular.module('simple.team.sidebar', []).directive('sidebar', function() {
 });
 
 
-},{"./view.html":43}],43:[function(require,module,exports){
+},{"./view.html":42}],42:[function(require,module,exports){
 module.exports = '<div class="wrapper">\n    <div class="sidebar">\n        <div class="title">simple.team</div>\n        <ul class="side-nav">\n            <li><a ui-sref="simple.projects.kanban">Kanban</a></li>\n            <li><a ui-sref="simple.projects.list">Projects List</a></li>\n            <!-- <li><a ui-sref="chat">Chat</a></li>\n            <li><a ui-sref="timeline">Timeline</a></li>\n            <li><a ui-sref="daily-summary">Daily Summary</a></li>\n            <li><a ui-sref="notes.list">Notes</a></li>\n            <li><a ui-sref="one-use-notes">Secure Notes</a></li>\n            <li><a ui-sref="designer">Designer</a></li>\n            <li><a ui-sref="settings.teams">Settings</a></li> -->\n        </ul>\n    </div>\n</div>\n';
-},{}],44:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 'use strict';
 angular.module('simple.team.tagData', []).service('TagDataService', [
   '$http', function($http) {
@@ -43108,7 +43086,7 @@ angular.module('simple.team.tagData', []).service('TagDataService', [
 ]);
 
 
-},{}],45:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 'use strict';
 angular.module('simple.team.userData', []).service('UserDataService', [
   '$http', function($http) {
@@ -43119,7 +43097,7 @@ angular.module('simple.team.userData', []).service('UserDataService', [
 ]);
 
 
-},{}],46:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 angular.module('simple.team.routes', []).config([
   '$stateProvider', function($stateProvider) {
     return $stateProvider.state('projects', {

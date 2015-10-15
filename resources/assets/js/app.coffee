@@ -19,7 +19,6 @@ require './modules/auth/index.coffee'
 require './modules/bytes/index.coffee'
 require './modules/sidebar/index.coffee'
 require './modules/navbar/index.coffee'
-require './modules/lightbox/index.coffee'
 
 angular
     .module 'simple.team', [
@@ -43,7 +42,6 @@ angular
         'simple.team.auth'
         'simple.team.tagData'
         'simple.team.userData'
-        'simple.team.lightbox'
     ]
 
     .config ['$urlRouterProvider', 'cfpLoadingBarProvider', ($urlRouterProvider, cfpLoadingBarProvider) ->
