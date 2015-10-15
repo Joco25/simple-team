@@ -153,7 +153,7 @@
     <div class="media" ng-repeat="attachment in ctrl.selectedCard.attachments">
         <div class="media-left" ng-click="ctrl.downloadAttachment(attachment)">
             <a href="#">
-                <img ng-src="http://res.cloudinary.com/michaeljcalkins/image/fetch/w_110,h_80,c_thumb/{{ ctrl.s3BucketAttachmentsUrl + ctrl.selectedCard.attachments[0].filename }}">
+                <img ng-src="http://res.cloudinary.com/michaeljcalkins/image/fetch/w_110,h_80,c_thumb/{{ ctrl.s3BucketAttachmentsUrl + attachment.filename }}">
             </a>
         </div>
         <div class="media-body">
