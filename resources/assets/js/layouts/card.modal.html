@@ -9,11 +9,11 @@
     <div class="text-center" ng-show="ctrl.selectedCard.attachments.length > 0">
         <div
             class="card-image-background"
-            style="background-image: url(http://res.cloudinary.com/michaeljcalkins/image/fetch/h_170,e_blur:719,w_900,c_fill/{{ ctrl.s3BucketAttachmentsUrl + ctrl.selectedCard.attachments[0].filename }})"></div>
+            style="background-image: url(http://res.cloudinary.com/michaeljcalkins/image/fetch/h_200,e_blur:719,w_900,c_fill/{{ ctrl.s3BucketAttachmentsUrl + ctrl.selectedCard.attachments[0].filename }})"></div>
         <a target="_blank" ng-href="{{ ctrl.s3BucketAttachmentsUrl + ctrl.selectedCard.attachments[0].filename }}">
             <img
                 class="card-image-preview"
-                ng-src="http://res.cloudinary.com/michaeljcalkins/image/fetch/h_170/{{ ctrl.s3BucketAttachmentsUrl + ctrl.selectedCard.attachments[0].filename }}">
+                ng-src="http://res.cloudinary.com/michaeljcalkins/image/fetch/h_200/{{ ctrl.s3BucketAttachmentsUrl + ctrl.selectedCard.attachments[0].filename }}">
         </a>
     </div>
 
