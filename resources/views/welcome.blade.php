@@ -7,7 +7,7 @@
     <section class="section-home">
         <h1>Your Communication<br>On One Platform.</h1>
         <p>Your whole team on one platform, with multiple ways of working with projects.</p>
-        <a href="/auth/register" class="btn btn-success btn-lg">Sign Up For Free</a>
+        <a href="/auth/register" class="btn btn-success btn-lg">Create My Free Account</a>
         <div class="site-preview"></div>
     </section>
 
