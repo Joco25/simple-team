@@ -10,7 +10,11 @@
         <div
             class="card-image-background"
             style="background-image: url(http://res.cloudinary.com/michaeljcalkins/image/fetch/h_170,e_blur:719,w_900,c_fill/{{ ctrl.s3BucketAttachmentsUrl + ctrl.selectedCard.attachments[0].filename }})"></div>
-        <img class="card-image-preview" ng-src="http://res.cloudinary.com/michaeljcalkins/image/fetch/h_170/{{ ctrl.s3BucketAttachmentsUrl + ctrl.selectedCard.attachments[0].filename }}">
+        <a target="_blank" ng-href="{{ ctrl.s3BucketAttachmentsUrl + ctrl.selectedCard.attachments[0].filename }}">
+            <img
+                class="card-image-preview"
+                ng-src="http://res.cloudinary.com/michaeljcalkins/image/fetch/h_170/{{ ctrl.s3BucketAttachmentsUrl + ctrl.selectedCard.attachments[0].filename }}">
+        </a>
     </div>
 
     <h4
@@ -151,18 +155,23 @@
         <div class="drag-overlay" ng-show="ctrl.states.uploading">Uploading...</div>
     </div>
     <div class="media" ng-repeat="attachment in ctrl.selectedCard.attachments">
-        <div class="media-left" ng-click="ctrl.downloadAttachment(attachment)">
-            <a href="#">
-                <img ng-src="http://res.cloudinary.com/michaeljcalkins/image/fetch/w_110,h_80,c_thumb/{{ ctrl.s3BucketAttachmentsUrl + attachment.filename }}">
+        <div class="media-left">
+            <a target="_blank" ng-href="{{ ctrl.s3BucketAttachmentsUrl + attachment.filename }}">
+                <img simple-lightbox ng-src="http://res.cloudinary.com/michaeljcalkins/image/fetch/w_110,h_80,c_thumb/{{ ctrl.s3BucketAttachmentsUrl + attachment.filename }}">
             </a>
         </div>
         <div class="media-body">
-            <h4 class="media-heading" ng-click="ctrl.downloadAttachment(attachment)">{{ attachment.original_filename }}</h4>
+            <h4 class="media-heading"><a target="_blank" ng-href="{{ ctrl.s3BucketAttachmentsUrl + attachment.filename }}">{{ attachment.original_filename }}</a></h4>
             <p>Added <span am-time-ago="attachment.created_at"></span></p>
-            <button class="btn btn-default btn-sm" ng-click="ctrl.downloadAttachment(attachment)">
+            <button
+                class="btn btn-default btn-sm"
+                ng-click="ctrl.downloadAttachment(attachment)">
                 Download
             </button>
-            <button class="btn btn-link btn-sm" type="button" ng-click="ctrl.deleteAttachment(attachment)">
+            <button
+                class="btn btn-link btn-sm"
+                type="button"
+                ng-click="ctrl.deleteAttachment(attachment)">
                 Delete
             </button>
         </div>
@@ -199,6 +208,7 @@
         ng-repeat="comment in ctrl.selectedCard.comments">
         <div class="media-left">
             <a href="#">
+                {{ comment.user.email }}
                 <img class="media-object" gravatar-src="comment.user.email" gravatar-size="45">
             </a>
         </div>
