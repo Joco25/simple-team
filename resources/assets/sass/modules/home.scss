@@ -153,6 +153,13 @@ html {
         }
     }
 
+    section.section-auth {
+        padding-top: 100px;
+        position: fixed;
+        height: 100%;
+        background-image: linear-gradient(rgba(251, 114, 89, 0.90), rgba(251, 114, 89, 0.90)), url(/img/header2.jpg);
+        background-size: cover;
+    }
 }
 
 .centered-pills { text-align:center; }
