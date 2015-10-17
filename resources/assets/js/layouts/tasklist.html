@@ -89,6 +89,7 @@
                     ng-repeat="card in ctrl.cards"
                     ng-class="{'list-group-item-danger': card.blocked }"
                     ui-sref="tasklist.card({ cardId: card.id })">
+                    <span class="label label-primary" title="Project this card is in." ng-show="card.stage.project.name">{{ card.stage.project.name }}</span>
                     <span class="label label-primary" title="Stage this card is in." ng-show="card.stage">{{ card.stage.name }}</span>
 
                     {{ card.name }}
