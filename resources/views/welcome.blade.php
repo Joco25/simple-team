@@ -6,7 +6,7 @@
 
     <section class="section-home">
         <h1>All The Tools You<br>Need To Make Progress.</h1>
-        <p>Multiple forms of project management and all of your projects in one place.</p>
+        <p>Your favorite way of working with projects and all in one place.</p>
         <a href="/auth/register" class="btn btn-success btn-lg">Create My Free Account</a>
         <div class="site-preview"></div>
     </section>
