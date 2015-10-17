@@ -73,63 +73,97 @@
 <hr style="margin: 0;">
 
 <div class="modal-body">
-    <h4>Assignees</h4>
-    <selectize
-        config="ctrl.usersConfig"
-        options="ctrl.users"
-        ng-model="ctrl.selectedCard.userIds"></selectize>
-</div>
-
-<hr style="margin: 0;">
-
-<div class="modal-body">
-    <h4>Subtasks</h4>
-    <div class="form-group">
-        <textarea
-            placeholder="Create a subtask..."
-            class="form-control"
-            rows="1"
-            msd-elastic
-            ng-model="ctrl.newSubtaskBody"
-            ng-keyup="$event.keyCode == 13 && ctrl.createSubtask()"></textarea>
-    </div>
-    <div
-        ui-sortable="ctrl.subTaskSortableOptions"
-        ng-model="ctrl.selectedCard.subtasks">
-        <div
-            class="media"
-            ng-repeat="task in ctrl.selectedCard.subtasks">
-            <div class="media-left">
-                <i
-                    class="fa fa-2 pointer"
-                    ng-click="ctrl.toggleSubtask(task)"
-                    ng-class="{ 'fa-square-o': task.checked != true, 'fa-check-square-o': task.checked == true }"></i>
+    <div class="row">
+        <div class="col-sm-6">
+            <h4>Subtasks</h4>
+            <div class="form-group">
+                <textarea
+                    placeholder="Create a subtask..."
+                    class="form-control"
+                    rows="1"
+                    msd-elastic
+                    ng-model="ctrl.newSubtaskBody"
+                    ng-keyup="$event.keyCode == 13 && ctrl.createSubtask()"></textarea>
             </div>
-            <div class="media-body">
-                <div ng-click="ctrl.editSubtask(task)" ng-hide="task.editMode">{{ task.body || 'Click to edit subtask...' }}</div>
-                <span ng-show="task.editMode">
-                    <div class="form-group">
-                        <textarea
-                            type="text"
-                            class="form-control"
-                            msd-elastic
-                            ng-model="task.newBody"
-                            ng-keyup="$event.keyCode == 13 && ctrl.updateSubtask(task)"></textarea>
+            <div
+                ui-sortable="ctrl.subTaskSortableOptions"
+                ng-model="ctrl.selectedCard.subtasks">
+                <div
+                    class="media"
+                    ng-repeat="task in ctrl.selectedCard.subtasks">
+                    <div class="media-left">
+                        <i
+                            class="fa fa-2 pointer"
+                            ng-click="ctrl.toggleSubtask(task)"
+                            ng-class="{ 'fa-square-o': task.checked != true, 'fa-check-square-o': task.checked == true }"></i>
                     </div>
-                    <button class="btn btn-success btn-sm" ng-click="ctrl.updateSubtask(task)">Save</button>
-                    <button class="btn btn-link btn-sm" ng-click="ctrl.cancelSubtaskEdit(task)">Cancel</button>
-                    <button class="btn btn-link btn-sm pull-right" ng-click="ctrl.deleteSubtask(task)">Delete</button>
-                </span>
+                    <div class="media-body">
+                        <div ng-click="ctrl.editSubtask(task)" ng-hide="task.editMode">{{ task.body || 'Click to edit subtask...' }}</div>
+                        <span ng-show="task.editMode">
+                            <div class="form-group">
+                                <textarea
+                                    type="text"
+                                    class="form-control"
+                                    msd-elastic
+                                    ng-model="task.newBody"
+                                    ng-keyup="$event.keyCode == 13 && ctrl.updateSubtask(task)"></textarea>
+                            </div>
+                            <button class="btn btn-success btn-sm" ng-click="ctrl.updateSubtask(task)">Save</button>
+                            <button class="btn btn-link btn-sm" ng-click="ctrl.cancelSubtaskEdit(task)">Cancel</button>
+                            <button class="btn btn-link btn-sm pull-right" ng-click="ctrl.deleteSubtask(task)">Delete</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+
+            <div class="modal-body">
+                <h4>Attachments</h4>
+                <div ngf-no-file-drop>File Drag/Drop is not supported for this browser</div>
+                <div
+                    class="dropbox"
+                    ng-model="ctrl.files"
+                    ngf-drop="ctrl.upload($file)"
+                    ngf-select="ctrl.uploadFiles($files)"
+                    ngf-drag-over-class="{accept:'dragover'}"
+                    ngf-multiple="true"
+                    ngf-allow-dir="false">
+                    <div class="drag-overlay" ng-hide="ctrl.states.uploading">Drop files here or <span>Browse<span></div>
+                    <div class="drag-overlay" ng-show="ctrl.states.uploading">Uploading...</div>
+                </div>
+                <div class="media" ng-repeat="attachment in ctrl.selectedCard.attachments">
+                    <div class="media-left">
+                        <a target="_blank" ng-href="{{ ctrl.s3BucketAttachmentsUrl + attachment.filename }}">
+                            <img simple-lightbox ng-src="http://res.cloudinary.com/michaeljcalkins/image/fetch/w_110,h_80,c_thumb/{{ ctrl.s3BucketAttachmentsUrl + attachment.filename }}">
+                        </a>
+                    </div>
+                    <div class="media-body">
+                        <h4 class="media-heading"><a target="_blank" ng-href="{{ ctrl.s3BucketAttachmentsUrl + attachment.filename }}">{{ attachment.original_filename }}</a></h4>
+                        <p>Added <span am-time-ago="attachment.created_at"></span></p>
+                        <button
+                            class="btn btn-default btn-sm"
+                            ng-click="ctrl.downloadAttachment(attachment)">
+                            Download
+                        </button>
+                        <button
+                            class="btn btn-link btn-sm"
+                            type="button"
+                            ng-click="ctrl.deleteAttachment(attachment)">
+                            Delete
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
+
 <hr style="margin: 0;">
 
 <div class="modal-body">
-    <h4>Impact</h4>
-    <p>By adding an impact value we can determine the priority of tasks against others.</p>
+    <h4>Impact <small>Impact value lets you determine the priority of tasks against others.</small></h4>
     <input
         type="range"
         min="0"
@@ -141,51 +175,22 @@
 <hr style="margin: 0;">
 
 <div class="modal-body">
-    <h4>Attachments</h4>
-    <div ngf-no-file-drop>File Drag/Drop is not supported for this browser</div>
-    <div
-        class="dropbox"
-        ng-model="ctrl.files"
-        ngf-drop="ctrl.upload($file)"
-        ngf-select="ctrl.uploadFiles($files)"
-        ngf-drag-over-class="{accept:'dragover'}"
-        ngf-multiple="true"
-        ngf-allow-dir="false">
-        <div class="drag-overlay" ng-hide="ctrl.states.uploading">Drop files here or <span>Browse<span></div>
-        <div class="drag-overlay" ng-show="ctrl.states.uploading">Uploading...</div>
-    </div>
-    <div class="media" ng-repeat="attachment in ctrl.selectedCard.attachments">
-        <div class="media-left">
-            <a target="_blank" ng-href="{{ ctrl.s3BucketAttachmentsUrl + attachment.filename }}">
-                <img simple-lightbox ng-src="http://res.cloudinary.com/michaeljcalkins/image/fetch/w_110,h_80,c_thumb/{{ ctrl.s3BucketAttachmentsUrl + attachment.filename }}">
-            </a>
+    <div class="row">
+        <div class="col-sm-6">
+            <h4>Assignees</h4>
+            <selectize
+                config="ctrl.usersConfig"
+                options="ctrl.users"
+                ng-model="ctrl.selectedCard.userIds"></selectize>
         </div>
-        <div class="media-body">
-            <h4 class="media-heading"><a target="_blank" ng-href="{{ ctrl.s3BucketAttachmentsUrl + attachment.filename }}">{{ attachment.original_filename }}</a></h4>
-            <p>Added <span am-time-ago="attachment.created_at"></span></p>
-            <button
-                class="btn btn-default btn-sm"
-                ng-click="ctrl.downloadAttachment(attachment)">
-                Download
-            </button>
-            <button
-                class="btn btn-link btn-sm"
-                type="button"
-                ng-click="ctrl.deleteAttachment(attachment)">
-                Delete
-            </button>
+        <div class="col-sm-6">
+            <h4>Tags</h4>
+            <selectize
+                config="ctrl.tagsConfig"
+                options="ctrl.tags"
+                ng-model="ctrl.selectedCard.tagNames"></selectize>
         </div>
     </div>
-</div>
-
-<hr style="margin: 0;">
-
-<div class="modal-body">
-    <h4>Tags</h4>
-    <selectize
-        config="ctrl.tagsConfig"
-        options="ctrl.tags"
-        ng-model="ctrl.selectedCard.tagNames"></selectize>
 </div>
 
 <hr style="margin: 0;">

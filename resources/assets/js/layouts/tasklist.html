@@ -89,6 +89,8 @@
                     ng-repeat="card in ctrl.cards"
                     ng-class="{'list-group-item-danger': card.blocked }"
                     ui-sref="tasklist.card({ cardId: card.id })">
+                    <span class="label label-primary" title="Stage this card is in." ng-show="card.stage">{{ card.stage.name }}</span>
+
                     {{ card.name }}
 
                     <span title="Users assigned to this card." ng-repeat="user in card.users">
@@ -99,7 +101,25 @@
                         <span class="label label-primary">{{ tag.name }}</span>
                     </span>
 
-                    <span title="Impact of card on project out of 100." class="badge">{{ card.impact }}</span>
+                    <span class="badge" ng-show="card.description" title="This card has a description.">
+                        <i class="glyphicon glyphicon-align-left"></i>
+                    </span>
+
+                    <span class="badge" ng-show="card.subtasks.length" title="{{ card.subtasks.length }} subtask(s)">
+                        <i class="glyphicon glyphicon-ok"></i> {{ card.subtasks.length }}
+                    </span>
+
+                    <span class="badge" ng-show="card.attachments.length" title="{{ card.attachments.length }} attachment(s)">
+                        <i class="glyphicon glyphicon-download-alt"></i> {{ card.attachments.length }}
+                    </span>
+
+                    <span class="badge" ng-show="card.comments.length" title="{{ card.comments.length }} comment(s)">
+                        <i class="glyphicon glyphicon-comment"></i> {{ card.comments.length }}
+                    </span>
+
+                    <span class="badge" title="Impact of card on project out of 100." ng-show="card.impact > 0">
+                        <i class="glyphicon glyphicon-fire"></i> {{ card.impact }}
+                    </span>
                 </a>
             </div>
         </div>

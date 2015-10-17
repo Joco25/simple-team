@@ -36,7 +36,7 @@ class ApiProjectController extends Controller
      */
     public function index()
     {
-        $projects = Project::with('stages.cards.subtasks', 'stages.cards.comments', 'stages.cards.tags', 'stages.cards.users', 'stages.cards.attachments')
+        $projects = Project::with('stages.cards.subtasks', 'stages.cards.comments', 'stages.cards.tags', 'stages.cards.users', 'stages.cards.attachments', 'stages.cards.stage.project')
             ->whereTeamId(Auth::user()->team_id)
             ->orderBy('priority')
             ->get();

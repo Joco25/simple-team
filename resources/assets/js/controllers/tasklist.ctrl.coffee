@@ -16,6 +16,9 @@ module.exports = ['$http', '$rootScope', 'TagDataService', ($http, $rootScope, T
     $rootScope.$on 'card:deleted', =>
         @loadProjects()
 
+    $rootScope.$on 'projects:reload', =>
+        @loadProjects()
+
     @toggleFilter = (filterName, obj) =>
         @filters[filterName] = @filters[filterName] || []
 
