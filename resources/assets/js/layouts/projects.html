@@ -94,7 +94,7 @@
             <button
                 class="btn btn-success"
                 ng-click="ctrl.createProject()">
-                Create Active Project
+                Create Project
             </button>
         </div>
     </div>
@@ -157,18 +157,6 @@
                                             </ul>
                                         </div>
                                     </div>
-                                </div>
-
-                                <div ng-show="ctrl.openTopCreateCards[stage.id]">
-                                    <textarea
-                                        msd-elastic
-                                        ng-keyup="$event.keyCode == 13 && ctrl.createCard(stage)"
-                                        ng-model="ctrl.newCardName"
-                                        class="form-control"
-                                        focus-me="ctrl.openTopCreateCards[stage.id]"
-                                        ng-blur="ctrl.hideCreateCard()"
-                                        ></textarea>
-                                    <a class="btn btn-link btn-sm" ng-click="ctrl.hideCreateCard()">Cancel</a>
                                 </div>
 
                                 <div class="clearfix"></div>

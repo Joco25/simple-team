@@ -42,6 +42,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('/api/stages', 'ApiStageController');
 
     Route::post('/api/cards/tags', 'ApiCardController@updateTags');
+    Route::put('/api/cards/{id}/updateStage', 'ApiCardController@updateStage');
     Route::post('/api/cards/users', 'ApiCardController@updateUsers');
     Route::post('/api/cards/withoutStage', 'ApiCardController@storeWithoutStage');
     Route::put('/api/cards/stageOrder', 'ApiCardController@updateStageOrder');

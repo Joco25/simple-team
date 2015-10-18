@@ -3,6 +3,7 @@
 module.exports = ['$http', '$rootScope', 'TagDataService', ($http, $rootScope, TagData) ->
     @newCard = {}
     @users = []
+    @orderBy = 'name'
     @filters =
         users: []
         tags: []
@@ -18,6 +19,27 @@ module.exports = ['$http', '$rootScope', 'TagDataService', ($http, $rootScope, T
 
     $rootScope.$on 'projects:reload', =>
         @loadProjects()
+
+    @createProject = ->
+        projectName = prompt("New Project Name")
+        if ! projectName then return
+
+        $http
+            .post '/api/projects',
+                name: projectName
+                stages: [
+                    {
+                        name: 'New'
+                    },
+                    {
+                        name: 'In Progress'
+                    },
+                    {
+                        name: 'Closed'
+                    }
+                ]
+            .success (data) =>
+                @projects = data.projects
 
     @toggleFilter = (filterName, obj) =>
         @filters[filterName] = @filters[filterName] || []

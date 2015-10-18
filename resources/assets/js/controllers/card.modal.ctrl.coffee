@@ -53,6 +53,19 @@ module.exports = ($state, $stateParams, $scope, $http, $rootScope, TagDataServic
             .success ->
                 $rootScope.$emit 'projects:reload'
 
+    @updateStage = (stage) =>
+        if stage.id is @selectedCard.stage.id then return
+        @selectedCard.stage = stage
+        $http
+            .put '/api/cards/' + @selectedCard.id + '/updateStage',
+                stage_id: stage.id
+            .success (data) =>
+                @selectedCard = data.card
+                @selectedCard.tagNames = _.pluck data.card.tags, 'name'
+                @selectedCard.userIds = _.pluck data.card.users, 'id'
+                @selectedCard.impact = @selectedCard.impact || 0
+                $rootScope.$emit 'projects:reload'
+
     @loadTags = =>
         TagDataService
             .loadTags()

@@ -10,6 +10,7 @@ module.exports = ($http, $state, $rootScope, $modal) ->
     @selectedStage = null
     @selectedCommentBody = ''
     @selectedTaskBody = ''
+    @searchInput
 
     @filters =
         tag: null

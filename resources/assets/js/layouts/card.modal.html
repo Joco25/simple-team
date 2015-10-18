@@ -17,10 +17,24 @@
         </a>
     </div>
 
+    <div class="btn-group pull-left" style="margin-right: 15px;" title="Stage this project is in.">
+        <button aria-expanded="false" aria-haspopup="true" class="btn btn-default dropdown-toggle" data-toggle="dropdown" type="button">
+            {{ ctrl.selectedCard.stage.name }}
+            <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li ng-repeat="stage in ctrl.selectedCard.stage.project.stages" ng-click="ctrl.updateStage(stage)">
+                <a href="#">{{ stage.name }}</a>
+            </li>
+        </ul>
+    </div>
+
     <h4
         ng-click="ctrl.selectedCard.editName = !ctrl.selectedCard.editName; ctrl.selectedCardName = ctrl.selectedCard.name"
         ng-hide="ctrl.selectedCard.editName"
+        style="line-height: 35px;"
         class="modal-title">{{ ctrl.selectedCard.name || 'Edit card name...' }}</h4>
+
     <div ng-show="ctrl.selectedCard.editName">
         <div class="form-group">
             <textarea

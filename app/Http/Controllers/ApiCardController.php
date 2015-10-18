@@ -4,6 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+use Input;
+use Auth;
+use App\Project;
+use App\Card;
+use App\Stage;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 
@@ -54,8 +59,8 @@ class ApiCardController extends Controller
 
     public function updateUsers()
     {
-        $userIds = \Input::get('user_ids');
-        $cardId = \Input::get('card_id');
+        $userIds = Input::get('user_ids');
+        $cardId = Input::get('card_id');
 
         $card = \App\Card::whereId($cardId)
             ->whereTeamId(\Auth::user()->team_id)
@@ -97,6 +102,38 @@ class ApiCardController extends Controller
         return response()->json();
     }
 
+    public function updateStage($id)
+    {
+        $stageId = Input::get('stage_id');
+        $cards = Card::whereStageId($stageId)
+            ->whereTeamId(Auth::user()->team_id)
+            ->orderBy('priority')
+            ->get();
+
+        foreach ($cards as $key => $card)
+        {
+            $card->priority = $key;
+            $card->save();
+        }
+
+        $success = Card::whereId($id)
+            ->whereTeamId(\Auth::user()->team_id)
+            ->update([
+                'priority' => count($cards),
+                'stage_id' => $stageId
+            ]);
+
+        $card = \App\Card::whereId($id)
+            ->with('stage.project.stages', 'users', 'comments.user', 'subtasks', 'tags', 'attachments')
+            ->whereTeamId(\Auth::user()->team_id)
+            ->first();
+
+        return response()->json([
+            'card' => $card,
+            'success' => $success
+        ]);
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -126,8 +163,9 @@ class ApiCardController extends Controller
             'team_id' => $project->stages[0]->team_id
         ]);
 
-        $projects = \App\Project::with('stages.cards.subtasks', 'stages.cards.comments', 'stages.cards.tags', 'stages.cards.users')
-            ->whereTeamId(\Auth::user()->team_id)
+        $projects = Project::with('stages.cards.subtasks', 'stages.cards.comments', 'stages.cards.tags', 'stages.cards.users', 'stages.cards.attachments', 'stages.cards.stage.project')
+            ->whereTeamId(Auth::user()->team_id)
+            ->orderBy('priority')
             ->get();
 
         return response()->json([
@@ -175,7 +213,7 @@ class ApiCardController extends Controller
     public function show($id)
     {
         $card = \App\Card::whereId($id)
-            ->with('stage.project', 'users', 'comments.user', 'subtasks', 'tags', 'attachments')
+            ->with('stage.project.stages', 'users', 'comments.user', 'subtasks', 'tags', 'attachments')
             ->whereTeamId(\Auth::user()->team_id)
             ->first();
 

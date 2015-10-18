@@ -18,6 +18,7 @@ class ApiTagController extends Controller
     {
         //
         $tags = \App\Tag::whereTeamId(\Auth::user()->team_id)
+            ->orderBy('name')
             ->get();
 
         return response()->json([
