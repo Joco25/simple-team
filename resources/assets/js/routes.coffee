@@ -32,11 +32,11 @@ angular
                 controller: require('./controllers/dailySummary.ctrl.coffee')
                 controllerAs: 'ctrl'
 
-            # .state 'timeline',
-            #     url: '/timeline'
-            #     template: require('./layouts/timeline.html')
-            #     controller: require('./controllers/timeline.ctrl.coffee')
-            #     controllerAs: 'ctrl'
+            .state 'timeline',
+                url: '/timeline'
+                template: require('./layouts/timeline.html')
+                controller: require('./controllers/timeline.ctrl.coffee')
+                controllerAs: 'ctrl'
 
             .state 'settings',
                 url: '/settings'

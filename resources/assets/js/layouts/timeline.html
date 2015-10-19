@@ -1,17 +1,45 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-sm-12">
-            <div gantt data="ctrl.data">
-                <!-- <gantt-table columns="['model.name']"></gantt-table> -->
-                <gantt-tree></gantt-tree>
-                <gantt-groups></gantt-groups>
-                <gantt-tooltips></gantt-tooltips>
-                <gantt-bounds></gantt-bounds>
-                <gantt-progress></gantt-progress>
-                <gantt-sortable></gantt-sortable>
-                <gantt-movable></gantt-movable>
-                <gantt-draw-task></gantt-draw-task>
-                <gantt-resize-sensor></gantt-resize-sensor>
+            <div class="panel">
+                <div class="panel-body">
+                    <div class="form-group text-center">
+                        <label class="control-label">
+                            <i class="fa fa-calendar"></i>
+                            <i class="fa fa-arrows-h"></i>
+                            <i class="fa fa-calendar"></i>
+                            Date range</label>
+                        <br>
+                        <div class="form-group">
+                            <input class="form-control" ng-model="ctrl.options.fromDate" placeholder="From" type="date">
+                        </div>
+                        <div class="form-group">
+                            <input class="form-control" ng-model="ctrl.options.toDate" placeholder="To" type="date">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel">
+                <div class="panel-body">
+                    <div
+                        gantt
+                        api="ctrl.registerApi"
+                        data="ctrl.data"
+                        headers="['month', 'day']"
+                        from-date="ctrl.options.fromDate"
+                        to-date="ctrl.options.toDate">
+                        <!-- <gantt-table columns="['model.name']"></gantt-table> -->
+                        <gantt-tree></gantt-tree>
+                        <gantt-groups></gantt-groups>
+                        <gantt-tooltips></gantt-tooltips>
+                        <gantt-bounds></gantt-bounds>
+                        <gantt-progress></gantt-progress>
+                        <gantt-sortable></gantt-sortable>
+                        <gantt-movable></gantt-movable>
+                        <gantt-draw-task></gantt-draw-task>
+                        <gantt-resize-sensor></gantt-resize-sensor>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -3,10 +3,10 @@
         <div class="col-sm-12">
             <div class="row" style="margin-bottom: 10px">
                 <div class="col-sm-6">
-                    Saturday, 25 Jul 2015
+                    {{ ctrl.filterDate | date:'EEEE, MMMM d, y' }}
                 </div>
                 <div class="col-sm-6 text-right">
-                    <div class="btn-group">
+                    <div class="btn-group" style="margin-right: 5px;">
                         <button class="btn btn-default" ng-click="ctrl.addDay()">&lt;</button>
                         <button class="btn btn-default" ng-click="ctrl.goToToday()">Today</button>
                         <button class="btn btn-default" ng-click="ctrl.substractDay()">&gt;</button>
@@ -19,8 +19,14 @@
             </div>
 
             <div class="panel">
-                <div class="panel-heading">{{ ctrl.authUser.name }}</div>
                 <div class="panel-body">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <h4 style="margin-top: 0">{{ ctrl.authUser.name }}</h4>
+                        </div>
+                        <div class="col-sm-6">
+                        </div>
+                    </div>
                     <div class="form-group">
                         <form ng-submit="ctrl.createDailySummary()">
                             <input
@@ -35,7 +41,7 @@
                             <td>
                                 <div
                                     ng-show="dailySummary != dailySummaryCopy"
-                                    v-on="dblclick: editDailySummary(dailySummary)">
+                                    ng-click="editDailySummary(dailySummary)">
                                     {{ dailySummary.body }}
                                 </div>
 
@@ -72,10 +78,15 @@
                 class="panel"
                 ng-repeat="user in ctrl.authUser.team.users"
                 ng-hide="user.id == ctrl.authUser.id">
-                <div class="panel-heading">{{ user.name }}</div>
                 <div class="panel-body">
+                    <h4 style="margin-top: 0">{{ user.name }}</h4>
                     <table class="table">
                         <tbody>
+                            <tr ng-show="! ctrl.dailySummaries[user.id].length">
+                                <td class="text-center">
+                                    <h5 class="text-muted">No entries.</h5>
+                                </td>
+                            </tr>
                             <tr ng-repeat="dailySummary in ctrl.dailySummaries[user.id]">
                                 <td>{{ dailySummary.body }}</td>
                             </tr>
