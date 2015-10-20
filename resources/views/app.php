@@ -19,10 +19,10 @@
     <!-- Angular CSS -->
     <link href='//cdnjs.cloudflare.com/ajax/libs/angular-loading-bar/0.7.1/loading-bar.min.css' rel='stylesheet' type='text/css'>
     <link href="//cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/css/selectize.default.min.css" rel="stylesheet" type='text/css'>
-
+<!--
     <link rel="stylesheet" type="text/css" href="http://rawgit.com/angular-ui-tree/angular-ui-tree/master/dist/angular-ui-tree.min.css">
     <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/angular.gantt/1.2.7/angular-gantt.min.css">
-    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/angular.gantt/1.2.7/angular-gantt-plugins.min.css">
+    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/angular.gantt/1.2.7/angular-gantt-plugins.min.css"> -->
 
 
     <!-- Custom CSS -->
@@ -90,7 +90,7 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.5/angular.js"></script>
 
-
+<!-- 
 
 
     <script src="http://cdn.jsdelivr.net/momentjs/latest/moment-with-locales.min.js"></script>
@@ -103,7 +103,7 @@
     <script src="//cdn.jsdelivr.net/angular.gantt/1.2.7/angular-gantt.min.js"></script>
     <script src="//cdn.jsdelivr.net/angular.gantt/1.2.7/angular-gantt-plugins.min.js"></script>
 
-
+ -->
 
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.13.4/ui-bootstrap-tpls.min.js"></script>

@@ -217,7 +217,15 @@ nav {
                                         </div>
                                         <div
                                             ng-show="card.impact"
-                                            style="position: absolute; bottom: 0; left: 0; right: 0; height: 4px; margin: 0; border-radius: 0 0 3px 3px"
+                                            style="
+                                                position: absolute;
+                                                bottom: -1px;
+                                                left: -1px;
+                                                right: -1px;
+                                                height: 7px;
+                                                margin: 0;
+                                                border-radius: 0 0 3px 3px
+                                            "
                                             title="Impact this card has on the project"
                                             class="progress">
                                             <div class="progress-bar progress-bar-info" style="width: {{ card.impact }}%"></div>
