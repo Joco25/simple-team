@@ -7,7 +7,7 @@
     background: red;
 }
 
-.table tbody>tr>td.vert-align{
+.table tbody > tr > td.vert-align {
     vertical-align: middle;
 }
 
@@ -127,12 +127,17 @@ button.close {
         }
 
         table {
-            border-top: 3px solid #ddd;
+            border: 0;
             table-layout: fixed;
             margin: 0;
         }
 
+        tr {
+            border-bottom: 1px solid white;
+        }
+
         td {
+            background: #fcfeff;
             padding: 0;
             vertical-align: top;
             position: static;
@@ -145,12 +150,14 @@ button.close {
         }
 
         td:nth-of-type(even) {
-            background: #eee;
+            background: #f2f9ff;
         }
 
         h4 {
             color: #4d4d4d;
             font-weight: bold;
+            font-size: 17px;
+            line-height: 22px;
             margin: 0 0 10px 0;
         }
 
@@ -178,8 +185,8 @@ button.close {
 
                     li {
                         background: white;
-                        border-bottom: 1px solid #ccc;
-                        border-radius: 3px;
+                        border: 1px solid #ccc;
+                        border-radius: 4px;
                         box-sizing: border-box;
                         position: relative;
                         color: #6F6F6F;
@@ -195,6 +202,7 @@ button.close {
 
                         &.card-blocked {
                             background: #C95B59;
+                            border-color: red;
                             color: white;
 
                             span, i {
@@ -203,7 +211,7 @@ button.close {
                         }
 
                         &.sortable-preview {
-                            background: #bbb;
+                            background: #ccc;
                             min-height: 100px;
                         }
                     }

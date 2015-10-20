@@ -90,10 +90,13 @@ button.close {
   .simple-page .projects-container .panel-body {
     padding: 0; }
   .simple-page .projects-container table {
-    border-top: 3px solid #ddd;
+    border: 0;
     table-layout: fixed;
     margin: 0; }
+  .simple-page .projects-container tr {
+    border-bottom: 1px solid white; }
   .simple-page .projects-container td {
+    background: #fcfeff;
     padding: 0;
     vertical-align: top;
     position: static;
@@ -102,10 +105,12 @@ button.close {
     padding: 10px;
     width: 200px; }
   .simple-page .projects-container td:nth-of-type(even) {
-    background: #eee; }
+    background: #f2f9ff; }
   .simple-page .projects-container h4 {
     color: #4d4d4d;
     font-weight: bold;
+    font-size: 17px;
+    line-height: 22px;
     margin: 0 0 10px 0; }
   .simple-page .projects-container .stage-container .stage-column {
     padding: 10px;
@@ -126,8 +131,8 @@ button.close {
       width: 100%; }
       .simple-page .projects-container .stage-container .stage-column ul.sortable li {
         background: white;
-        border-bottom: 1px solid #ccc;
-        border-radius: 3px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
         box-sizing: border-box;
         position: relative;
         color: #6F6F6F;
@@ -140,11 +145,12 @@ button.close {
           margin: 0; }
         .simple-page .projects-container .stage-container .stage-column ul.sortable li.card-blocked {
           background: #C95B59;
+          border-color: red;
           color: white; }
           .simple-page .projects-container .stage-container .stage-column ul.sortable li.card-blocked span, .simple-page .projects-container .stage-container .stage-column ul.sortable li.card-blocked i {
             color: white; }
         .simple-page .projects-container .stage-container .stage-column ul.sortable li.sortable-preview {
-          background: #bbb;
+          background: #ccc;
           min-height: 100px; }
   .simple-page .drag-overlay {
     background: rgba(255, 255, 255, 0.8);
