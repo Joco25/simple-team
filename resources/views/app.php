@@ -47,12 +47,12 @@
                 <li ng-class="{ active: appCtrl.state.current.name.indexOf('tasklist') > -1 }">
                     <a ui-sref="tasklist">Tasklist</a>
                 </li>
-                <li ng-class="{ active: appCtrl.state.current.name.indexOf('timeline') > -1 }">
+                <!-- <li ng-class="{ active: appCtrl.state.current.name.indexOf('timeline') > -1 }">
                     <a ui-sref="timeline">Timeline</a>
                 </li>
                 <li ng-class="{ active: appCtrl.state.current.name.indexOf('dailySummary') > -1 }">
                     <a ui-sref="dailySummary">Daily Summary</a>
-                </li>
+                </li> -->
                 <!-- <li><a ui-sref="chat">Chat</a></li>
                 <li><a ui-sref="notes">Notes</a></li>
                 <li><a ui-sref="one-use-notes">View Once Notes</a></li>
