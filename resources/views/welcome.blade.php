@@ -38,7 +38,7 @@
                 </div>
             </div>
 
-            <div class="row">
+            {{-- <div class="row">
                 <div class="col-sm-6">
                     <h3>Daily Summaries - What Everyone Did Today</h3>
                     <p>
@@ -48,7 +48,7 @@
                 <div class="col-sm-6 text-center">
                     <div class="image-preview" style="background-image: url(/img/feature-projects.png)"></div>
                 </div>
-            </div>
+            </div> --}}
         </div>
     </section>
 </div>

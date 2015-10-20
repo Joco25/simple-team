@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" ng-app="simple.team" ng-cloak ng-controller="AppCtrl as appCtrl">
+<html lang="en" ng-app="simple.team" ng-controller="AppCtrl as appCtrl">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -90,7 +90,7 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.5/angular.js"></script>
 
-<!-- 
+<!--
 
 
     <script src="http://cdn.jsdelivr.net/momentjs/latest/moment-with-locales.min.js"></script>
