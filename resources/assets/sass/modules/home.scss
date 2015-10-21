@@ -204,6 +204,27 @@ body {
         background-image: linear-gradient(rgba(251, 114, 89, 0.90), rgba(251, 114, 89, 0.90)), url(/img/header2.jpg);
         background-size: cover;
     }
+
+    section.section-highlight {
+        padding: 100px;
+
+        h2 {
+            font-family: 'Source Sans Pro';
+            font-size: 48px;
+            font-weight: 300;
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: rgb(82, 82, 82);
+        }
+
+        h3 {
+            font-family: 'Source Sans Pro';
+            color: rgb(174, 174, 174);
+            font-size: 21px;
+            font-weight: normal;
+            margin-bottom: 60px;
+        }
+    }
 }
 
 .centered-pills { text-align:center; }

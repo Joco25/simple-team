@@ -62,5 +62,11 @@
             </div>
         </div>
     </section>
+
+    <section class="section-highlight text-center">
+        <h2>Easy to learn, and easy to teach.</h2>
+        <h3>Focused on clear communication and empowerment.</h3>
+        <a href="/auth/register" class="btn btn-primary btn-lg">Create My Free Account</a>
+    </section>
 </div>
 @stop

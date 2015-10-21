@@ -691,6 +691,21 @@ body {
     height: 100%;
     background-image: linear-gradient(rgba(251, 114, 89, 0.9), rgba(251, 114, 89, 0.9)), url(/img/header2.jpg);
     background-size: cover; }
+  .home-page section.section-highlight {
+    padding: 100px; }
+    .home-page section.section-highlight h2 {
+      font-family: 'Source Sans Pro';
+      font-size: 48px;
+      font-weight: 300;
+      margin-top: 0;
+      margin-bottom: 20px;
+      color: #525252; }
+    .home-page section.section-highlight h3 {
+      font-family: 'Source Sans Pro';
+      color: #aeaeae;
+      font-size: 21px;
+      font-weight: normal;
+      margin-bottom: 60px; }
 
 .centered-pills {
   text-align: center; }
