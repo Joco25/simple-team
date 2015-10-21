@@ -7,14 +7,14 @@
     <meta name="description" content="Your favorite way of working with projects and all in one place.">
     <meta name="author" content="">
 
-    <title>simple.team | All The Tools You Need To Make Progress | Project Management</title>
+    <title>simple.team | Project management for your team all in one place.</title>
 
     <!-- Bootstrap CSS -->
 	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
 	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
 
     <!-- Custom Fonts -->
-    <link href='https://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,400italic,300,700,700italic' rel='stylesheet' type='text/css'>
 
     <!-- Custom CSS -->
 	<link href="/css/app.css" rel="stylesheet">

@@ -129,9 +129,6 @@ nav {
                                     ng-click="ctrl.deleteProject(project)">
                                     <i class="glyphicon glyphicon-remove text-danger"></i> Delete
                                 </button>
-                                <!-- <button class="btn btn-default btn-sm" ng-click="ctrl.toggleProjectVisibility(project)">
-                                    {{ project.hidden ? 'Show' : 'Hide' }}
-                                </button> -->
                             </div>
                         </td>
                         <td ng-repeat="(stageIndex, stage) in project.stages">
@@ -219,9 +216,9 @@ nav {
                                             ng-show="card.impact"
                                             style="
                                                 position: absolute;
-                                                bottom: -1px;
-                                                left: -1px;
-                                                right: -1px;
+                                                bottom: 0;
+                                                left: 0;
+                                                right: 0;
                                                 height: 7px;
                                                 margin: 0;
                                                 border-radius: 0 0 3px 3px

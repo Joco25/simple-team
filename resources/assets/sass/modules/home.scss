@@ -1,9 +1,14 @@
 html {
     overflow-x: hidden;
+    font-family: 'Source Sans Pro';
+}
+
+body {
+    font-family: 'Source Sans Pro';
 }
 
 .home-page {
-    font-family: Merriweather,'Helvetica Neue',Arial,sans-serif;
+    font-family: 'Source Sans Pro','Helvetica Neue',Arial,sans-serif;
     text-rendering: optimizelegibility;
 
     h1,
@@ -12,29 +17,36 @@ html {
     h4,
     h5,
     h6 {
-        font-family: 'Montserrat','Helvetica Neue',Arial,sans-serif;
+        font-family: 'Source Sans Pro', 'Helvetica Neue', Arial, sans-serif;
     }
 
     .navbar-default {
-        border-color: rgba(34,34,34,.05);
-        font-family: 'Montserrat','Helvetica Neue',Arial,sans-serif;
-        background-color: #fff;
-        -webkit-transition: all .35s;
-        -moz-transition: all .35s;
+        border: 0;
+        background-color: transparent;
+        height: auto;
+        font-family: 'Source Sans Pro','Helvetica Neue',Arial,sans-serif;
+        margin: 0 0 0 10px;
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
         transition: all .35s;
-        margin: 0;
+        z-index: 1;
+
+        .navbar-btn > .btn {
+            margin-top: 15px;
+            color: #fff;
+            font-size: 16px;
+        }
     }
 
     .navbar-default .navbar-header .navbar-brand {
-        text-transform: uppercase;
-        font-family: 'Montserrat','Helvetica Neue',Arial,sans-serif;
-        font-weight: 700;
-        color: #f05f40;
-    }
-
-    .navbar-default .navbar-header .navbar-brand:hover,
-    .navbar-default .navbar-header .navbar-brand:focus {
-        color: #eb3812;
+        text-transform: lowercase;
+        font-family: 'Source Sans Pro', 'Helvetica Neue', Arial, sans-serif;
+        font-weight: 400;
+        font-size: 22px;
+        margin-top: 15px;
+        color: #fff;
     }
 
     .navbar-default .nav > li > a,
@@ -42,17 +54,12 @@ html {
         text-transform: uppercase;
         font-size: 13px;
         font-weight: 700;
-        color: #222;
-    }
-
-    .navbar-default .nav > li>a:hover,
-    .navbar-default .nav>li>a:focus:hover {
-        color: #f05f40;
+        color: #fff;
     }
 
     .navbar-default .nav > li.active>a,
     .navbar-default .nav>li.active>a:focus {
-        color: #f05f40!important;
+        color: #fff!important;
         background-color: transparent;
     }
 
@@ -74,21 +81,22 @@ html {
         min-height: auto;
         text-align: center;
         color: #fff;
-        background-image: linear-gradient(rgba(251, 114, 89, 0.90), rgba(251, 114, 89, 0.90)), url(/img/header.jpg);
+        background-image: url('/img/Curtains.jpg');
         background-position: 0% 0%, 50% 50%;
         background-repeat: repeat, no-repeat;
         background-attachment: scroll, fixed;
         background-size: cover;
 
         h1 {
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             font-size: 56px;
-            font-weight: bold;
+            font-weight: 300;
+            margin-top: 120px;
             text-shadow: 0px 2px 5px rgba(0,0,0,0.25);
         }
 
         p {
-            margin-bottom: 45px;
+            margin-bottom: 55px;
             font-size: 26px;
             font-weight: 300;
             text-shadow: 0px 2px 5px rgba(0,0,0,0.25);
@@ -99,40 +107,98 @@ html {
             background-size: cover;
             border-radius: 5px 5px 0 0;
             box-shadow: 0 0 3px rgba(0, 0, 0, .4);
-            margin: 40px auto 0;
+            margin: 60px auto 0;
             width: 940px;
             height: 441px;
         }
     }
 
     section.section-features {
-        background: white;
+        background: #f0f2f1;
+        padding-bottom: 125px;
+
+        h2 {
+            font-family: 'Source Sans Pro';
+            font-size: 48px;
+            font-weight: 300;
+            margin-top: 125px;
+            margin-bottom: 20px;
+            color: rgb(82, 82, 82);
+        }
 
         h3 {
-            margin-top: 150px
+            font-family: 'Source Sans Pro';
+            color: rgb(174, 174, 174);
+            font-size: 21px;
+            font-weight: normal;
+            margin-bottom: 60px;
         }
 
         p {
+            font-family: 'Source Sans Pro';
             margin-top: 10px;
             margin-bottom: 10px;
             font-size: 14px;
             line-height: 25px;
         }
 
+        hr {
+            margin: 0;
+        }
+
+        .panel {
+            border: 1px solid #ddd;
+            box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+
+        }
+
+        .panel-body {
+            overflow: hidden;
+            position: relative;
+        }
+
+        h4 {
+            color: #337AB7;
+            margin-top: 70px;
+        }
+
+        p {
+            margin-bottom: 25px;
+        }
+
+        .preview-descriptions {
+            margin-left: 30px;
+        }
+
         .image-preview {
             background-size: cover;
-            display: inline-block;
-            width: 600px;
-            max-width: 100%;
+            background-color: #fff;
+            border-radius: 4px 0 0 0;
+            border: 1px solid #ddd;
+            border-right: 0;
+            border-bottom: 0;
+            box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
             height: 400px;
-            margin: 50px 0;
-            box-shadow: inset 0 0 5px rgba(0, 0, 0, .3);
-            border-radius: 4px;
+            position: absolute;
+            bottom: 0;
+            left: 50px;
+            top: 30px;
+            right: 0;
+            width: 100%;
+
+            &.image-preview-left {
+                border-radius: 0 4px 0 0;
+                border: 1px solid #ddd;
+                border-left: 0;
+                border-bottom: 0;
+                right: 50px;
+                left: 0;
+            }
         }
     }
 
     section.section-auth {
-        padding-top: 100px;
+        padding-top: 14%;
         position: fixed;
         height: 100%;
         background-image: linear-gradient(rgba(251, 114, 89, 0.90), rgba(251, 114, 89, 0.90)), url(/img/header2.jpg);

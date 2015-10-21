@@ -5,50 +5,61 @@
     @include('partials.publicHeader')
 
     <section class="section-home">
-        <h1>All The Tools You<br>Need To Make Progress.</h1>
-        <p>Your favorite way of working with projects and all in one place.</p>
-        <a href="/auth/register" class="btn btn-success btn-lg">Create My Free Account</a>
+        <h1>Simple tools, for rapid progress.</h1>
+        <p>Project management for your team all in one place.</p>
+        <a href="/auth/register" class="btn btn-primary btn-lg">Create My Free Account</a>
         <div class="site-preview"></div>
     </section>
 
     <section class="section-features">
         <div class="container">
-            <div class="row">
-                <div class="col-sm-6">
-                    <h3>Projects - Clearly See Your Progress</h3>
-                    <p>
-                        Show exactly what stage you are at with a project by allowing someone to quickly glance over the placement of tasks. Prioritize what is most important to your project by putting putting the most important on top and adding impact to your tasks.
-                    </p>
-                </div>
-                <div class="col-sm-6 text-center">
-                    <div class="image-preview" style="background-image: url(/img/feature-projects.png)"></div>
+            <div class="row text-center">
+                <div class="col-sm-12">
+                    <h2>Bring your team to one platform.</h2>
+                    <h3>Simple tools optimized for making progress in one place.</h3>
                 </div>
             </div>
 
             <div class="row">
-                <div class="col-sm-6 text-center">
-                    <div class="image-preview" style="background-image: url(/img/feature-tasklist.png)"></div>
-                </div>
-                <div class="col-sm-6">
-                    <h3>Tasklist - Overview of Your Goals</h3>
-                    <p>
-                        Turns your cards into a list that allows you to sort and filter by impact or stage.
-                        You can scan them quickly to see what issues are being issues are being worked on and what might have been missed.
-                    </p>
+                <div class="col-sm-10 col-sm-offset-1">
+                    <div class="panel">
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="preview-descriptions">
+                                        <h4>Projects, expressive progress.</h4>
+                                        <p>
+                                            Clearly communicate project progress by quickly glancing over your projects. Prioritize what is most important to your team and give them the info to get it done.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 text-center">
+                                    <div class="image-preview" style="background-image: url(/img/feature-projects.png)"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-sm-6 text-center">
+                                    <div class="image-preview image-preview-left" style="background-image: url(/img/feature-tasklist.png)"></div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="preview-descriptions">
+                                        <h4>Tasklist, tailored goals.</h4>
+                                        <p>
+                                            Turns your cards into a list that allows you to sort and filter by impact or stage.
+                                            You can scan them quickly to see what issues are being issues are being worked on and what might have been missed.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            {{-- <div class="row">
-                <div class="col-sm-6">
-                    <h3>Daily Summaries - What Everyone Did Today</h3>
-                    <p>
-                        Keep team members informed about what you worked on for the day.  Excellent for adding details about things that may not be immediately related to the projects you're actively working on.
-                    </p>
-                </div>
-                <div class="col-sm-6 text-center">
-                    <div class="image-preview" style="background-image: url(/img/feature-projects.png)"></div>
-                </div>
-            </div> --}}
         </div>
     </section>
 </div>
