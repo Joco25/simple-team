@@ -3,7 +3,7 @@ nav {
     margin: 0 !important;
 }
 </style>
-<div class="container-fluid" style="padding-top: 15px; border-bottom: 1px solid #eee; background: white">
+<div class="container-fluid" style="padding-top: 15px; box-shadow: 0 1px 2px -1px rgba(0, 0, 0, 0.3); background: white">
     <div class="row" style="margin-bottom: 15px">
         <div class="col-sm-8">
             <div class="btn-group pull-left" style="margin-right: 10px;">
@@ -111,57 +111,59 @@ nav {
                 <table class="table">
                     <tr>
                         <td>
-                            <h4>{{ project.name }}</h4>
-                            <div class="btn-group-vertical" style="width: 100%;">
-                                <button
-                                    type="button"
-                                    class="btn btn-default btn-sm"
-                                    ng-click="ctrl.createCard(project)">
-                                    <i class="glyphicon glyphicon-plus text-success"></i> Add a Card
-                                </button>
-                                <button
-                                    class="btn btn-default btn-sm"
-                                    ng-click="ctrl.editProject(project)">
-                                    <i class="glyphicon glyphicon-pencil text-info"></i> Edit
-                                </button>
-                                <button
-                                    class="btn btn-default btn-sm"
-                                    ng-click="ctrl.deleteProject(project)">
-                                    <i class="glyphicon glyphicon-remove text-danger"></i> Delete
-                                </button>
+                            <div class="project-head">
+                                <h4>{{ project.name }}</h4>
+                                <div class="btn-group-vertical" style="width: 100%;">
+                                    <button
+                                        type="button"
+                                        class="btn btn-default btn-sm"
+                                        ng-click="ctrl.createCard(project)">
+                                        <i class="glyphicon glyphicon-plus text-success"></i> Add a Card
+                                    </button>
+                                    <button
+                                        class="btn btn-default btn-sm"
+                                        ng-click="ctrl.editProject(project)">
+                                        <i class="glyphicon glyphicon-pencil text-info"></i> Edit
+                                    </button>
+                                    <button
+                                        class="btn btn-default btn-sm"
+                                        ng-click="ctrl.deleteProject(project)">
+                                        <i class="glyphicon glyphicon-remove text-danger"></i> Delete
+                                    </button>
+                                </div>
                             </div>
                         </td>
                         <td ng-repeat="(stageIndex, stage) in project.stages">
                             <div class="stage-column">
-                                <div class="row">
-                                    <div class="col-sm-6">
-                                        <h5>{{ stage.name }}</h5>
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <div class="btn-group  pull-right">
-                                            <button
-                                                type="button"
-                                                class="btn btn-link btn-sm dropdown-toggle pull-right"
-                                                data-toggle="dropdown">
-                                                <span class="fa fa-cog"></span>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-right">
-                                                <li>
-                                                    <a class="pointer" ng-click="ctrl.editStage(stage)">Rename</a>
-                                                </li>
-                                                <li>
-                                                    <a class="pointer" ng-click="ctrl.deleteAllCardsInStage(stage)">Delete All Cards</a>
-                                                </li>
-                                                <li role="separator" class="divider"></li>
-                                                <li>
-                                                    <a ng-click="ctrl.deleteStage(project, stageIndex)">Delete</a>
-                                                </li>
-                                            </ul>
+                                <div class="stage-header">
+                                    <div class="row">
+                                        <div class="col-sm-6">
+                                            <h5>{{ stage.name }}</h5>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <div class="btn-group  pull-right">
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-link btn-sm dropdown-toggle pull-right"
+                                                    data-toggle="dropdown">
+                                                    <span class="fa fa-cog"></span>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-right">
+                                                    <li>
+                                                        <a class="pointer" ng-click="ctrl.editStage(stage)">Rename</a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="pointer" ng-click="ctrl.deleteAllCardsInStage(stage)">Delete All Cards</a>
+                                                    </li>
+                                                    <li role="separator" class="divider"></li>
+                                                    <li>
+                                                        <a ng-click="ctrl.deleteStage(project, stageIndex)">Delete</a>
+                                                    </li>
+                                                </ul>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-
-                                <div class="clearfix"></div>
 
                                 <ul
                                     class="sortable"
@@ -214,15 +216,6 @@ nav {
                                         </div>
                                         <div
                                             ng-show="card.impact"
-                                            style="
-                                                position: absolute;
-                                                bottom: 0;
-                                                left: 0;
-                                                right: 0;
-                                                height: 7px;
-                                                margin: 0;
-                                                border-radius: 0 0 3px 3px
-                                            "
                                             title="Impact this card has on the project"
                                             class="progress">
                                             <div class="progress-bar progress-bar-info" style="width: {{ card.impact }}%"></div>

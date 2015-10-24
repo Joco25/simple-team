@@ -45,7 +45,7 @@ button.close {
 }
 
 .simple-page {
-    background: #F9F8F8;
+    background: #F1F1F1;
     color: #212121;
     height: 100%;
     font-family: Arial;
@@ -133,7 +133,6 @@ button.close {
         }
 
         td {
-            background: #fcfeff;
             padding: 0;
             vertical-align: top;
             position: static;
@@ -145,16 +144,25 @@ button.close {
             width: 200px;
         }
 
-        td:nth-of-type(even) {
-            background: #f2f9ff;
-        }
+        .project-head {
+            background: white;
+            box-shadow: 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+            border-radius: 2px;
+            padding: 10px;
 
-        h4 {
-            color: #4d4d4d;
-            font-weight: bold;
-            font-size: 17px;
-            line-height: 22px;
-            margin: 0 0 10px 0;
+            h4 {
+                color: #4d4d4d;
+                display: block;
+                font-weight: bold;
+                font-size: 18px;
+                line-height: 22px;
+                margin: 0 0 10px 0;
+            }
+
+            .btn {
+                border: 0;
+                text-align: left;
+            }
         }
 
         .stage-container {
@@ -163,12 +171,23 @@ button.close {
                 width: 100%;
                 float: left;
 
+                .stage-header {
+                    background: white;
+                    box-shadow: 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+                    border-radius: 2px;
+                    clear: both;
+                    padding: 2px;
+                    margin: 0 0 10px;
+                }
+
                 h5 {
                     color: #4d4d4d;
+                    display: block;
                     font-weight: bold;
-                    margin: 0 0 4px 0;
                     font-size: 15px;
-                    line-height: 18px;
+                    line-height: 29px;
+                    margin: 0 0 0 8px;
+                    width: 100%;
                 }
 
                 ul.sortable {
@@ -181,14 +200,15 @@ button.close {
 
                     li {
                         background: white;
-                        border: 1px solid #ccc;
-                        border-radius: 4px;
+                        box-shadow: 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+                        border-radius: 2px;
                         box-sizing: border-box;
+                        padding: 3px;
                         position: relative;
                         color: #6F6F6F;
                         cursor: pointer;
                         font-size: 14px;
-                        margin: 0 0 5px;
+                        margin: 0 0 10px;
                         padding: 10px;
                         width: 100%;
 
@@ -209,6 +229,12 @@ button.close {
                         &.sortable-preview {
                             background: #ccc;
                             min-height: 100px;
+                        }
+
+                        .progress {
+                            height: 7px;
+                            margin: 5px 0 0 0;
+                            border-radius: 2px;
                         }
                     }
                 }

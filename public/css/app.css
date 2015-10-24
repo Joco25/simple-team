@@ -38,7 +38,7 @@ button.close {
   z-index: 2; }
 
 .simple-page {
-  background: #F9F8F8;
+  background: #F1F1F1;
   color: #212121;
   height: 100%;
   font-family: Arial;
@@ -94,7 +94,6 @@ button.close {
   .simple-page .projects-container tr {
     border-bottom: 1px solid white; }
   .simple-page .projects-container td {
-    background: #fcfeff;
     padding: 0;
     vertical-align: top;
     position: static;
@@ -102,24 +101,40 @@ button.close {
   .simple-page .projects-container td:first-child {
     padding: 10px;
     width: 200px; }
-  .simple-page .projects-container td:nth-of-type(even) {
-    background: #f2f9ff; }
-  .simple-page .projects-container h4 {
-    color: #4d4d4d;
-    font-weight: bold;
-    font-size: 17px;
-    line-height: 22px;
-    margin: 0 0 10px 0; }
+  .simple-page .projects-container .project-head {
+    background: white;
+    box-shadow: 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+    border-radius: 2px;
+    padding: 10px; }
+    .simple-page .projects-container .project-head h4 {
+      color: #4d4d4d;
+      display: block;
+      font-weight: bold;
+      font-size: 18px;
+      line-height: 22px;
+      margin: 0 0 10px 0; }
+    .simple-page .projects-container .project-head .btn {
+      border: 0;
+      text-align: left; }
   .simple-page .projects-container .stage-container .stage-column {
     padding: 10px;
     width: 100%;
     float: left; }
+    .simple-page .projects-container .stage-container .stage-column .stage-header {
+      background: white;
+      box-shadow: 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+      border-radius: 2px;
+      clear: both;
+      padding: 2px;
+      margin: 0 0 10px; }
     .simple-page .projects-container .stage-container .stage-column h5 {
       color: #4d4d4d;
+      display: block;
       font-weight: bold;
-      margin: 0 0 4px 0;
       font-size: 15px;
-      line-height: 18px; }
+      line-height: 29px;
+      margin: 0 0 0 8px;
+      width: 100%; }
     .simple-page .projects-container .stage-container .stage-column ul.sortable {
       float: left;
       list-style-type: none;
@@ -129,14 +144,15 @@ button.close {
       width: 100%; }
       .simple-page .projects-container .stage-container .stage-column ul.sortable li {
         background: white;
-        border: 1px solid #ccc;
-        border-radius: 4px;
+        box-shadow: 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+        border-radius: 2px;
         box-sizing: border-box;
+        padding: 3px;
         position: relative;
         color: #6F6F6F;
         cursor: pointer;
         font-size: 14px;
-        margin: 0 0 5px;
+        margin: 0 0 10px;
         padding: 10px;
         width: 100%; }
         .simple-page .projects-container .stage-container .stage-column ul.sortable li:last-child {
@@ -150,6 +166,10 @@ button.close {
         .simple-page .projects-container .stage-container .stage-column ul.sortable li.sortable-preview {
           background: #ccc;
           min-height: 100px; }
+        .simple-page .projects-container .stage-container .stage-column ul.sortable li .progress {
+          height: 7px;
+          margin: 5px 0 0 0;
+          border-radius: 2px; }
   .simple-page .drag-overlay {
     background: rgba(255, 255, 255, 0.8);
     border: 3px dashed #ccc;
