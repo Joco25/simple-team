@@ -43,7 +43,8 @@
           ga('send', 'pageview');
         </script>
     @endif
-
+ s
+ 
     @yield('scripts')
 </body>
 </html>
