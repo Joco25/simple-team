@@ -13,6 +13,15 @@ module.exports = ['$rootScope', '$http', '$modal', ($rootScope, $http, $modal) -
             .success (data) =>
                 @teams = data.teams
 
+    @renameTeam = (team) ->
+        newName = prompt 'New name for this team', team.name
+        if ! newName then return
+        team.name = newName
+
+        $http
+            .put '/api/teams/' + team.id,
+                name: newName
+
     @openTeamUsers = (team) ->
         $modal
             .open({

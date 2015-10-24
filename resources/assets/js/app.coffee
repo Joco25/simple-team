@@ -84,6 +84,7 @@ angular
                 .get '/api/teams'
                 .success (data) =>
                     @teams = data.teams
+                    $rootScope.teams = data.teams
 
         @setCurrentTeam = (team) ->
             previousTeam = angular.copy @authUser.team

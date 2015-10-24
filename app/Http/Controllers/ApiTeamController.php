@@ -90,7 +90,6 @@ class ApiTeamController extends Controller
      */
     public function store(Request $request)
     {
-        //
         $team = \App\Team::create([
             'user_id' => \Auth::user()->id,
             'name' => \Input::get('name')
@@ -116,17 +115,6 @@ class ApiTeamController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      *
      * @param  Request  $request
@@ -135,7 +123,27 @@ class ApiTeamController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $name = Input::get('name');
+
+        $teams = Auth::user()->teams->all();
+        $hasTeam = array_filter($teams, function($team) use (&$id)
+        {
+            return $id == $team->id;
+        });
+
+        if (is_null($hasTeam))
+        {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $success = Team::whereId($id)
+            ->update([
+                'name' => $name
+            ]);
+
+        return response()->json([
+            'success' => $success
+        ]);
     }
 
     /**

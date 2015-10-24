@@ -41745,7 +41745,8 @@ angular.module('simple.team', ['ngFileUpload', 'ngSanitize', 'ui.router', 'ui.so
     this.loadTeams = function() {
       return $http.get('/api/teams').success((function(_this) {
         return function(data) {
-          return _this.teams = data.teams;
+          _this.teams = data.teams;
+          return $rootScope.teams = data.teams;
         };
       })(this));
     };
@@ -42265,6 +42266,7 @@ module.exports = function($http, $state, $rootScope, $modal) {
   this.sortableOptions = {
     placeholder: "sortable-preview",
     connectWith: ".sortable",
+    delay: 100,
     stop: function(evt, ui) {
       var stage;
       if (ui.item.sortable.droptarget) {
@@ -42423,7 +42425,7 @@ module.exports = function($http, $state, $rootScope, $modal) {
       name: projectName,
       stages: [
         {
-          name: 'New'
+          name: 'Open'
         }, {
           name: 'In Progress'
         }, {
@@ -42579,6 +42581,17 @@ module.exports = [
         };
       })(this));
     };
+    this.renameTeam = function(team) {
+      var newName;
+      newName = prompt('New name for this team', team.name);
+      if (!newName) {
+        return;
+      }
+      team.name = newName;
+      return $http.put('/api/teams/' + team.id, {
+        name: newName
+      });
+    };
     this.openTeamUsers = function(team) {
       return $modal.open({
         template: require('../layouts/settings.teams.users.modal.html'),
@@ -42718,7 +42731,7 @@ module.exports = [
         name: projectName,
         stages: [
           {
-            name: 'New'
+            name: 'Open'
           }, {
             name: 'In Progress'
           }, {
@@ -42921,7 +42934,7 @@ module.exports = '<div class="row">\n    <div class="col-sm-6">\n        <div cl
 },{}],31:[function(require,module,exports){
 module.exports = '<div class="container-fluid">\n    <div class="row">\n        <div class="col-sm-3">\n            <div class="list-group">\n                <a class="list-group-item" ui-sref="settings.account">Account</a>\n                <a class="list-group-item" ui-sref="settings.teams" href="#">Teams</a>\n            </div>\n        </div>\n        <div class="col-sm-9">\n            <div ui-view></div>\n        </div>\n    </div>\n</div>\n';
 },{}],32:[function(require,module,exports){
-module.exports = '<div class="panel panel-default">\n    <div class="panel-heading">\n        <h3 class="panel-title pull-left">Teams</h3>\n        <button class="pull-right btn btn-sm btn-success" ng-click="ctrl.createTeam()">\n            Create Team\n        </button>\n        <div class="clearfix"></div>\n    </div>\n    <table class="table">\n        <thead>\n            <tr>\n                <th>Name</th>\n                <th>Number of Members</th>\n                <th></th>\n            </tr>\n        </thead>\n        <tr ng-repeat="team in ctrl.teams">\n            <td class="vert-align">\n                {{ team.name || \'Unamed team\' }}\n            </td>\n            <td class="vert-align">\n                {{ team.users.length }}\n            </td>\n            <td class="text-right">\n                <button ng-click="ctrl.openTeamUsers(team)" class="btn btn-default" type="button">\n                    Users\n                </button>\n                <button ng-click="ctrl.deleteTeam(team)" class="btn btn-danger" type="button">\n                    Delete\n                </button>\n            </td>\n        </tr>\n    </table>\n</div>\n';
+module.exports = '<div class="panel panel-default">\n    <div class="panel-heading">\n        <h3 class="panel-title pull-left">Teams</h3>\n        <button class="pull-right btn btn-sm btn-success" ng-click="ctrl.createTeam()">\n            Create Team\n        </button>\n        <div class="clearfix"></div>\n    </div>\n    <table class="table">\n        <thead>\n            <tr>\n                <th>Name</th>\n                <th>Number of Members</th>\n                <th></th>\n            </tr>\n        </thead>\n        <tr ng-repeat="team in ctrl.teams">\n            <td class="vert-align">\n                {{ team.name || \'Unamed team\' }}\n            </td>\n            <td class="vert-align">\n                {{ team.users.length }}\n            </td>\n            <td class="text-right">\n                <button ng-click="ctrl.renameTeam(team)" class="btn btn-default" type="button">\n                    Rename\n                </button>\n                <button ng-click="ctrl.openTeamUsers(team)" class="btn btn-default" type="button">\n                    Users\n                </button>\n                <button ng-click="ctrl.deleteTeam(team)" class="btn btn-danger" type="button">\n                    Delete\n                </button>\n            </td>\n        </tr>\n    </table>\n</div>\n';
 },{}],33:[function(require,module,exports){
 module.exports = '<div class="modal-header">\n    <button\n        ng-click="ctrl.cancel()"\n        type="button"\n        class="close"\n        data-dismiss="modal"\n        aria-label="Close"><span aria-hidden="true">&times;</span></button>\n    <h4 class="modal-title">Team Users</h4>\n</div>\n<div class="modal-body">\n    <form ng-submit="ctrl.inviteEmail()">\n        <div class="row">\n            <div class="col-sm-10">\n                <div class="form-group">\n                    <input\n                        type="email"\n                        class="form-control"\n                        placeholder="Enter user\'s email and hit enter..."\n                        ng-model="ctrl.newEmail">\n                </div>\n            </div>\n            <div class="col-sm-2">\n                <button type="submit" class="btn btn-success">\n                    Invite\n                </button>\n            </div>\n        </div>\n    </form>\n    <table class="table">\n        <thead>\n            <tr>\n                <th>Name</th>\n                <th>Email</th>\n                <th></th>\n            </tr>\n        </thead>\n        <tr ng-repeat="user in ctrl.team.users">\n            <td class="vert-align">\n                <span ng-show="user.name">{{ user.name }}</span>\n                <span ng-hide="user.name" class="text-muted">No name found</span>\n            </td>\n            <td class="vert-align">{{ user.email }}</td>\n            <td class="text-right">\n                <button class="btn btn-danger btn-sm" ng-click="ctrl.deleteUser(user)">\n                    Delete\n                </button>\n            </td>\n        </tr>\n    </table>\n</div>\n<div class="modal-footer">\n    <button\n        type="button"\n        class="btn btn-link"\n        data-dismiss="modal"\n        ng-click="ctrl.cancel()">\n        Close\n    </button>\n</div>\n';
 },{}],34:[function(require,module,exports){

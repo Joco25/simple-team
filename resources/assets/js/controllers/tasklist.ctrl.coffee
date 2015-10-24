@@ -29,7 +29,7 @@ module.exports = ['$http', '$rootScope', 'TagDataService', ($http, $rootScope, T
                 name: projectName
                 stages: [
                     {
-                        name: 'New'
+                        name: 'Open'
                     },
                     {
                         name: 'In Progress'

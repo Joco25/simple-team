@@ -20,6 +20,7 @@ module.exports = ($http, $state, $rootScope, $modal) ->
     @sortableOptions =
         placeholder: "sortable-preview"
         connectWith: ".sortable"
+        delay: 100
         stop: (evt, ui) ->
             if ui.item.sortable.droptarget
                 stage = ui.item.sortable.droptarget.scope().stage
@@ -139,7 +140,7 @@ module.exports = ($http, $state, $rootScope, $modal) ->
                 name: projectName
                 stages: [
                     {
-                        name: 'New'
+                        name: 'Open'
                     },
                     {
                         name: 'In Progress'
