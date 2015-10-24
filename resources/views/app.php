@@ -39,13 +39,13 @@
 <body class="simple-page">
     <nav class="navbar navbar-default navbar-static-top">
         <div class="container-fluid">
-            <a href="../" class="navbar-brand">simple.team</a>
+            <a ui-sref="projects" class="navbar-brand">simple.team</a>
             <ul class="nav navbar-nav navbar-right">
-                <li ng-class="{ active: appCtrl.state.current.name.indexOf('projects') > -1 }">
-                    <a ui-sref="projects">Projects</a>
+                <li ui-sref-active="active" ui-sref="projects" class="pointer">
+                    <a>Projects</a>
                 </li>
-                <li ng-class="{ active: appCtrl.state.current.name.indexOf('tasklist') > -1 }">
-                    <a ui-sref="tasklist">Tasklist</a>
+                <li ui-sref-active="active" ui-sref="tasklist" class="pointer">
+                    <a>Tasklist</a>
                 </li>
                 <!-- <li ng-class="{ active: appCtrl.state.current.name.indexOf('timeline') > -1 }">
                     <a ui-sref="timeline">Timeline</a>
