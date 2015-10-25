@@ -97,7 +97,7 @@ button.close {
     table-layout: fixed;
     margin: 0; }
   .simple-page .projects-container tr {
-    border-bottom: 1px solid white; }
+    border: 0; }
   .simple-page .projects-container td {
     padding: 0;
     vertical-align: top;
