@@ -19,11 +19,6 @@
     <!-- Angular CSS -->
     <link href='//cdnjs.cloudflare.com/ajax/libs/angular-loading-bar/0.7.1/loading-bar.min.css' rel='stylesheet' type='text/css'>
     <link href="//cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/css/selectize.default.min.css" rel="stylesheet" type='text/css'>
-<!--
-    <link rel="stylesheet" type="text/css" href="http://rawgit.com/angular-ui-tree/angular-ui-tree/master/dist/angular-ui-tree.min.css">
-    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/angular.gantt/1.2.7/angular-gantt.min.css">
-    <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/angular.gantt/1.2.7/angular-gantt-plugins.min.css"> -->
-
 
     <!-- Custom CSS -->
 	<link href="/css/app.css" rel="stylesheet" type="text/css">
@@ -39,14 +34,18 @@
 <body class="simple-page">
     <nav class="navbar navbar-default navbar-static-top">
         <div class="container-fluid">
-            <a ui-sref="projects" class="navbar-brand">simple.team</a>
+            <a ui-sref="projects" class="navbar-brand">simple.team (beta)</a>
             <ul class="nav navbar-nav navbar-right">
                 <li ui-sref-active="active" ui-sref="projects" class="pointer">
                     <a>Projects</a>
                 </li>
-                <li ui-sref-active="active" ui-sref="tasklist" class="pointer">
+                <!-- <li ui-sref-active="active" ui-sref="conversations.list" class="pointer">
+                    <a>Conversations</a>
+                </li> -->
+
+                <!-- <li ui-sref-active="active" ui-sref="tasklist" class="pointer">
                     <a>Tasklist</a>
-                </li>
+                </li> -->
                 <!-- <li ng-class="{ active: appCtrl.state.current.name.indexOf('timeline') > -1 }">
                     <a ui-sref="timeline">Timeline</a>
                 </li>

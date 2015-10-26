@@ -19,6 +19,7 @@ require './modules/auth/index.coffee'
 require './modules/bytes/index.coffee'
 require './modules/sidebar/index.coffee'
 require './modules/navbar/index.coffee'
+require './modules/www'
 
 angular
     .module 'simple.team', [
@@ -34,18 +35,6 @@ angular
         'ng-showdown'
         'LocalStorageModule'
         'monospaced.elastic'
-        #
-        # 'gantt'
-        # 'gantt.sortable'
-        # 'gantt.movable'
-        # 'gantt.drawtask'
-        # 'gantt.tooltips'
-        # 'gantt.bounds'
-        # 'gantt.progress'
-        # 'gantt.table'
-        # 'gantt.tree'
-        # 'gantt.groups'
-        # 'gantt.resizeSensor'
 
         'simple.team.routes'
         'simple.team.focusMe'
@@ -55,6 +44,7 @@ angular
         'simple.team.auth'
         'simple.team.tagData'
         'simple.team.userData'
+        'simple.team.www'
     ]
 
     .config ['$urlRouterProvider', 'cfpLoadingBarProvider', ($urlRouterProvider, cfpLoadingBarProvider) ->

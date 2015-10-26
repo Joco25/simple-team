@@ -178,44 +178,38 @@ nav {
                                                 {{ card.name }}
                                             </div>
                                         </div>
-                                        <div class="row" ng-hide="card.tags.length == 0">
+                                        <div class="row" style="margin-bottom: 7px;" ng-show="card.impact || card.tags.length > 0">
                                             <div class="col-sm-12">
-                                                <p style="margin: 5px 0">
-                                                    <span ng-repeat="tag in card.tags">
-                                                        <span class="label label-primary">{{ tag.name }}</span>
-                                                    </span>
-                                                </p>
+                                                <span class="label label-warning" ng-show="card.impact" title="Impact this card has on the project"><i class="glyphicon glyphicon-fire"></i> {{ card.impact }}</span>
+                                                <span ng-repeat="tag in card.tags" ng-show="card.tags.length > 0">
+                                                    <span class="label label-primary">{{ tag.name }}</span>
+                                                </span>
                                             </div>
                                         </div>
                                         <div class="row text-center text-muted">
-                                            <div class="col-sm-2" title="This card has a description.">
+                                            <div class="col-sm-5ths" title="This card has a description.">
                                                 <span ng-show="card.description">
                                                     <i class="glyphicon glyphicon-align-left"></i>
                                                 </span>
                                             </div>
-                                            <div class="col-sm-2" title="{{ card.users.length }} user(s) assigned to this card">
+                                            <div class="col-sm-5ths" title="{{ card.users.length }} user(s) assigned to this card">
                                                 <span ng-show="card.users.length">
                                                     <i class="glyphicon glyphicon-user"></i> {{ card.users.length }}
                                                 </span>
                                             </div>
-                                            <div class="col-sm-2" title="{{ card.subtasks.length }} subtask(s)">
+                                            <div class="col-sm-5ths" title="{{ card.subtasks.length }} subtask(s)">
                                                 <span ng-show="card.subtasks.length">
                                                     <i class="glyphicon glyphicon-ok"></i> {{ card.subtasks.length }}
                                                 </span>
                                             </div>
-                                            <div class="col-sm-2" title="{{ card.attachments.length }} attachment(s)">
+                                            <div class="col-sm-5ths" title="{{ card.attachments.length }} attachment(s)">
                                                 <span ng-show="card.attachments.length">
                                                     <i class="glyphicon glyphicon-download-alt"></i> {{ card.attachments.length }}
                                                 </span>
                                             </div>
-                                            <div class="col-sm-2" title="{{ card.comments.length }} comment(s)">
+                                            <div class="col-sm-5ths" title="{{ card.comments.length }} comment(s)">
                                                 <span ng-show="card.comments.length">
                                                     <i class="glyphicon glyphicon-comment"></i> {{ card.comments.length }}
-                                                </span>
-                                            </div>
-                                            <div class="col-sm-2" title="Impact this card has on the project">
-                                                <span ng-show="card.impact">
-                                                    <i class="glyphicon glyphicon-fire"></i> {{ card.impact }}
                                                 </span>
                                             </div>
                                         </div>

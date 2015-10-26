@@ -56,7 +56,30 @@ angular
                 controller: require('./controllers/settings.teams.ctrl.coffee')
                 controllerAs: 'ctrl'
 
-            #
+            .state 'conversations',
+                url: '/conversations'
+                template: require './layouts/conversations.html'
+                controller: require './controllers/conversations.ctrl.coffee'
+                controllerAs: 'ctrl'
+
+            .state 'conversations.list',
+                url: '/list'
+                template: require './layouts/conversations.list.html'
+                controller: require './controllers/conversations.list.ctrl.coffee'
+                controllerAs: 'ctrl'
+
+            .state 'conversations.create',
+                url: '/create'
+                template: require './layouts/conversations.create.html'
+                controller: require './controllers/conversations.create.ctrl.coffee'
+                controllerAs: 'ctrl'
+
+            .state 'conversations.view',
+                url: '/view'
+                template: require './layouts/conversations.view.html'
+                controller: require './controllers/conversations.view.ctrl.coffee'
+                controllerAs: 'ctrl'
+
             # .state 'notes',
             #     url: '/notes'
             #     template: require('./simple/notes/view.html')
