@@ -34,7 +34,7 @@
 <body class="simple-page">
     <nav class="navbar navbar-default navbar-static-top">
         <div class="container-fluid">
-            <a ui-sref="projects" class="navbar-brand">simple.team (beta)</a>
+            <a ui-sref="projects" class="navbar-brand">simple.team</a>
             <ul class="nav navbar-nav navbar-right">
                 <li ui-sref-active="active" ui-sref="projects" class="pointer">
                     <a>Projects</a>
