@@ -12,6 +12,11 @@ use App\Http\Controllers\Controller;
 
 class ApiConversationController extends Controller
 {
+	public function show()
+	{
+		
+	}
+
 	public function store()
 	{
 		$inputs = Input::all();

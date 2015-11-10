@@ -47,13 +47,47 @@ Route::group(['middleware' => 'auth'], function () {
     Route::put('/api/cards/stageOrder', 'ApiCardController@updateStageOrder');
     Route::resource('/api/cards', 'ApiCardController');
 
-    Route::resource('/api/conversations', 'ApiConversationController');
-    Route::resource('/api/conversationComments', 'ApiConversationCommentController');
+    /**
+     * Conversations / Topic Posts
+     */
+    Route::resource('api/posts', 'ApiTopicPostController');
+	Route::post('api/posts/(:num)/like', 'ApiTopicPostController@like');
+	Route::delete('api/posts/(:num)/like', 'ApiTopicPostController@like');
 
+    /**
+     * Conversations / Topics
+     */
+    Route::resource('api/topics', 'ApiTopicPostController');
+	Route::get('api/topics/latest', 'ApiTopicPostController@latest');
+	Route::get('api/topics/starred', 'ApiTopicPostController@starred');
+	Route::get('api/topics/unread', 'ApiTopicPostController@unread');
+	Route::get('api/topics/top', 'ApiTopicPostController@top');
+
+	Route::post('api/topics/(:num)/star', 'ApiTopicPostController@star');
+	Route::delete('api/topics/(:num)/star', 'ApiTopicPostController@star');
+	Route::post('api/topics/(:num)/view', 'ApiTopicPostController@view');
+	Route::get('api/topics/(:num)/users/(:num)/notification', 'ApiTopicPostController@user_notification');
+	Route::post('api/topics/(:num)/users/(:num)/notification', 'ApiTopicPostController@user_notification');
+	Route::delete('api/topics/(:num)/users/(:num)/notification', 'ApiTopicPostController@user_notification');
+
+    /**
+     * Subtasks
+     */
     Route::resource('/api/subtasks', 'ApiSubtaskController');
+
+    /**
+     * Comments
+     */
     Route::resource('/api/comments', 'ApiCommentController');
+
+    /**
+     * Tags
+     */
     Route::resource('/api/tags', 'ApiTagController');
 
+    /**
+     * Teams
+     */
     Route::delete('/api/teams/user/{id}', 'ApiTeamController@deleteUser');
     Route::post('/api/teams/user', 'ApiTeamController@createUser');
     Route::resource('/api/teams', 'ApiTeamController');
