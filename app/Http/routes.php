@@ -10,7 +10,7 @@
 | and give it the controller to call when that URI is requested.
 |
 */
-
+Bugsnag::notifyError('ErrorType', 'Test Error');
 Route::get('/', 'HomeController@index');
 
 // Authentication routes...
