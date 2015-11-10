@@ -48,7 +48,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::put('/api/cards/stageOrder', 'ApiCardController@updateStageOrder');
     Route::resource('/api/cards', 'ApiCardController');
 
-    Route::resource('/api/dailySummaries', 'ApiDailySummaryController');
+    Route::resource('/api/conversations', 'ApiConversationController');
+    Route::resource('/api/conversationComments', 'ApiConversationCommentController');
 
     Route::resource('/api/subtasks', 'ApiSubtaskController');
     Route::resource('/api/comments', 'ApiCommentController');

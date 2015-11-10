@@ -26,13 +26,14 @@ class ApiConversationCommentController extends Controller
             'conversation_id' => $inputs['conversation_id']
         ]);
 
-        foreach ($inputs['user_ids'] as $user_id) {
-            $comment->users()->attach($user_id);
+        foreach ($inputs['user_ids'] as $userId)
+		{
+            $comment->users()->attach($userId);
         }
 
         $conversation->touch();
 
-        return response([
+        return response()->json([
 			'success' => true
 		]);
 	}
@@ -65,7 +66,7 @@ class ApiConversationCommentController extends Controller
 
         $comment->likes;
 
-        return Api::json(compact('comment'));
+        return response()->json(compact('comment'));
 	}
 
 	public function destroyLike($id)
@@ -74,6 +75,6 @@ class ApiConversationCommentController extends Controller
         $comment->unlike(Auth::user()->id);
         $comment->likes = $comment->likes;
 
-        return Api::json(compact('comment'));
+        return response()->json(compact('comment'));
 	}
 }

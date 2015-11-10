@@ -18,7 +18,8 @@ class ApiConversationController extends Controller
 
 		$conversation = Conversation::create([
 			'user_id' => Auth::user()->id,
-			'team_id' => Auth::user()->team_id
+			'team_id' => Auth::user()->team_id,
+			'body' => Input::get('body')
 		]);
 
 		$comment = ConversationComment::create([

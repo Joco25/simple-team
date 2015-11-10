@@ -7,8 +7,8 @@
 
 	<hr class='mtl'>
 
-	<div class='row-fluid'>
-		<div class='span12'>
+	<div class='row'>
+		<div class='col-sm-12'>
 			<div class="media" ng-repeat='post in topic.posts'>
 				<a class="pull-left" href="#">
 					<img width='50' class="media-object" ng-src="/image?image={{ post.user.image }}&size=50&type=square">
@@ -19,8 +19,8 @@
 						{{ post.post.user.name }}
 						<div ng-bind-html-unsafe="post.body"></div>
 
-						<div class='row-fluid' ng-if='$index == 0'>
-							<div class='span12'>
+						<div class='row' ng-if='$index == 0'>
+							<div class='col-sm-12'>
 								<div class='pull-right'>
 									 <button class='btn' ng-if='post.user_id !== main.authUser.id' ng-class='{ active: post.is_liked }' ng-click='togglePostUserLike(post)'>
 										<i class='icon-heart' ng-class='{ "text-red": post.is_liked }'></i>
@@ -35,8 +35,8 @@
 							</div>
 						</div>
 
-						<div class='row-fluid mbm' ng-if='$index > 0'>
-							<div class='span12'>
+						<div class='row mbm' ng-if='$index > 0'>
+							<div class='col-sm-12'>
 								<button class='btn' ng-click='post.showReplies = !post.showReplies' ng-if='post.posts.length > 0'>
 									{{ post.posts.length }} Replies <i ng-class='{ "icon-chevron-down": !post.showReplies, "icon-chevron-up": post.showReplies }'></i>
 								</button>
@@ -60,8 +60,8 @@
 					</div>
 
 					<div ng-if='post.editMode'>
-						<div class='row-fluid'>
-							<div class='span12'>
+						<div class='row'>
+							<div class='col-sm-12'>
 								<div class='mbs'>
 									<textarea redactor ng-model='postCopy.body'></textarea>
 								</div>
@@ -86,8 +86,8 @@
 					</div>
 				</div>
 
-				<div class='row-fluid' ng-if='post.showNewPost'>
-					<div class='span12'>
+				<div class='row' ng-if='post.showNewPost'>
+					<div class='col-sm-12'>
 						<form class='mbn' ng-submit='createPost()'>
 							<div class='mbm'>
 								<textarea ng-model='newPost.body' redactor></textarea>
@@ -109,8 +109,8 @@
 		</div>
 	</div>
 
-	<div class='row-fluid mbm'>
-		<div class='span12'>
+	<div class='row mbm'>
+		<div class='col-sm-12'>
 			<button class='btn' ng-class='{ active: topic.is_starred }' ng-click='toggleTopicUserStar(topic)'>
 				<i class='icon-star' ng-class='{ "text-orange": topic.is_starred }'></i> Star
 			</button>
@@ -126,8 +126,8 @@
 		</div>
 	</div>
 
-	<div class='row-fluid' ng-if='filters.showNewPost'>
-		<div class='span12'>
+	<div class='row' ng-if='filters.showNewPost'>
+		<div class='col-sm-12'>
 			<form ng-submit='createPost()' class='form-horizontal'>
 				<div class='mbm'>
 					<select class='input-full' placeholder='Tag Users'ui-select2 multiple ng-model='newTopic.user_ids'>

@@ -25,7 +25,7 @@ module.exports = [
             return
 
         $scope.loadTopic = ->
-            $www.get('/api/topics/' + $scope.topicId).success (data) ->
+            $www.get('/api/conversations/' + $scope.topicId).success (data) ->
                 if data.error
                     $state.go 'profile.social.list'
                     return
@@ -42,7 +42,7 @@ module.exports = [
             return
 
         $scope.createPost = ->
-            $www.post('/api/topics/' + $scope.topicId + '/post', $scope.newPost).success (data) ->
+            $www.post('/api/conversations/' + $scope.topicId + '/post', $scope.newPost).success (data) ->
                 $scope.topic.posts.push data.post
                 if $scope.selectedPost
                     $scope.selectedPost.posts = $scope.selectedPost.posts or []
@@ -58,7 +58,7 @@ module.exports = [
             return
 
         $scope.deleteTopic = (topicId) ->
-            $www.delete('/api/topics/' + topicId).success ->
+            $www.delete('/api/conversations/' + topicId).success ->
                 $state.go 'profile.social.list'
                 return
             return
@@ -77,23 +77,23 @@ module.exports = [
             return
 
         $scope.createTopicView = ->
-            $www.post '/api/topics/' + $scope.topicId + '/view'
+            $www.post '/api/conversations/' + $scope.topicId + '/view'
             return
 
         $scope.loadUserNotification = ->
-            $www.get('/api/topics/' + $scope.topicId + '/users/' + $scope.main.authUser.id + '/notification').success (data) ->
+            $www.get('/api/conversations/' + $scope.topicId + '/users/' + $scope.main.authUser.id + '/notification').success (data) ->
                 $scope.watchNotification = data.notification
                 return
             return
 
         $scope.createNotification = ->
-            $www.post('/api/topics/' + $scope.topicId + '/users/' + $scope.main.authUser.id + '/notification').success (data) ->
+            $www.post('/api/conversations/' + $scope.topicId + '/users/' + $scope.main.authUser.id + '/notification').success (data) ->
                 $scope.watchNotification = data.notification
                 return
             return
 
         $scope.deleteNotification = ->
-            $www.delete('/api/topics/' + $scope.topicId + '/users/' + $scope.main.authUser.id + '/notification').success ->
+            $www.delete('/api/conversations/' + $scope.topicId + '/users/' + $scope.main.authUser.id + '/notification').success ->
                 $scope.watchNotification = false
                 return
             return
