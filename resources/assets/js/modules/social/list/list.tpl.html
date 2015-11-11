@@ -10,17 +10,17 @@
 				</button>
 				<ul class="dropdown-menu">
 					<li class='pointer'>
-						<a ui-sref='profile.social.list({ serieId: "all" })'>
+						<a ui-sref='conversations.list({ serieId: "all" })'>
 							All Discussions
 						</a>
 					</li>
 					<li class='pointer'>
-						<a ui-sref='profile.social.list({ serieId: 0 })'>
+						<a ui-sref='conversations.list({ serieId: 0 })'>
 							Your Team
 						</a>
 					</li>
 					<li class='pointer' ng-repeat='serie in main.series'>
-						<a ui-sref='profile.social.list({ serieId: serie.id })'>
+						<a ui-sref='conversations.list({ serieId: serie.id })'>
 							{{ serie.name }}
 						</a>
 					</li>
@@ -29,23 +29,23 @@
 
 			<ul class="nav nav-pills pull-left mbn">
 				<li ng-class='{ active: filters.type == "latest" }'>
-					<a ui-sref='profile.social.list({ type: "latest" })'>Latest</a>
+					<a ui-sref='conversations.list({ type: "latest" })'>Latest</a>
 				</li>
 
 				<li ng-class='{ active: filters.type == "unread" }'>
-					<a ui-sref='profile.social.list({ type: "unread" })'>
+					<a ui-sref='conversations.list({ type: "unread" })'>
 						<i class='icon-bookmark'></i> Unread
 					</a>
 				</li>
 
 				<li ng-class='{ active: filters.type == "starred" }'>
-					<a ui-sref='profile.social.list({ type: "starred" })'>
+					<a ui-sref='conversations.list({ type: "starred" })'>
 						<i class='icon-star'></i> Starred
 					</a>
 				</li>
 
 				<li ng-class='{ active: filters.type == "top" }'>
-					<a ui-sref='profile.social.list({ type: "top" })'>Top</a>
+					<a ui-sref='conversations.list({ type: "top" })'>Top</a>
 				</li>
 			</ul>
 

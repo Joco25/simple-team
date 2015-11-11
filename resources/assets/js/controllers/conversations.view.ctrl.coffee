@@ -1,112 +1,103 @@
 'use strict'
 
 module.exports = [
-    '$scope'
     '$stateParams'
     '$www'
     '$state'
-    ($scope, $stateParams, $www, $state) ->
-        $scope.topicId = $stateParams.topicId
-        $scope.newPost = {}
-        $scope.filters = showNewPost: false
+    ($stateParams, $www, $state) ->
+        @topicId = $stateParams.topicId
+        @newPost = {}
+        @topic = null
+        @filters = showNewPost: false
 
-        $scope.selectPost = (post) ->
-            $scope.selectedPost = post
-            $scope.postCopy = angular.copy(post)
-            return
+        @selectPost = (post) =>
+            @selectedPost = post
+            @postCopy = angular.copy(post)
 
-        $scope.resetNewPost = ->
-            if $scope.selectedPost
-                $scope.selectedPost.showNewPost = false
-            $scope.filters.showNewPost = false
-            $scope.selectedPost = undefined
-            $scope.postCopy = angular.copy(undefined)
-            $scope.newPost = {}
-            return
+        @resetNewPost = =>
+            if @selectedPost then @selectedPost.showNewPost = false
+            @filters.showNewPost = false
+            @selectedPost = undefined
+            @postCopy = angular.copy(undefined)
+            @newPost = {}
 
-        $scope.loadTopic = ->
-            $www.get('/api/conversations/' + $scope.topicId).success (data) ->
-                if data.error
-                    $state.go 'profile.social.list'
-                    return
-                $scope.topic = data.topic
-                return
-            return
+        @loadTopic = =>
+            $www
+                .get '/api/topics/' + @topicId
+                .success (data) =>
+                    if data.error then $state.go 'conversations.list'
+                    @topic = data.topic
 
-        $scope.updatePost = ->
-            $scope.selectedPost.body = $scope.postCopy.body
-            $scope.selectedPost.editMode = false
-            $www.put('/api/posts/' + $scope.postCopy.id, body: $scope.postCopy.body).success ->
-                $scope.postCopy = undefined
-                return
-            return
+        @updatePost = =>
+            @selectedPost.body = @postCopy.body
+            @selectedPost.editMode = false
+            $www
+                .put '/api/topicPosts/' + @postCopy.id,
+                    body: @postCopy.body
+                .success =>
+                    @postCopy = undefined
 
-        $scope.createPost = ->
-            $www.post('/api/conversations/' + $scope.topicId + '/post', $scope.newPost).success (data) ->
-                $scope.topic.posts.push data.post
-                if $scope.selectedPost
-                    $scope.selectedPost.posts = $scope.selectedPost.posts or []
-                    $scope.selectedPost.posts.push data.post
-                $scope.resetNewPost()
-                return
-            return
+        @createPost = =>
+            @newPost.topic_id = @topicId
+            $www
+                .post '/api/topicPosts', @newPost
+                .success (data) =>
+                    @topic.posts.push data.post
+                    if @selectedPost
+                        @selectedPost.posts = @selectedPost.posts or []
+                        @selectedPost.posts.push data.post
+                    @resetNewPost()
 
-        $scope.deletePost = (postId) ->
-            $www.delete('/api/posts/' + postId).success ->
-                $scope.topic.posts = _.reject($scope.topic.posts, id: +postId)
-                return
-            return
+        @deletePost = (postId) =>
+            $www
+                .delete '/api/topicPosts/' + postId
+                .success =>
+                    @topic.posts = _.reject(@topic.posts, id: +postId)
 
-        $scope.deleteTopic = (topicId) ->
-            $www.delete('/api/conversations/' + topicId).success ->
-                $state.go 'profile.social.list'
-                return
-            return
+        @deleteTopic = (topicId) =>
+            $www
+                .delete '/api/topics/' + topicId
+                .success =>
+                    $state.go 'conversations.list'
 
-        $scope.likePost = (postId) ->
-            $www.post '/api/posts/' + postId + '/like'
-            return
+        @likePost = (postId) =>
+            $www.post '/api/topicPostLikes/' + postId
 
-        $scope.unlikePost = (postId) ->
-            $www.delete '/api/posts/' + postId + '/like'
-            return
+        @unlikePost = (postId) =>
+            $www.delete '/api/topicPostLikes/' + postId
 
-        $scope.togglePostUserLike = (post) ->
-            if post.is_liked then $scope.unlikePost(post.id) else $scope.likePost(post.id)
+        @togglePostUserLike = (post) =>
+            if post.is_liked then @unlikePost(post.id) else @likePost(post.id)
             post.is_liked = !post.is_liked
-            return
 
-        $scope.createTopicView = ->
-            $www.post '/api/conversations/' + $scope.topicId + '/view'
-            return
+        @createTopicView = =>
+            $www.post '/api/topicViews',
+                topic_id: @topicId
 
-        $scope.loadUserNotification = ->
-            $www.get('/api/conversations/' + $scope.topicId + '/users/' + $scope.main.authUser.id + '/notification').success (data) ->
-                $scope.watchNotification = data.notification
-                return
-            return
+        @loadUserNotification = =>
+            $www
+                .get('/api/topicNotifications/' + @topicId + '/users/' + @main.authUser.id + '/notification')
+                .success (data) =>
+                    @watchNotification = data.notification
 
-        $scope.createNotification = ->
-            $www.post('/api/conversations/' + $scope.topicId + '/users/' + $scope.main.authUser.id + '/notification').success (data) ->
-                $scope.watchNotification = data.notification
-                return
-            return
+        @createNotification = =>
+            $www
+                .post('/api/topicNotifications/' + @topicId + '/users/' + @main.authUser.id + '/notification')
+                .success (data) =>
+                    @watchNotification = data.notification
 
-        $scope.deleteNotification = ->
-            $www.delete('/api/conversations/' + $scope.topicId + '/users/' + $scope.main.authUser.id + '/notification').success ->
-                $scope.watchNotification = false
-                return
-            return
+        @deleteNotification = =>
+            $www
+                .delete('/api/topicNotifications/' + @topicId + '/users/' + @main.authUser.id + '/notification')
+                .success =>
+                    @watchNotification = false
 
-        $scope.toggleNotification = ->
-            if $scope.watchNotification then $scope.deleteNotification() else $scope.createNotification()
-            return
+        @toggleNotification = =>
+            if @watchNotification then @deleteNotification() else @createNotification()
 
-        $scope.loadTopic()
-        $scope.createTopicView()
-        $scope.loadUserNotification()
+        @loadTopic()
+        @createTopicView()
+        # @loadUserNotification()
+
         return
 ]
-
-# ---
-# generated by js2coffee 2.1.0

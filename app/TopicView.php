@@ -6,5 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class TopicView extends Model
 {
-    public static $table = 'topic_views';
+    protected $fillable = ['user_id', 'team_id', 'topic_id'];
 }

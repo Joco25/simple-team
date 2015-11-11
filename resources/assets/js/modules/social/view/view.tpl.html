@@ -1,7 +1,7 @@
 <div class='inner-medium'>
 	<h3 class='mbn'>
 		<i class='icon-star pointer' ng-click='toggleTopicUserStar(topic)' ng-class='{ muted: !topic.is_starred, "text-orange": topic.is_starred }'></i>
-		<a ng-if='topic.serie' ui-sref='profile.social.list({ serieId: topic.serie.id })' class='btn btn-small btn-primary disabled'>{{ topic.serie.name }}</a>
+		<a ng-if='topic.serie' ui-sref='conversations.list({ serieId: topic.serie.id })' class='btn btn-small btn-primary disabled'>{{ topic.serie.name }}</a>
 		{{ topic.name }}
 	</h3>
 

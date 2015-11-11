@@ -6,10 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class TopicNotification extends Model
 {
-    public static $table = 'topic_notifications';
+    protected $fillable = ['user_id', 'team_id', 'topic_id', 'type'];
 
 	public function user()
 	{
-		return $this->belongs_to('User');
+		return $this->belongsTo('\App\User');
 	}
 }

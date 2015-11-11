@@ -2,71 +2,68 @@
 
 namespace App;
 
+use Auth;
 use Illuminate\Database\Eloquent\Model;
 
 class Topic extends Model
 {
+	protected $fillable = ['user_id', 'team_id', 'name', 'postCount'];
+
 	public function posts()
 	{
-		return $this->has_many('TopicPost');
+		return $this->hasMany('\App\TopicPost');
 	}
 
-	public function post_count()
+	public function postCount()
 	{
-		return $this->has_many('TopicPost')
-			->where_deleted(0)
+		return $this->hasMany('\App\TopicPost')
 			->count();
-	}
-
-	public function serie()
-	{
-		return $this->belongs_to('Serie');
 	}
 
 	public function user()
 	{
-		return $this->belongs_to('User');
+		return $this->belongsTo('\App\User');
 	}
 
-	public function is_starred($user_id)
+	public function isStarred($user_id)
 	{
-		$count = DB::table('topic_user_stars')
-			->where_user_id($user_id)
-			->where_topic_id($this->id)
+		$count = DB::table('topic_stars')
+			->whereUserId($user_id)
+			->whereTopicId($this->id)
 			->count();
 
 		return $count > 0;
 	}
 
-	public function star_count()
+	public function starCount()
 	{
-		return TopicUserStar::where_topic_id($this->id)
+		return TopicStar::whereTopicId($this->id)
 			->count();
 	}
 
-	public function create_star($user_id)
+	public function createStar($user_id)
 	{
-		return TopicUserStar::create([
+		return TopicStar::create([
 			'user_id' => $user_id,
 			'topic_id' => $this->id
 		]);
 	}
 
-	public function delete_star($user_id)
+	public function deleteStar($user_id)
 	{
-		return TopicUserStar::where_user_id($user_id)
-			->where_topic_id($this->id)
+		return TopicStar::whereUserId($user_id)
+			->whereTopicId($this->id)
 			->delete();
 	}
 
-	public function view_count()
+	public function viewCount()
 	{
-		return DB::table('topic_user_views')
-			->where_topic_id($this->id)
+		return TopicView::whereTeamId(Auth::user()->id)
+			->whereTopicId($this->id)
 			->count();
 	}
 
-	public function like_count()
+	public function likeCount()
 	{
 		return Topic::where('topics.id', '=', $this->id)
 			->where('topics.deleted', '=', 0)
@@ -88,34 +85,30 @@ class Topic extends Model
 			->get(['users.name', 'users.image']);
 	}
 
-	public function update_post_count()
+	public function updatePostCount()
 	{
-		DB::table('topics')
-			->where_id($this->id)
+		Topic::whereId($this->id)
 			->update([
-				'post_count' => $this->post_count()
+				'post_count' => $this->postCount()
 			]);
 	}
 
-	public function update_like_count()
+	public function updateLikeCount()
 	{
 		DB::table('topics')
-			->where_id($this->id)
+			->whereId($this->id)
 			->update([
-				'like_count' => $this->like_count()
+				'like_count' => $this->likeCount()
 			]);
 	}
 
-	public function update_view_count()
+	public function updateViewCount()
 	{
-		DB::table('topics')
-			->where_id($this->id)
-			->update([
-				'view_count' => $this->view_count()
-			]);
+		$this->view_count = $this->viewCount();
+		return $this->save();
 	}
 
-	public function is_unread()
+	public function isUnread()
 	{
 		$query = DB::query("
 			SELECT COUNT(*) as topic_count
@@ -135,7 +128,7 @@ class Topic extends Model
 
 	public function notifications()
 	{
-		return $this->has_many('TopicUserNotification');
+		return $this->hasMany('TopicNotification');
 	}
 
 	public function send_notifications($post)
@@ -180,16 +173,16 @@ class Topic extends Model
 		}
 	}
 
-	public function remove_notifications($user_id)
+	public function removeNotifications($user_id)
 	{
-		return TopicUserNotification::where_user_id($user_id)
-			->where_topic_id($this->id)
+		return TopicUserNotification::whereUserId($user_id)
+			->whereTopicId($this->id)
 			->delete();
 	}
 
-	public function add_notifications($user_id)
+	public function addNotifications($user_id)
 	{
-		$this->remove_notifications($user_id);
+		$this->removeNotifications($user_id);
 
 		return DB::table('topic_user_notifications')
 			->insert([

@@ -1793,7 +1793,7 @@ angularLocalStorage.provider('localStorageService', function() {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"moment":9}],5:[function(require,module,exports){
 /**
- * @license AngularJS v1.4.6
+ * @license AngularJS v1.4.7
  * (c) 2010-2015 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -41719,9 +41719,11 @@ require('./modules/sidebar/index.coffee');
 
 require('./modules/navbar/index.coffee');
 
+require('./modules/ngBindHtmlUnsafe');
+
 require('./modules/www');
 
-angular.module('simple.team', ['ngFileUpload', 'ngSanitize', 'ui.router', 'ui.sortable', 'ui.gravatar', 'ui.bootstrap', 'selectize', 'angularMoment', 'angular-loading-bar', 'ng-showdown', 'LocalStorageModule', 'monospaced.elastic', 'simple.team.routes', 'simple.team.focusMe', 'simple.team.bytes', 'simple.team.sidebar', 'simple.team.navbar', 'simple.team.auth', 'simple.team.tagData', 'simple.team.userData', 'simple.team.www']).config([
+angular.module('simple.team', ['ngFileUpload', 'ngSanitize', 'ui.router', 'ui.sortable', 'ui.gravatar', 'ui.bootstrap', 'selectize', 'angularMoment', 'angular-loading-bar', 'ng-showdown', 'LocalStorageModule', 'monospaced.elastic', 'simple.team.routes', 'simple.team.focusMe', 'simple.team.ngBindHtmlUnsafe', 'simple.team.bytes', 'simple.team.sidebar', 'simple.team.navbar', 'simple.team.auth', 'simple.team.tagData', 'simple.team.userData', 'simple.team.www']).config([
   '$urlRouterProvider', 'cfpLoadingBarProvider', function($urlRouterProvider, cfpLoadingBarProvider) {
     $urlRouterProvider.otherwise('/projects');
     cfpLoadingBarProvider.includeSpinner = false;
@@ -41775,7 +41777,7 @@ angular.module('simple.team', ['ngFileUpload', 'ngSanitize', 'ui.router', 'ui.so
 ]);
 
 
-},{"./modules/auth/index.coffee":45,"./modules/bytes/index.coffee":46,"./modules/focusMe/index.coffee":47,"./modules/navbar/index.coffee":48,"./modules/selectize":50,"./modules/sidebar/index.coffee":51,"./modules/tagData/index.coffee":53,"./modules/userData/index.coffee":54,"./modules/www":55,"./routes.coffee":56,"angular-elastic":1,"angular-gravatar":2,"angular-local-storage":3,"angular-moment":4,"angular-sanitize":6,"angular-ui-router":7,"angular-ui-sortable":8,"moment":9,"ng-showdown":10}],15:[function(require,module,exports){
+},{"./modules/auth/index.coffee":45,"./modules/bytes/index.coffee":46,"./modules/focusMe/index.coffee":47,"./modules/navbar/index.coffee":48,"./modules/ngBindHtmlUnsafe":50,"./modules/selectize":51,"./modules/sidebar/index.coffee":52,"./modules/tagData/index.coffee":54,"./modules/userData/index.coffee":55,"./modules/www":56,"./routes.coffee":57,"angular-elastic":1,"angular-gravatar":2,"angular-local-storage":3,"angular-moment":4,"angular-sanitize":6,"angular-ui-router":7,"angular-ui-sortable":8,"moment":9,"ng-showdown":10}],15:[function(require,module,exports){
 'use strict';
 module.exports = function($state, $stateParams, $modal) {
   var cardId, init;
@@ -42184,27 +42186,31 @@ module.exports = [
       page: 1,
       disableInfiniteScroll: false
     };
-    this.loadConversations = function() {
-      if (this.filters.busy) {
-        return;
-      }
-      this.filters.busy = true;
-      $www.get('/api/conversations/' + this.filters.type, {
-        take: 50,
-        page: this.filters.page
-      }).success(function(data) {
-        this.topics = this.topics.concat(data.topics);
-        this.filters.busy = false;
-        this.filters.disableInfiniteScroll = data.topics.length === 0 ? true : false;
-      });
-    };
-    this.nextPage = function() {
-      if (this.filters.busy) {
-        return;
-      }
-      this.filters.page += 1;
-      this.loadConversations();
-    };
+    this.loadConversations = (function(_this) {
+      return function() {
+        if (_this.filters.busy) {
+          return;
+        }
+        _this.filters.busy = true;
+        return $www.get('/api/topics/' + _this.filters.type, {
+          take: 50,
+          page: _this.filters.page
+        }).success(function(data) {
+          _this.topics = _this.topics.concat(data.topics);
+          _this.filters.busy = false;
+          return _this.filters.disableInfiniteScroll = data.topics.length === 0 ? true : false;
+        });
+      };
+    })(this);
+    this.nextPage = (function(_this) {
+      return function() {
+        if (_this.filters.busy) {
+          return;
+        }
+        _this.filters.page += 1;
+        return _this.loadConversations();
+      };
+    })(this);
     this.loadConversations();
   }
 ];
@@ -42213,107 +42219,139 @@ module.exports = [
 },{}],20:[function(require,module,exports){
 'use strict';
 module.exports = [
-  '$scope', '$stateParams', '$www', '$state', function($scope, $stateParams, $www, $state) {
-    $scope.topicId = $stateParams.topicId;
-    $scope.newPost = {};
-    $scope.filters = {
+  '$stateParams', '$www', '$state', function($stateParams, $www, $state) {
+    this.topicId = $stateParams.topicId;
+    this.newPost = {};
+    this.topic = null;
+    this.filters = {
       showNewPost: false
     };
-    $scope.selectPost = function(post) {
-      $scope.selectedPost = post;
-      $scope.postCopy = angular.copy(post);
-    };
-    $scope.resetNewPost = function() {
-      if ($scope.selectedPost) {
-        $scope.selectedPost.showNewPost = false;
-      }
-      $scope.filters.showNewPost = false;
-      $scope.selectedPost = void 0;
-      $scope.postCopy = angular.copy(void 0);
-      $scope.newPost = {};
-    };
-    $scope.loadTopic = function() {
-      $www.get('/api/conversations/' + $scope.topicId).success(function(data) {
-        if (data.error) {
-          $state.go('profile.social.list');
-          return;
+    this.selectPost = (function(_this) {
+      return function(post) {
+        _this.selectedPost = post;
+        return _this.postCopy = angular.copy(post);
+      };
+    })(this);
+    this.resetNewPost = (function(_this) {
+      return function() {
+        if (_this.selectedPost) {
+          _this.selectedPost.showNewPost = false;
         }
-        $scope.topic = data.topic;
-      });
-    };
-    $scope.updatePost = function() {
-      $scope.selectedPost.body = $scope.postCopy.body;
-      $scope.selectedPost.editMode = false;
-      $www.put('/api/posts/' + $scope.postCopy.id, {
-        body: $scope.postCopy.body
-      }).success(function() {
-        $scope.postCopy = void 0;
-      });
-    };
-    $scope.createPost = function() {
-      $www.post('/api/conversations/' + $scope.topicId + '/post', $scope.newPost).success(function(data) {
-        $scope.topic.posts.push(data.post);
-        if ($scope.selectedPost) {
-          $scope.selectedPost.posts = $scope.selectedPost.posts || [];
-          $scope.selectedPost.posts.push(data.post);
-        }
-        $scope.resetNewPost();
-      });
-    };
-    $scope.deletePost = function(postId) {
-      $www["delete"]('/api/posts/' + postId).success(function() {
-        $scope.topic.posts = _.reject($scope.topic.posts, {
-          id: +postId
+        _this.filters.showNewPost = false;
+        _this.selectedPost = void 0;
+        _this.postCopy = angular.copy(void 0);
+        return _this.newPost = {};
+      };
+    })(this);
+    this.loadTopic = (function(_this) {
+      return function() {
+        return $www.get('/api/topics/' + _this.topicId).success(function(data) {
+          if (data.error) {
+            $state.go('conversations.list');
+          }
+          return _this.topic = data.topic;
         });
-      });
-    };
-    $scope.deleteTopic = function(topicId) {
-      $www["delete"]('/api/conversations/' + topicId).success(function() {
-        $state.go('profile.social.list');
-      });
-    };
-    $scope.likePost = function(postId) {
-      $www.post('/api/posts/' + postId + '/like');
-    };
-    $scope.unlikePost = function(postId) {
-      $www["delete"]('/api/posts/' + postId + '/like');
-    };
-    $scope.togglePostUserLike = function(post) {
-      if (post.is_liked) {
-        $scope.unlikePost(post.id);
-      } else {
-        $scope.likePost(post.id);
-      }
-      post.is_liked = !post.is_liked;
-    };
-    $scope.createTopicView = function() {
-      $www.post('/api/conversations/' + $scope.topicId + '/view');
-    };
-    $scope.loadUserNotification = function() {
-      $www.get('/api/conversations/' + $scope.topicId + '/users/' + $scope.main.authUser.id + '/notification').success(function(data) {
-        $scope.watchNotification = data.notification;
-      });
-    };
-    $scope.createNotification = function() {
-      $www.post('/api/conversations/' + $scope.topicId + '/users/' + $scope.main.authUser.id + '/notification').success(function(data) {
-        $scope.watchNotification = data.notification;
-      });
-    };
-    $scope.deleteNotification = function() {
-      $www["delete"]('/api/conversations/' + $scope.topicId + '/users/' + $scope.main.authUser.id + '/notification').success(function() {
-        $scope.watchNotification = false;
-      });
-    };
-    $scope.toggleNotification = function() {
-      if ($scope.watchNotification) {
-        $scope.deleteNotification();
-      } else {
-        $scope.createNotification();
-      }
-    };
-    $scope.loadTopic();
-    $scope.createTopicView();
-    $scope.loadUserNotification();
+      };
+    })(this);
+    this.updatePost = (function(_this) {
+      return function() {
+        _this.selectedPost.body = _this.postCopy.body;
+        _this.selectedPost.editMode = false;
+        return $www.put('/api/topicPosts/' + _this.postCopy.id, {
+          body: _this.postCopy.body
+        }).success(function() {
+          return _this.postCopy = void 0;
+        });
+      };
+    })(this);
+    this.createPost = (function(_this) {
+      return function() {
+        _this.newPost.topic_id = _this.topicId;
+        return $www.post('/api/topicPosts', _this.newPost).success(function(data) {
+          _this.topic.posts.push(data.post);
+          if (_this.selectedPost) {
+            _this.selectedPost.posts = _this.selectedPost.posts || [];
+            _this.selectedPost.posts.push(data.post);
+          }
+          return _this.resetNewPost();
+        });
+      };
+    })(this);
+    this.deletePost = (function(_this) {
+      return function(postId) {
+        return $www["delete"]('/api/topicPosts/' + postId).success(function() {
+          return _this.topic.posts = _.reject(_this.topic.posts, {
+            id: +postId
+          });
+        });
+      };
+    })(this);
+    this.deleteTopic = (function(_this) {
+      return function(topicId) {
+        return $www["delete"]('/api/topics/' + topicId).success(function() {
+          return $state.go('conversations.list');
+        });
+      };
+    })(this);
+    this.likePost = (function(_this) {
+      return function(postId) {
+        return $www.post('/api/topicPostLikes/' + postId);
+      };
+    })(this);
+    this.unlikePost = (function(_this) {
+      return function(postId) {
+        return $www["delete"]('/api/topicPostLikes/' + postId);
+      };
+    })(this);
+    this.togglePostUserLike = (function(_this) {
+      return function(post) {
+        if (post.is_liked) {
+          _this.unlikePost(post.id);
+        } else {
+          _this.likePost(post.id);
+        }
+        return post.is_liked = !post.is_liked;
+      };
+    })(this);
+    this.createTopicView = (function(_this) {
+      return function() {
+        return $www.post('/api/topicViews', {
+          topic_id: _this.topicId
+        });
+      };
+    })(this);
+    this.loadUserNotification = (function(_this) {
+      return function() {
+        return $www.get('/api/topicNotifications/' + _this.topicId + '/users/' + _this.main.authUser.id + '/notification').success(function(data) {
+          return _this.watchNotification = data.notification;
+        });
+      };
+    })(this);
+    this.createNotification = (function(_this) {
+      return function() {
+        return $www.post('/api/topicNotifications/' + _this.topicId + '/users/' + _this.main.authUser.id + '/notification').success(function(data) {
+          return _this.watchNotification = data.notification;
+        });
+      };
+    })(this);
+    this.deleteNotification = (function(_this) {
+      return function() {
+        return $www["delete"]('/api/topicNotifications/' + _this.topicId + '/users/' + _this.main.authUser.id + '/notification').success(function() {
+          return _this.watchNotification = false;
+        });
+      };
+    })(this);
+    this.toggleNotification = (function(_this) {
+      return function() {
+        if (_this.watchNotification) {
+          return _this.deleteNotification();
+        } else {
+          return _this.createNotification();
+        }
+      };
+    })(this);
+    this.loadTopic();
+    this.createTopicView();
   }
 ];
 
@@ -43102,9 +43140,9 @@ module.exports = '<div class="panel">\n	<div class="panel-body">\n		<form ng-sub
 },{}],33:[function(require,module,exports){
 module.exports = '<div class="container-fluid" ui-view></div>\n';
 },{}],34:[function(require,module,exports){
-module.exports = '<div class="panel">\n	<div class="panel-body">\n		<div class=\'row\'>\n			<div class=\'col-sm-12\'>\n				<div class=\'inner-medium\'>\n					<ul class="nav nav-pills pull-left mbn">\n						<li ng-class=\'{ active: filters.type == "latest" }\'>\n							<a ui-sref=\'conversations.list({ type: "latest" })\'>Latest</a>\n						</li>\n\n						<li ng-class=\'{ active: filters.type == "unread" }\'>\n							<a ui-sref=\'conversations.list({ type: "unread" })\'>\n								<i class=\'icon-bookmark\'></i> Unread\n							</a>\n						</li>\n\n						<li ng-class=\'{ active: filters.type == "starred" }\'>\n							<a ui-sref=\'conversations.list({ type: "starred" })\'>\n								<i class=\'icon-star\'></i> Starred\n							</a>\n						</li>\n\n						<li ng-class=\'{ active: filters.type == "top" }\'>\n							<a ui-sref=\'conversations.list({ type: "top" })\'>Top</a>\n						</li>\n					</ul>\n\n					<a ui-sref=\'conversations.create\' class=\'btn pull-right\'>\n						<i class=\'icon-plus text-success\'></i> Create Discussion\n					</a>\n				</div>\n			</div>\n		</div>\n	</div>\n</div>\n\n<div class="panel">\n	<div class="panel-body">\n		<div infinite-scroll-disabled=\'filters.disableInfiniteScroll\' infinite-scroll=\'nextPage()\' infinite-scroll-distance=\'2\'>\n			<table class=\'table table-striped table-middle table-hover\'>\n				<thead>\n					<tr>\n						<th></th>\n						<th class=\'span5\'>Discussion</th>\n						<th>App</th>\n						<th>Users</th>\n						<th class=\'text-center\'>Posts</th>\n						<th class=\'text-center\'>Likes</th>\n						<th class=\'text-center\'>Views</th>\n						<th colspan=\'2\' class=\'text-center\'>Activity</th>\n					</tr>\n				</thead>\n				<tbody>\n					<tr ng-repeat=\'topic in topics\'>\n						<td class=\'text-center\'>\n							<i class=\'icon-star icon-large\' ng-click=\'toggleTopicUserStar(topic)\' ng-class=\'{ muted: !topic.is_starred, "text-orange": topic.is_starred }\'></i>\n						</td>\n						<td class=\'pointer\' ui-sref=\'profile.social.view({ topicId: topic.id })\'>\n							<h5 class=\'mbn mtn\' ng-class=\'{ muted: !topic.is_unread }\'>{{ topic.name }}</h5>\n						</td>\n						<td>\n							<span class=\'badge badge-info\'>{{ topic.serie.name }}</span>\n						</td>\n						<td>\n							<img class=\'mrs img-rounded\' ng-repeat=\'user in topic.users\' ng-src=\'/image?size=25&type=square&image={{ user.image }}\' title=\'{{ user.name }}\'>\n						</td>\n						<td class=\'text-center\'>\n							{{ topic.post_count }}\n						</td>\n						<td class=\'text-center\'>\n							<span ng-if=\'topic.like_count > 0\'>\n								{{ topic.like_count }} <i class=\'icon-heart text-red\'></i>\n							</span>\n						</td>\n						<td class=\'text-center\'>{{ topic.view_count }}</td>\n						<td class=\'text-center\'>{{ topic.created_at }}</td>\n						<td class=\'text-center\'>{{ topic.updated_at }}</td>\n					</tr>\n				</tbody>\n			</table>\n		</div>\n	</div>\n</div>\n';
+module.exports = '<div class="panel">\n	<div class="panel-body">\n		<div class=\'row\'>\n			<div class=\'col-sm-12\'>\n				<div class=\'inner-medium\'>\n					<ul class="nav nav-pills pull-left mbn">\n						<li ng-class=\'{ active: ctrl.filters.type == "latest" }\'>\n							<a ui-sref=\'conversations.list({ type: "latest" })\'>Latest</a>\n						</li>\n\n						<li ng-class=\'{ active: ctrl.filters.type == "unread" }\'>\n							<a ui-sref=\'conversations.list({ type: "unread" })\'>\n								<i class=\'icon-bookmark\'></i> Unread\n							</a>\n						</li>\n\n						<li ng-class=\'{ active: ctrl.filters.type == "starred" }\'>\n							<a ui-sref=\'conversations.list({ type: "starred" })\'>\n								<i class=\'icon-star\'></i> Starred\n							</a>\n						</li>\n\n						<li ng-class=\'{ active: ctrl.filters.type == "top" }\'>\n							<a ui-sref=\'conversations.list({ type: "top" })\'>Top</a>\n						</li>\n					</ul>\n\n					<a ui-sref=\'conversations.create\' class=\'btn btn-success pull-right\'>\n						<i class=\'icon-plus text-success\'></i> Create Discussion\n					</a>\n				</div>\n			</div>\n		</div>\n	</div>\n</div>\n\n<div class="panel">\n	<div class="panel-body">\n		<div infinite-scroll-disabled=\'ctrl.filters.disableInfiniteScroll\' infinite-scroll=\'nextPage()\' infinite-scroll-distance=\'2\'>\n			<table class=\'table table-striped table-middle table-hover\'>\n				<thead>\n					<tr>\n						<th></th>\n						<th class=\'span5\'>Discussion</th>\n						<th>Users</th>\n						<th class=\'text-center\'>Posts</th>\n						<th class=\'text-center\'>Likes</th>\n						<th class=\'text-center\'>Views</th>\n						<th colspan=\'2\' class=\'text-center\'>Activity</th>\n					</tr>\n				</thead>\n				<tbody>\n					<tr ng-repeat=\'topic in ctrl.topics\'>\n						<td class=\'text-center vert-align\'>\n							<i\n								class=\'fa fa-star fa-2\'\n								ng-click=\'ctrl.toggleTopicUserStar(topic)\'\n								ng-class=\'{ "text-muted": !topic.is_starred, "text-orange": topic.is_starred }\'></i>\n						</td>\n						<td class=\'vert-align pointer\' ui-sref=\'conversations.view({ topicId: topic.id })\'>\n							<h5 ng-class=\'{ muted: !topic.is_unread }\'>{{ topic.name }}</h5>\n						</td>\n						<td class="vert-align">\n							<img class=\'mrs img-rounded\' ng-repeat=\'user in topic.users\' ng-src=\'/image?size=25&type=square&image={{ user.image }}\' title=\'{{ user.name }}\'>\n						</td>\n						<td class=\'text-center vert-align\'>{{ topic.post_count }}</td>\n						<td class=\'text-center vert-align\'>\n							<span ng-if=\'topic.like_count > 0\'>\n								{{ topic.like_count }} <i class=\'icon-heart text-red\'></i>\n							</span>\n						</td>\n						<td class=\'text-center vert-align\'>\n							<span ng-if=\'topic.view_count > 0\'>\n								{{ topic.view_count }}\n							</span>\n						</td>\n						<td class=\'text-center vert-align\'>{{ topic.created_at }}</td>\n						<td class=\'text-center vert-align\'>{{ topic.updated_at }}</td>\n					</tr>\n				</tbody>\n			</table>\n		</div>\n	</div>\n</div>\n';
 },{}],35:[function(require,module,exports){
-module.exports = '<div class=\'inner-medium\'>\n	<h3 class=\'mbn\'>\n		<i class=\'icon-star pointer\' ng-click=\'toggleTopicUserStar(topic)\' ng-class=\'{ muted: !topic.is_starred, "text-orange": topic.is_starred }\'></i>\n		<a ng-if=\'topic.serie\' ui-sref=\'profile.social.list({ serieId: topic.serie.id })\' class=\'btn btn-small btn-primary disabled\'>{{ topic.serie.name }}</a>\n		{{ topic.name }}\n	</h3>\n\n	<hr class=\'mtl\'>\n\n	<div class=\'row\'>\n		<div class=\'col-sm-12\'>\n			<div class="media" ng-repeat=\'post in topic.posts\'>\n				<a class="pull-left" href="#">\n					<img width=\'50\' class="media-object" ng-src="/image?image={{ post.user.image }}&size=50&type=square">\n				</a>\n				<div class="media-body">\n					<h5 class="media-heading muted">{{ post.user.name }}</h5>\n					<div ng-if=\'!post.editMode\'>\n						{{ post.post.user.name }}\n						<div ng-bind-html-unsafe="post.body"></div>\n\n						<div class=\'row\' ng-if=\'$index == 0\'>\n							<div class=\'col-sm-12\'>\n								<div class=\'pull-right\'>\n									 <button class=\'btn\' ng-if=\'post.user_id !== main.authUser.id\' ng-class=\'{ active: post.is_liked }\' ng-click=\'togglePostUserLike(post)\'>\n										<i class=\'icon-heart\' ng-class=\'{ "text-red": post.is_liked }\'></i>\n									</button>\n									<button class=\'btn\' ng-click=\'selectPost(post); post.editMode = true\' ng-if=\'post.user_id === main.authUser.id\'>\n										<i class=\'icon-pencil\'></i>\n									</button>\n									<button class=\'btn\' ng-if=\'post.user_id === main.authUser.id && topic.posts.length == 1\' confirm=\'deleteTopic(topic.id)\' title=\'Delete this post?\'>\n										<i class=\'icon-trash\'></i>\n									</button>\n								</div>\n							</div>\n						</div>\n\n						<div class=\'row mbm\' ng-if=\'$index > 0\'>\n							<div class=\'col-sm-12\'>\n								<button class=\'btn\' ng-click=\'post.showReplies = !post.showReplies\' ng-if=\'post.posts.length > 0\'>\n									{{ post.posts.length }} Replies <i ng-class=\'{ "icon-chevron-down": !post.showReplies, "icon-chevron-up": post.showReplies }\'></i>\n								</button>\n\n								<div class=\'pull-right\'>\n									<button class=\'btn\' ng-if=\'post.user_id !== main.authUser.id\' ng-class=\'{ active: post.is_liked }\' ng-click=\'togglePostUserLike(post)\'>\n										<i class=\'icon-heart\' ng-class=\'{ "text-red": post.is_liked }\'></i>\n									</button>\n									<button class=\'btn\' ng-click=\'selectPost(post); post.editMode = true\' ng-if=\'post.user_id === main.authUser.id\'>\n										<i class=\'icon-pencil\'></i>\n									</button>\n									<button class=\'btn\' ng-if=\'post.user_id === main.authUser.id\' confirm=\'deletePost(post.id)\' title=\'Delete this post?\'>\n										<i class=\'icon-trash\'></i>\n									</button>\n									<button class=\'btn btn-primary\' ng-click=\'selectPost(post); newPost.post_id = post.id; post.showNewPost = true\'>\n										<i class=\'icon-reply\'></i> Reply\n									</button>\n								</div>\n							</div>\n						</div>\n					</div>\n\n					<div ng-if=\'post.editMode\'>\n						<div class=\'row\'>\n							<div class=\'col-sm-12\'>\n								<div class=\'mbs\'>\n									<textarea redactor ng-model=\'postCopy.body\'></textarea>\n								</div>\n								<button class=\'btn btn-success\' ng-click=\'updatePost()\'>\n									Submit\n								</button>\n							</div>\n						</div>\n					</div>\n				</div>\n				<div class=\'well well-small\' ng-if=\'post.posts.length > 0 && post.showReplies\'>\n					<div ng-repeat=\'iPost in post.posts\'>\n						<div class="media" ng-repeat=\'iPost in post.posts\'>\n							<a class="pull-left" href="#">\n								<img width=\'50\' class="media-object" ng-src="/image?image={{ iPost.user.image }}&size=50&type=square">\n							</a>\n							<div class="media-body">\n								<h5 class="media-heading muted">{{ iPost.user.name }}</h5>\n								<div ng-bind-html-unsafe="iPost.body"></div>\n							</div>\n						</div>\n					</div>\n				</div>\n\n				<div class=\'row\' ng-if=\'post.showNewPost\'>\n					<div class=\'col-sm-12\'>\n						<form class=\'mbn\' ng-submit=\'createPost()\'>\n							<div class=\'mbm\'>\n								<textarea ng-model=\'newPost.body\' redactor></textarea>\n							</div>\n							<button type=\'submit\' class=\'btn btn-success\'>\n								Submit\n							</button>\n							<button ng-if=\'newPost.body.length > 0\' confirm=\'resetNewPost()\' title=\'Abandon your response?\' type=\'button\' class=\'btn btn-link\'>\n								Cancel\n							</button>\n							<button ng-if=\'!newPost.body\' type=\'button\' ng-click=\'resetNewPost()\' class=\'btn btn-link\'>\n								Cancel\n							</button>\n						</form>\n					</div>\n				</div>\n				<hr>\n			</div>\n		</div>\n	</div>\n\n	<div class=\'row mbm\'>\n		<div class=\'col-sm-12\'>\n			<button class=\'btn\' ng-class=\'{ active: topic.is_starred }\' ng-click=\'toggleTopicUserStar(topic)\'>\n				<i class=\'icon-star\' ng-class=\'{ "text-orange": topic.is_starred }\'></i> Star\n			</button>\n\n			<button class=\'btn btn-primary\' ng-click=\'filters.showNewPost = true\'>\n				<i class=\'icon-plus\'></i> Reply\n			</button>\n\n			<button class="btn" ng-click=\'toggleNotification()\'>\n				<span ng-show=\'watchNotification\'>Stop Notifications</span>\n				<span ng-show=\'!watchNotification\'>Get Notifications</span>\n			</button>\n		</div>\n	</div>\n\n	<div class=\'row\' ng-if=\'filters.showNewPost\'>\n		<div class=\'col-sm-12\'>\n			<form ng-submit=\'createPost()\' class=\'form-horizontal\'>\n				<div class=\'mbm\'>\n					<select class=\'input-full\' placeholder=\'Tag Users\'ui-select2 multiple ng-model=\'newTopic.user_ids\'>\n						<option ng-repeat="user in main.users" value=\'{{ user.id }}\'>{{ user.name }}</option>\n					</select>\n				</div>\n\n				<div class=\'mbm\'>\n					<textarea ng-model=\'newPost.body\' redactor></textarea>\n				</div>\n\n				<button type=\'submit\' class=\'btn btn-success\'>\n					Submit\n				</button>\n				<button ng-if=\'newPost.body.length > 0\' confirm=\'resetNewPost(post)\' title=\'Abandon your response?\' type=\'button\' class=\'btn btn-link\'>\n					Cancel\n				</button>\n				<button ng-if=\'!newPost.body\' type=\'button\' ng-click=\'resetNewPost(post)\' class=\'btn btn-link\'>\n					Cancel\n				</button>\n			</form>\n		</div>\n	</div>\n</div>\n';
+module.exports = '<div class="panel">\n	<div class="panel-body">\n		<h3 style="margin: 0;">\n			<i\n				class=\'icon-star pointer\'\n				ng-click=\'ctrl.toggleTopicUserStar(topic)\'\n				ng-class=\'{ muted: !ctrl.topic.is_starred, "text-orange": ctrl.topic.is_starred }\'></i>\n			{{ ctrl.topic.name }}\n		</h3>\n	</div>\n</div>\n\n<div class="panel">\n	<div class="panel-body">\n		<div class=\'row\'>\n			<div class=\'col-sm-12\'>\n				<div class="media" ng-repeat=\'post in ctrl.topic.posts\'>\n					<a class="pull-left" href="#">\n						<img width=\'50\' class="media-object" ng-src="/image?image={{ post.user.image }}&size=50&type=square">\n					</a>\n					<div class="media-body">\n						<h5 class="media-heading muted">{{ post.user.name }}</h5>\n						<div ng-show=\'!post.editMode\'>\n							{{ post.post.user.name }}\n							<div ng-bind-html-unsafe="post.body"></div>\n\n							<div class=\'row\' ng-show=\'$index == 0\'>\n								<div class=\'col-sm-12\'>\n									<div class=\'pull-right\'>\n										 <button class=\'btn\' ng-show=\'post.user_id !== main.authUser.id\' ng-class=\'{ active: post.is_liked }\' ng-click=\'togglePostUserLike(post)\'>\n											<i class=\'fa fa-heart\' ng-class=\'{ "text-red": post.is_liked }\'></i>\n										</button>\n										<button class=\'btn\' ng-click=\'selectPost(post); post.editMode = true\' ng-show=\'post.user_id === main.authUser.id\'>\n											<i class=\'fa fa-pencil\'></i>\n										</button>\n										<button class=\'btn\' ng-show=\'post.user_id === main.authUser.id && ctrl.topic.posts.length == 1\' confirm=\'deleteTopic(ctrl.topic.id)\' title=\'Delete this post?\'>\n											<i class=\'fa fa-trash\'></i>\n										</button>\n									</div>\n								</div>\n							</div>\n\n							<div class=\'row mbm\' ng-show=\'$index > 0\'>\n								<div class=\'col-sm-12\'>\n									<button class=\'btn\' ng-click=\'post.showReplies = !post.showReplies\' ng-show=\'post.posts.length > 0\'>\n										{{ post.posts.length }} Replies <i ng-class=\'{ "icon-chevron-down": !post.showReplies, "icon-chevron-up": post.showReplies }\'></i>\n									</button>\n\n									<div class=\'pull-right\'>\n										<button class=\'btn\' ng-show=\'post.user_id !== main.authUser.id\' ng-class=\'{ active: post.is_liked }\' ng-click=\'togglePostUserLike(post)\'>\n											<i class=\'fa fa-heart\' ng-class=\'{ "text-red": post.is_liked }\'></i>\n										</button>\n										<button class=\'btn\' ng-click=\'selectPost(post); post.editMode = true\' ng-show=\'post.user_id === main.authUser.id\'>\n											<i class=\'fa fa-pencil\'></i>\n										</button>\n										<button class=\'btn\' ng-show=\'post.user_id === main.authUser.id\' confirm=\'deletePost(post.id)\' title=\'Delete this post?\'>\n											<i class=\'fa fa-trash\'></i>\n										</button>\n										<button class=\'btn btn-primary\' ng-click=\'selectPost(post); ctrl.newPost.post_id = post.id; post.showNewPost = true\'>\n											<i class=\'fa fa-reply\'></i> Reply\n										</button>\n									</div>\n								</div>\n							</div>\n						</div>\n\n						<div ng-show=\'post.editMode\'>\n							<div class=\'row\'>\n								<div class=\'col-sm-12\'>\n									<div class=\'mbs\'>\n										<textarea msd-elastic ng-model=\'postCopy.body\'></textarea>\n									</div>\n									<button class=\'btn btn-success\' ng-click=\'updatePost()\'>\n										Submit\n									</button>\n								</div>\n							</div>\n						</div>\n					</div>\n					<div class=\'well well-small\' ng-show=\'post.posts.length > 0 && post.showReplies\'>\n						<div ng-repeat=\'iPost in post.posts\'>\n							<div class="media" ng-repeat=\'iPost in post.posts\'>\n								<a class="pull-left" href="#">\n									<img width=\'50\' class="media-object" ng-src="/image?image={{ iPost.user.image }}&size=50&type=square">\n								</a>\n								<div class="media-body">\n									<h5 class="media-heading muted">{{ iPost.user.name }}</h5>\n									<div ng-bind-html-unsafe="iPost.body"></div>\n								</div>\n							</div>\n						</div>\n					</div>\n\n					<div class=\'row\' ng-show=\'post.showNewPost\'>\n						<div class=\'col-sm-12\'>\n							<form class=\'mbn\' ng-submit=\'createPost()\'>\n								<div class=\'mbm\'>\n									<textarea msd-elastic ng-model=\'ctrl.newPost.body\'></textarea>\n								</div>\n								<button type=\'submit\' class=\'btn btn-success\'>\n									Submit\n								</button>\n								<button ng-show=\'ctrl.newPost.body.length > 0\' confirm=\'resetNewPost()\' title=\'Abandon your response?\' type=\'button\' class=\'btn btn-link\'>\n									Cancel\n								</button>\n								<button ng-show=\'!ctrl.newPost.body\' type=\'button\' ng-click=\'resetNewPost()\' class=\'btn btn-link\'>\n									Cancel\n								</button>\n							</form>\n						</div>\n					</div>\n					<hr>\n				</div>\n			</div>\n		</div>\n\n		<div class=\'row mbm\'>\n			<div class=\'col-sm-12\'>\n				<button class=\'btn\' ng-class=\'{ active: ctrl.topic.is_starred }\' ng-click=\'toggleTopicUserStar(topic)\'>\n					<i class=\'icon-star\' ng-class=\'{ "text-orange": ctrl.topic.is_starred }\'></i> Star\n				</button>\n\n				<button class=\'btn btn-primary\' ng-click=\'filters.showNewPost = true\'>\n					<i class=\'icon-plus\'></i> Reply\n				</button>\n\n				<button class="btn" ng-click=\'ctrl.toggleNotification()\'>\n					<span ng-show=\'watchNotification\'>Stop Notifications</span>\n					<span ng-show=\'!watchNotification\'>Get Notifications</span>\n				</button>\n			</div>\n		</div>\n\n		<div class=\'row\' ng-show=\'filters.showNewPost\'>\n			<div class=\'col-sm-12\'>\n				<form ng-submit=\'ctrl.createPost()\' class=\'form-horizontal\'>\n					<!-- <div class=\'mbm\'>\n						<select class=\'input-full\' placeholder=\'Tag Users\'ui-select2 multiple ng-model=\'newctrl.topic.user_ids\'>\n							<option ng-repeat="user in main.users" value=\'{{ user.id }}\'>{{ user.name }}</option>\n						</select>\n					</div> -->\n\n					<div class=\'form-group\'>\n						<textarea class="form-control" ng-model=\'ctrl.newPost.body\' msd-elastic></textarea>\n					</div>\n\n					<button type=\'submit\' class=\'btn btn-success\'>\n						Submit\n					</button>\n					<button ng-show=\'ctrl.newPost.body.length > 0\' confirm=\'ctrl.resetNewPost(post)\' title=\'Abandon your response?\' type=\'button\' class=\'btn btn-link\'>\n						Cancel\n					</button>\n					<button ng-show=\'!ctrl.newPost.body\' type=\'button\' ng-click=\'ctrl.resetNewPost(post)\' class=\'btn btn-link\'>\n						Cancel\n					</button>\n				</form>\n			</div>\n		</div>\n	</div>\n</div>\n';
 },{}],36:[function(require,module,exports){
 module.exports = '<div class="container-fluid">\n    <div class="row">\n        <div class="col-sm-12">\n            <div class="row" style="margin-bottom: 10px">\n                <div class="col-sm-6">\n                    {{ ctrl.filterDate | date:\'EEEE, MMMM d, y\' }}\n                </div>\n                <div class="col-sm-6 text-right">\n                    <div class="btn-group" style="margin-right: 5px;">\n                        <button class="btn btn-default" ng-click="ctrl.addDay()">&lt;</button>\n                        <button class="btn btn-default" ng-click="ctrl.goToToday()">Today</button>\n                        <button class="btn btn-default" ng-click="ctrl.substractDay()">&gt;</button>\n                    </div>\n\n                    <div class="form-inline pull-right">\n                        <input class="form-control" type="date" ng-model="ctrl.filterDate" ng-click="ctrl.loadDailySummaries()">\n                    </div>\n                </div>\n            </div>\n\n            <div class="panel">\n                <div class="panel-body">\n                    <div class="row">\n                        <div class="col-sm-6">\n                            <h4 style="margin-top: 0">{{ ctrl.authUser.name }}</h4>\n                        </div>\n                        <div class="col-sm-6">\n                        </div>\n                    </div>\n                    <div class="form-group">\n                        <form ng-submit="ctrl.createDailySummary()">\n                            <input\n                                type="text"\n                                class="form-control"\n                                ng-model="ctrl.dailySummaryBody"\n                                placeholder="Today I...">\n                        </form>\n                    </div>\n                    <table class="table">\n                        <tr ng-repeat="dailySummary in ctrl.selectedDailySummaries">\n                            <td>\n                                <div\n                                    ng-show="dailySummary != dailySummaryCopy"\n                                    ng-click="editDailySummary(dailySummary)">\n                                    {{ dailySummary.body }}\n                                </div>\n\n                                <div ng-show="dailySummary == dailySummaryCopy">\n                                    <input\n                                        type="text"\n                                        class="form-control"\n                                        ng-model="dailySummaryCopy.body"\n                                        v-on="\n                                            blur: updateDailySummary(dailySummary),\n                                            keyup: updateDailySummary(dailySummary) | key \'enter\',\n                                            keyup: cancelDailySummary(dailySummary) | key \'esc\'\n                                        ">\n                                </div>\n                            </td>\n                            <td class="text-right">\n                                <button\n                                    class="btn btn-primary"\n                                    ng-click="ctrl.editDailySummary(dailySummary)">\n                                    Edit\n                                </button>\n                                <button\n                                    class="btn btn-danger"\n                                    ng-click="ctrl.deleteDailySummary(userId, dailySummary)">\n                                    Delete\n                                </button>\n                            </td>\n                        </tr>\n                    </table>\n                </div>\n            </div>\n\n            <div\n                class="panel"\n                ng-repeat="user in ctrl.authUser.team.users"\n                ng-hide="user.id == ctrl.authUser.id">\n                <div class="panel-body">\n                    <h4 style="margin-top: 0">{{ user.name }}</h4>\n                    <table class="table">\n                        <tbody>\n                            <tr ng-show="! ctrl.dailySummaries[user.id].length">\n                                <td class="text-center">\n                                    <h5 class="text-muted">No entries.</h5>\n                                </td>\n                            </tr>\n                            <tr ng-repeat="dailySummary in ctrl.dailySummaries[user.id]">\n                                <td>{{ dailySummary.body }}</td>\n                            </tr>\n                        </tbody>\n                    </table>\n                </div>\n            </div>\n        </div>\n    </div>\n</div>\n';
 },{}],37:[function(require,module,exports){
@@ -43263,6 +43301,18 @@ angular.module('simple.team.navbar', []).directive('navbar', function() {
 },{"./view.html":49}],49:[function(require,module,exports){
 module.exports = '<nav class="navbar navbar-default navbar-static-top">\n    <div class="container-fluid">\n        <ul class="nav navbar-nav">\n            <li class="dropdown">\n                <a href="#" class="dropdown-toggle" data-toggle="dropdown">{{ navCtrl.selectedTeam.name || \'Select a team...\' }} <span class="caret"></span></a>\n                <ul class="dropdown-menu">\n                    <li ng-repeat="team in navCtrl.teams" ng-click="navCtrl.setCurrentTeam(team)">\n                        <a href="#">{{ team.name }}</a>\n                    </li>\n                </ul>\n            </li>\n        </ul>\n        <ul class="nav navbar-nav navbar-right">\n            <li class="dropdown">\n                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Menu<span class="caret"></span></a>\n                <ul class="dropdown-menu">\n                    <li><a ui-sref="simple.settings.account">Account</a></li>\n                    <li><a ui-sref="simple.settings.teams">Teams</a></li>\n                    <li class="divider"></li>\n                    <li><a ui-sref="auth.logout">Sign Out</a></li>\n                </ul>\n            </li>\n        </ul>\n    </div>\n</nav>\n';
 },{}],50:[function(require,module,exports){
+"use strict";
+
+angular.module('simple.team.ngBindHtmlUnsafe', []).directive('ngBindHtmlUnsafe', [function () {
+    return function (scope, element, attr) {
+        element.addClass('ng-binding').data('$binding', attr.ngBindHtmlUnsafe);
+        scope.$watch(attr.ngBindHtmlUnsafe, function ngBindHtmlUnsafeWatchAction(value) {
+            element.html(value || '');
+        });
+    };
+}]);
+
+},{}],51:[function(require,module,exports){
 /**
  * Angular Selectize2
  * https://github.com/machineboy2045/angular-selectize
@@ -43372,7 +43422,7 @@ angular.module('selectize', []).value('selectizeConfig', {}).directive("selectiz
   };
 }]);
 
-},{}],51:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 angular.module('simple.team.sidebar', []).directive('sidebar', function() {
   return {
     restrict: 'E',
@@ -43381,9 +43431,9 @@ angular.module('simple.team.sidebar', []).directive('sidebar', function() {
 });
 
 
-},{"./view.html":52}],52:[function(require,module,exports){
+},{"./view.html":53}],53:[function(require,module,exports){
 module.exports = '<div class="wrapper">\n    <div class="sidebar">\n        <div class="title">simple.team</div>\n        <ul class="side-nav">\n            <li><a ui-sref="simple.projects.kanban">Kanban</a></li>\n            <li><a ui-sref="simple.projects.list">Projects List</a></li>\n            <!-- <li><a ui-sref="chat">Chat</a></li>\n            <li><a ui-sref="timeline">Timeline</a></li>\n            <li><a ui-sref="daily-summary">Daily Summary</a></li>\n            <li><a ui-sref="notes.list">Notes</a></li>\n            <li><a ui-sref="one-use-notes">Secure Notes</a></li>\n            <li><a ui-sref="designer">Designer</a></li>\n            <li><a ui-sref="settings.teams">Settings</a></li> -->\n        </ul>\n    </div>\n</div>\n';
-},{}],53:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 'use strict';
 angular.module('simple.team.tagData', []).service('TagDataService', [
   '$http', function($http) {
@@ -43394,7 +43444,7 @@ angular.module('simple.team.tagData', []).service('TagDataService', [
 ]);
 
 
-},{}],54:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 'use strict';
 angular.module('simple.team.userData', []).service('UserDataService', [
   '$http', function($http) {
@@ -43405,7 +43455,7 @@ angular.module('simple.team.userData', []).service('UserDataService', [
 ]);
 
 
-},{}],55:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 'use strict';
 
 module.exports = angular.module('simple.team.www', []).factory('$www', ['$http', function ($http) {
@@ -43460,7 +43510,7 @@ module.exports = angular.module('simple.team.www', []).factory('$www', ['$http',
 	return self;
 }]);
 
-},{}],56:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 angular.module('simple.team.routes', []).config([
   '$stateProvider', function($stateProvider) {
     return $stateProvider.state('projects', {
@@ -43514,7 +43564,7 @@ angular.module('simple.team.routes', []).config([
       controller: require('./controllers/conversations.ctrl.coffee'),
       controllerAs: 'ctrl'
     }).state('conversations.list', {
-      url: '/list',
+      url: '/list?type',
       template: require('./layouts/conversations.list.html'),
       controller: require('./controllers/conversations.list.ctrl.coffee'),
       controllerAs: 'ctrl'
@@ -43524,7 +43574,7 @@ angular.module('simple.team.routes', []).config([
       controller: require('./controllers/conversations.create.ctrl.coffee'),
       controllerAs: 'ctrl'
     }).state('conversations.view', {
-      url: '/view',
+      url: '/view?topicId',
       template: require('./layouts/conversations.view.html'),
       controller: require('./controllers/conversations.view.ctrl.coffee'),
       controllerAs: 'ctrl'

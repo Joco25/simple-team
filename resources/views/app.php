@@ -39,9 +39,9 @@
                 <li ui-sref-active="active" ui-sref="projects" class="pointer">
                     <a>Projects</a>
                 </li>
-                <!-- <li ui-sref-active="active" ui-sref="conversations.list" class="pointer">
+                <li ui-sref-active="active" ui-sref="conversations.list" class="pointer">
                     <a>Conversations</a>
-                </li> -->
+                </li>
 
                 <!-- <li ui-sref-active="active" ui-sref="tasklist" class="pointer">
                     <a>Tasklist</a>

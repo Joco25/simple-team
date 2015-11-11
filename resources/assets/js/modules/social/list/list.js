@@ -2,13 +2,13 @@
 
     'use strict';
 
-    angular.module('profile.social.list', [
+    angular.module('conversations.list', [
         'infinite-scroll'
     ])
 
         .config(['$stateProvider', function($stateProvider) {
             $stateProvider
-                .state('profile.social.list', {
+                .state('conversations.list', {
                     url: '/topics?serieId&type',
                     controller: 'SocialListCtrl',
                     templateUrl: '/dist/apps/profile/social/list/list.tpl.html'

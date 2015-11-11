@@ -19,6 +19,7 @@ require './modules/auth/index.coffee'
 require './modules/bytes/index.coffee'
 require './modules/sidebar/index.coffee'
 require './modules/navbar/index.coffee'
+require './modules/ngBindHtmlUnsafe'
 require './modules/www'
 
 angular
@@ -38,6 +39,7 @@ angular
 
         'simple.team.routes'
         'simple.team.focusMe'
+        'simple.team.ngBindHtmlUnsafe'
         'simple.team.bytes'
         'simple.team.sidebar'
         'simple.team.navbar'

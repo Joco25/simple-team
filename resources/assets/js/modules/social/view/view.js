@@ -39,7 +39,7 @@
             $scope.loadTopic = function() {
                 $www.get('/api/topics/' + $scope.topicId).success(function(data) {
                     if (data.error) {
-                        $state.go('profile.social.list');
+                        $state.go('conversations.list');
                         return;
                     }
 
@@ -77,7 +77,7 @@
 
             $scope.deleteTopic = function(topicId) {
                 $www.delete('/api/topics/' + topicId).success(function() {
-                    $state.go('profile.social.list');
+                    $state.go('conversations.list');
                 });
             };
 

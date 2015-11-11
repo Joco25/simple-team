@@ -48,27 +48,31 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('/api/cards', 'ApiCardController');
 
     /**
-     * Conversations / Topic Posts
+     * Topics
      */
-    Route::resource('api/posts', 'ApiTopicPostController');
-	Route::post('api/posts/(:num)/like', 'ApiTopicPostController@like');
-	Route::delete('api/posts/(:num)/like', 'ApiTopicPostController@like');
-
-    /**
-     * Conversations / Topics
-     */
-    Route::resource('api/topics', 'ApiTopicPostController');
-	Route::get('api/topics/latest', 'ApiTopicPostController@latest');
-	Route::get('api/topics/starred', 'ApiTopicPostController@starred');
-	Route::get('api/topics/unread', 'ApiTopicPostController@unread');
-	Route::get('api/topics/top', 'ApiTopicPostController@top');
+	Route::get('api/topics/latest', 'ApiTopicController@latest');
+	Route::get('api/topics/starred', 'ApiTopicController@starred');
+	Route::get('api/topics/unread', 'ApiTopicController@unread');
+	Route::get('api/topics/top', 'ApiTopicController@top');
+    Route::resource('api/topics', 'ApiTopicController');
 
 	Route::post('api/topics/(:num)/star', 'ApiTopicPostController@star');
 	Route::delete('api/topics/(:num)/star', 'ApiTopicPostController@star');
-	Route::post('api/topics/(:num)/view', 'ApiTopicPostController@view');
 	Route::get('api/topics/(:num)/users/(:num)/notification', 'ApiTopicPostController@user_notification');
 	Route::post('api/topics/(:num)/users/(:num)/notification', 'ApiTopicPostController@user_notification');
 	Route::delete('api/topics/(:num)/users/(:num)/notification', 'ApiTopicPostController@user_notification');
+
+    /**
+     * Topic Posts
+     */
+	Route::post('api/topicPosts/(:num)/like', 'ApiTopicPostController@like');
+	Route::delete('api/topicPosts/(:num)/like', 'ApiTopicPostController@like');
+    Route::resource('api/topicPosts', 'ApiTopicPostController');
+
+    /**
+     * Topic Views
+     */
+    Route::resource('api/topicViews', 'ApiTopicViewController');
 
     /**
      * Subtasks

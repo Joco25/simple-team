@@ -4,7 +4,7 @@
 
     angular.module('profile.social', [
         'profile.social.create',
-        'profile.social.list',
+        'conversations.list',
         'profile.social.view'
     ])
 
