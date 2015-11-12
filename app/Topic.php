@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Topic extends Model
 {
-	protected $fillable = ['user_id', 'team_id', 'name', 'postCount'];
+	protected $fillable = ['user_id', 'team_id', 'name', 'post_count', 'like_count', 'view_count'];
 
 	public function posts()
 	{
@@ -56,13 +56,6 @@ class Topic extends Model
 			->delete();
 	}
 
-	public function viewCount()
-	{
-		return TopicView::whereTeamId(Auth::user()->id)
-			->whereTopicId($this->id)
-			->count();
-	}
-
 	public function likeCount()
 	{
 		return Topic::where('topics.id', '=', $this->id)
@@ -100,6 +93,13 @@ class Topic extends Model
 			->update([
 				'like_count' => $this->likeCount()
 			]);
+	}
+
+	public function viewCount()
+	{
+		return TopicView::whereTeamId(Auth::user()->team_id)
+			->whereTopicId($this->id)
+			->count();
 	}
 
 	public function updateViewCount()

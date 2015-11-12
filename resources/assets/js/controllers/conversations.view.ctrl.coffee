@@ -4,7 +4,9 @@ module.exports = [
     '$stateParams'
     '$www'
     '$state'
-    ($stateParams, $www, $state) ->
+    '$rootScope'
+    ($stateParams, $www, $state, $rootScope) ->
+        @authUser = $rootScope.authUser
         @topicId = $stateParams.topicId
         @newPost = {}
         @topic = null

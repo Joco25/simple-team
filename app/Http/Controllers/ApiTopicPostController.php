@@ -45,32 +45,43 @@ class ApiTopicPostController extends Controller
 		]);
 	}
 
-	public function put_update($id = 0)
+	public function update($id = 0)
 	{
-		$s = Api::inputs([
-			'body' => ''
+		$post = TopicPost::whereId($id)
+			->whereUserId(Auth::user()->id)
+			->whereTeamId(Auth::user()->team_id)
+			->first();
+
+		if (! $post) abort(422);
+
+		$post->body = Input::get('body');
+		$success = $post->save();
+
+		return response()->json([
+			'post' => $post,
+			'success' => $success
 		]);
-
-		$post = TopicPost::find($id);
-		has_access($post);
-
-		$post->body = $s['body'];
-
-		return Api::success($post->save());
 	}
 
-	public function delete_delete($id = 0)
+	public function destroy($id)
 	{
-		$post = TopicPost::find($id);
-		has_access($post);
+		$post = TopicPost::whereId($id)
+			->whereUserId(Auth::user()->id)
+			->whereTeamId(Auth::user()->team_id)
+			->first();
 
-		$post->delete();
-		$post->topic->update_post_count();
+		if (! $post) abort(422);
 
-		return Api::success();
+		$topic = $post->topic;
+		$success = $post->delete();
+		$topic->updatePostCount();
+
+		return response()->json([
+			'success' => $success
+		]);
 	}
 
-	public function post_like($id = 0)
+	public function post_like($id)
 	{
 		$post = TopicPost::find($id);
 		if (! $post) {

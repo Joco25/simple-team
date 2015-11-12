@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class TopicPost extends Model
 {
-    protected $fillable = ['user_id', 'team_id', 'topic_id', 'body'];
+    protected $fillable = ['user_id', 'team_id', 'topic_id', 'body', 'topic_post_id'];
 
 	public function topic()
 	{

@@ -27,13 +27,24 @@
 							<div class='row' ng-show='$index == 0'>
 								<div class='col-sm-12'>
 									<div class='pull-right'>
-										 <button class='btn' ng-show='post.user_id !== main.authUser.id' ng-class='{ active: post.is_liked }' ng-click='togglePostUserLike(post)'>
+										 <button
+										 	class='btn'
+											ng-show='post.user_id !== ctrl.authUser.id'
+											ng-class='{ active: post.is_liked }'
+											ng-click='ctrl.togglePostUserLike(post)'>
 											<i class='fa fa-heart' ng-class='{ "text-red": post.is_liked }'></i>
 										</button>
-										<button class='btn' ng-click='selectPost(post); post.editMode = true' ng-show='post.user_id === main.authUser.id'>
+										<button
+											class='btn'
+											ng-click='ctrl.selectPost(post); post.editMode = true'
+											ng-show='post.user_id === ctrl.authUser.id'>
 											<i class='fa fa-pencil'></i>
 										</button>
-										<button class='btn' ng-show='post.user_id === main.authUser.id && ctrl.topic.posts.length == 1' confirm='deleteTopic(ctrl.topic.id)' title='Delete this post?'>
+										<button
+											class='btn'
+											ng-show='post.user_id === ctrl.authUser.id && ctrl.topic.posts.length == 1'
+											ng-click='ctrl.deleteTopic(ctrl.topic.id)'
+											title='Delete this post?'>
 											<i class='fa fa-trash'></i>
 										</button>
 									</div>
@@ -47,16 +58,29 @@
 									</button>
 
 									<div class='pull-right'>
-										<button class='btn' ng-show='post.user_id !== main.authUser.id' ng-class='{ active: post.is_liked }' ng-click='togglePostUserLike(post)'>
+										<button
+											class='btn'
+											ng-show='post.user_id !== ctrl.authUser.id'
+											ng-class='{ active: post.is_liked }'
+											ng-click='ctrl.togglePostUserLike(post)'>
 											<i class='fa fa-heart' ng-class='{ "text-red": post.is_liked }'></i>
 										</button>
-										<button class='btn' ng-click='selectPost(post); post.editMode = true' ng-show='post.user_id === main.authUser.id'>
+										<button
+											class='btn'
+											ng-click='ctrl.selectPost(post); post.editMode = true'
+											ng-show='post.user_id === ctrl.authUser.id'>
 											<i class='fa fa-pencil'></i>
 										</button>
-										<button class='btn' ng-show='post.user_id === main.authUser.id' confirm='deletePost(post.id)' title='Delete this post?'>
+										<button
+											class='btn'
+											ng-show='post.user_id === ctrl.authUser.id'
+											ng-click='ctrl.deletePost(post.id)'
+											title='Delete this post?'>
 											<i class='fa fa-trash'></i>
 										</button>
-										<button class='btn btn-primary' ng-click='selectPost(post); ctrl.newPost.post_id = post.id; post.showNewPost = true'>
+										<button
+											class='btn btn-primary'
+											ng-click='ctrl.selectPost(post); ctrl.newPost.topic_post_id = post.id; post.showNewPost = true'>
 											<i class='fa fa-reply'></i> Reply
 										</button>
 									</div>
@@ -67,17 +91,17 @@
 						<div ng-show='post.editMode'>
 							<div class='row'>
 								<div class='col-sm-12'>
-									<div class='mbs'>
-										<textarea msd-elastic ng-model='postCopy.body'></textarea>
+									<div class='form-group'>
+										<text-angular ng-model='ctrl.postCopy.body'></text-angular>
 									</div>
-									<button class='btn btn-success' ng-click='updatePost()'>
+									<button class='btn btn-success' ng-click='ctrl.updatePost()'>
 										Submit
 									</button>
 								</div>
 							</div>
 						</div>
 					</div>
-					<div class='well well-small' ng-show='post.posts.length > 0 && post.showReplies'>
+					<div class='well well-sm' ng-show='post.posts.length > 0 && post.showReplies'>
 						<div ng-repeat='iPost in post.posts'>
 							<div class="media" ng-repeat='iPost in post.posts'>
 								<a class="pull-left" href="#">
@@ -93,17 +117,15 @@
 
 					<div class='row' ng-show='post.showNewPost'>
 						<div class='col-sm-12'>
-							<form class='mbn' ng-submit='createPost()'>
-								<div class='mbm'>
-									<textarea msd-elastic ng-model='ctrl.newPost.body'></textarea>
-								</div>
+							<form class='mbn' ng-submit='ctrl.createPost()'>
+								<text-angular ng-model='ctrl.newPost.body'></text-angular>
 								<button type='submit' class='btn btn-success'>
 									Submit
 								</button>
-								<button ng-show='ctrl.newPost.body.length > 0' confirm='resetNewPost()' title='Abandon your response?' type='button' class='btn btn-link'>
+								<button ng-show='ctrl.newPost.body.length > 0' confirm='ctrl.resetNewPost()' title='Abandon your response?' type='button' class='btn btn-link'>
 									Cancel
 								</button>
-								<button ng-show='!ctrl.newPost.body' type='button' ng-click='resetNewPost()' class='btn btn-link'>
+								<button ng-show='!ctrl.newPost.body' type='button' ng-click='ctrl.resetNewPost()' class='btn btn-link'>
 									Cancel
 								</button>
 							</form>
@@ -140,9 +162,7 @@
 						</select>
 					</div> -->
 
-					<div class='form-group'>
-						<textarea class="form-control" ng-model='ctrl.newPost.body' msd-elastic></textarea>
-					</div>
+					<text-angular ng-model='ctrl.newPost.body'></text-angular>
 
 					<button type='submit' class='btn btn-success'>
 						Submit

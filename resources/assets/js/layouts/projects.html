@@ -180,7 +180,6 @@ nav {
                                         </div>
                                         <div class="row" style="margin-bottom: 7px;" ng-show="card.impact || card.tags.length > 0">
                                             <div class="col-sm-12">
-                                                <span class="label label-warning" ng-show="card.impact" title="Impact this card has on the project"><i class="glyphicon glyphicon-fire"></i> {{ card.impact }}</span>
                                                 <span ng-repeat="tag in card.tags" ng-show="card.tags.length > 0">
                                                     <span class="label label-primary">{{ tag.name }}</span>
                                                 </span>
@@ -212,6 +211,12 @@ nav {
                                                     <i class="glyphicon glyphicon-comment"></i> {{ card.comments.length }}
                                                 </span>
                                             </div>
+                                        </div>
+                                        <div class="progress" ng-show="card.impact">
+                                            <div
+                                                class="progress-bar progress-bar-info"
+                                                style="width: {{ card.impact }}%;"
+                                                title="Impact this card has on the project"></div>
                                         </div>
                                     </li>
                                 </ul>

@@ -207,10 +207,21 @@ class ApiTopicController extends Controller
 
 	public function destroy($id)
 	{
-		$topic = Topic::find($id);
-		has_access($topic);
+		$topic = Topic::whereId($id)
+			->whereUserId(Auth::user()->id)
+			->whereTeamId(Auth::user()->team_id)
+			->first();
 
-		return Api::success($topic->soft_delete());
+		if (! $topic) abort(422);
+
+		TopicPost::whereTopicId($topic->id)
+			->delete();
+
+		$success = $topic->delete();
+
+		return response()->json([
+			'success' => $success
+		]);
 	}
 
 	public function show($id)

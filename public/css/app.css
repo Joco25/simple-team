@@ -172,9 +172,14 @@ button.close {
           background: #ccc;
           min-height: 100px; }
         .simple-page .projects-container .stage-container .stage-column ul.sortable li .progress {
-          height: 7px;
-          margin: 5px 0 0 0;
-          border-radius: 2px; }
+          position: absolute;
+          bottom: 0;
+          right: 0;
+          left: 0;
+          width: 100%;
+          height: 6px;
+          margin: 0;
+          border-radius: 0 0 2px 2px; }
   .simple-page .drag-overlay {
     background: rgba(255, 255, 255, 0.8);
     border: 3px dashed #ccc;

@@ -12,7 +12,7 @@ module.exports = [
                 toastr.error 'You are missing some info!'
                 return
             $www.post('/api/topics', $scope.newTopic).success (data) ->
-                $state.go 'profile.social.view', topicId: data.topic.id
+                $state.go 'conversations.view', topicId: data.topic.id
                 return
             return
 

@@ -3,7 +3,6 @@
 require 'moment'
 require 'angular-ui-router'
 require 'angular-ui-sortable'
-require 'angular-sanitize'
 require 'angular-gravatar'
 require 'angular-elastic'
 require 'angular-local-storage'
@@ -20,12 +19,15 @@ require './modules/bytes/index.coffee'
 require './modules/sidebar/index.coffee'
 require './modules/navbar/index.coffee'
 require './modules/ngBindHtmlUnsafe'
+require './modules/strings'
+require './modules/mediaComment'
+require './modules/redactor'
+require './modules/time'
 require './modules/www'
 
 angular
     .module 'simple.team', [
         'ngFileUpload'
-        'ngSanitize'
         'ui.router'
         'ui.sortable'
         'ui.gravatar'
@@ -36,6 +38,7 @@ angular
         'ng-showdown'
         'LocalStorageModule'
         'monospaced.elastic'
+        'textAngular'
 
         'simple.team.routes'
         'simple.team.focusMe'

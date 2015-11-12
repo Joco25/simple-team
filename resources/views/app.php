@@ -19,6 +19,8 @@
     <!-- Angular CSS -->
     <link href='//cdnjs.cloudflare.com/ajax/libs/angular-loading-bar/0.7.1/loading-bar.min.css' rel='stylesheet' type='text/css'>
     <link href="//cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/css/selectize.default.min.css" rel="stylesheet" type='text/css'>
+    <link href="//cdnjs.cloudflare.com/ajax/libs/textAngular/1.4.6/textAngular.css" rel="stylesheet" type='text/css'>
+
 
     <!-- Custom CSS -->
 	<link href="/css/app.css" rel="stylesheet" type="text/css">
@@ -87,27 +89,17 @@
 	<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-alpha1/jquery.min.js"></script>
 	<script src="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+    <!--
+     * Angular Scripts
+    -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.5/angular.js"></script>
-
-<!--
-
-
-    <script src="http://cdn.jsdelivr.net/momentjs/latest/moment-with-locales.min.js"></script>
-    <script src="http://cdn.jsdelivr.net/angular.moment/latest/angular-moment.min.js"></script>
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/moment-range/2.0.3/moment-range.min.js"></script>
-    <script src="http://rawgit.com/JimLiu/angular-ui-tree/master/dist/angular-ui-tree.js"></script>
-    <script src="http://rawgit.com/ganarajpr/angular-dragdrop/master/draganddrop.js"></script>
-    <script src="http://rawgit.com/marcj/css-element-queries/master/src/ElementQueries.js"></script>
-    <script src="http://rawgit.com/marcj/css-element-queries/master/src/ResizeSensor.js"></script>
-    <script src="//cdn.jsdelivr.net/angular.gantt/1.2.7/angular-gantt.min.js"></script>
-    <script src="//cdn.jsdelivr.net/angular.gantt/1.2.7/angular-gantt-plugins.min.js"></script>
-
- -->
-
-
     <script src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.13.4/ui-bootstrap-tpls.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/danialfarid-angular-file-upload/9.0.7/ng-file-upload-all.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/angular-loading-bar/0.8.0/loading-bar.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/textAngular/1.4.6/textAngular-rangy.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/textAngular/1.4.6/textAngular-sanitize.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/textAngular/1.4.6/textAngular.min.js"></script>
 
     <script>
         var ENV = {

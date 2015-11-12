@@ -30,21 +30,15 @@ class ApiTopicViewController extends Controller
      */
     public function store(Request $request)
     {
-        $inputs = Input::all([
-            'topic_id' => null
-        ]);
-
-        $topic = Topic::find($inputs['topic_id'])
+        $topicId = Input::get('topic_id');
+        $topic = Topic::whereId($topicId)
             ->whereTeamId(Auth::user()->team_id)
             ->first();
 
-        if (! $topic)
-        {
-            abort('Could not find topic.');
-        }
+        if (! $topic) abort(422);
 
         $success = TopicView::create([
-            'topic_id' => $inputs['topic_id'],
+            'topic_id' => $topicId,
             'team_id' => Auth::user()->team_id,
             'user_id' => Auth::user()->id
         ]);
