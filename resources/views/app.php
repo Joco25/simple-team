@@ -4,12 +4,12 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
+    <meta name="description" content="Simple tools for design, development, and communication.">
     <meta name="author" content="">
 
-    <title>simple.team - Simple and effective project management for teams</title>
+    <title>simple.team - A Web Developer's Best Friend</title>
 
-    <link rel="icon" type="image/png" href="/img/SimpleTeam01-favicon.png">
+    <link rel="shortcut icon" type="image/png" href="/img/SimpleTeam01-favicon.png"/>
 
     <!-- Bootstrap Core CSS -->
     <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">

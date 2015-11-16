@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Simple project management for your team all in one place.">
+    <meta name="description" content="Simple tools for design, development, and communication.">
     <meta name="author" content="@michaeljcalkins">
 
-    <title>simple.team | Project management for your team all in one place.</title>
+    <title>simple.team - A Web Developer's Best Friend</title>
 
     <link rel="shortcut icon" type="image/png" href="/img/SimpleTeam01-favicon.png"/>
 

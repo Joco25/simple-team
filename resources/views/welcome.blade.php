@@ -5,8 +5,8 @@
     @include('partials.publicHeader')
 
     <section class="section-home">
-        <h1>Simple tools, for rapid progress.</h1>
-        <p>Project management for your team all in one place.</p>
+        <h1>A Web Developer's Best Friend.</h1>
+        <p>Simple tools for design, development, and communication.</p>
         <a href="/auth/register" class="btn btn-primary btn-lg">Create My Free Account</a>
         <div class="site-preview"></div>
     </section>
