@@ -41098,7 +41098,7 @@ angular.module('simple.team', ['ngFileUpload', 'ui.router', 'ui.sortable', 'ui.g
 ]);
 
 
-},{"./modules/auth/index.coffee":43,"./modules/bytes/index.coffee":44,"./modules/cardCacher/index.coffee":45,"./modules/cardList/index.coffee":50,"./modules/focusMe/index.coffee":52,"./modules/mediaComment":53,"./modules/navbar/index.coffee":54,"./modules/ngBindHtmlUnsafe":56,"./modules/redactor":57,"./modules/selectize":58,"./modules/sidebar/index.coffee":59,"./modules/strings":61,"./modules/tagData/index.coffee":62,"./modules/time":63,"./modules/userData/index.coffee":64,"./modules/www":65,"./routes.coffee":66,"angular-elastic":1,"angular-gravatar":2,"angular-local-storage":3,"angular-moment":4,"angular-ui-router":5,"angular-ui-sortable":6,"moment":7,"ng-showdown":8}],13:[function(require,module,exports){
+},{"./modules/auth/index.coffee":43,"./modules/bytes/index.coffee":44,"./modules/cardCacher/index.coffee":45,"./modules/cardList/index.coffee":49,"./modules/focusMe/index.coffee":51,"./modules/mediaComment":52,"./modules/navbar/index.coffee":53,"./modules/ngBindHtmlUnsafe":55,"./modules/redactor":56,"./modules/selectize":57,"./modules/sidebar/index.coffee":58,"./modules/strings":60,"./modules/tagData/index.coffee":61,"./modules/time":62,"./modules/userData/index.coffee":63,"./modules/www":64,"./routes.coffee":65,"angular-elastic":1,"angular-gravatar":2,"angular-local-storage":3,"angular-moment":4,"angular-ui-router":5,"angular-ui-sortable":6,"moment":7,"ng-showdown":8}],13:[function(require,module,exports){
 'use strict';
 module.exports = function($state, $stateParams, $modal) {
   var cardId, init;
@@ -41799,10 +41799,15 @@ module.exports = [
 
 },{"moment":7}],20:[function(require,module,exports){
 'use strict';
-module.exports = function($http, $state, $rootScope, $modal) {
-  var init, updateProjectOrder, updateStageCards;
+module.exports = function($http, $state, $rootScope, $modal, CardCacherService) {
+  var init;
   this.s3BucketAttachmentsUrl = $rootScope.s3BucketAttachmentsUrl;
   this.authUser = $rootScope.authUser;
+  this.filters = {
+    tag: null,
+    assignedTo: null,
+    quick: null
+  };
   this.team = $rootScope.authUser.team;
   this.projects = [];
   this.tags = [];
@@ -41811,22 +41816,19 @@ module.exports = function($http, $state, $rootScope, $modal) {
   this.selectedCommentBody = '';
   this.selectedTaskBody = '';
   this.searchInput = '';
-  this.filters = {
-    tag: null,
-    assignedTo: null,
-    quick: null
-  };
   this.sortableOptions = {
     placeholder: "sortable-preview",
     connectWith: ".sortable",
     delay: 100,
-    stop: function(evt, ui) {
-      var stage;
-      if (ui.item.sortable.droptarget) {
-        stage = ui.item.sortable.droptarget.scope().stage;
-        return updateStageCards(stage);
-      }
-    }
+    stop: (function(_this) {
+      return function(evt, ui) {
+        var stage;
+        if (ui.item.sortable.droptarget) {
+          stage = ui.item.sortable.droptarget.scope().stage;
+          return _this.updateStageCards(stage);
+        }
+      };
+    })(this)
   };
   $rootScope.$on('projects:reload', (function(_this) {
     return function() {
@@ -41839,7 +41841,13 @@ module.exports = function($http, $state, $rootScope, $modal) {
       return _this.loadTags();
     };
   })(this);
-  updateStageCards = function(stage) {
+  this.openEditCard = function(card) {
+    CardCacherService.set(card);
+    return $state.go('projects.card', {
+      cardId: card.id
+    });
+  };
+  this.updateStageCards = function(stage) {
     var cardIds;
     cardIds = _.pluck(stage.cards, 'id');
     return $http.put('/api/cards/stageOrder', {
@@ -41847,7 +41855,7 @@ module.exports = function($http, $state, $rootScope, $modal) {
       stage_id: stage.id
     });
   };
-  updateProjectOrder = function(projects) {
+  this.updateProjectOrder = function(projects) {
     var projectIds;
     projectIds = _.pluck(projects, 'id');
     return $http.post('/api/projects/order', {
@@ -41906,7 +41914,7 @@ module.exports = function($http, $state, $rootScope, $modal) {
     }).result.then((function(_this) {
       return function(projects) {
         _this.projects = projects;
-        return updateProjectOrder(projects);
+        return _this.updateProjectOrder(projects);
       };
     })(this));
   };
@@ -42459,7 +42467,7 @@ module.exports = '<div class="panel">\n	<div class="panel-body">\n		<h3 style="m
 },{}],34:[function(require,module,exports){
 module.exports = '<div class="container-fluid">\n    <div class="row">\n        <div class="col-sm-12">\n            <div class="row" style="margin-bottom: 10px">\n                <div class="col-sm-6">\n                    {{ ctrl.filterDate | date:\'EEEE, MMMM d, y\' }}\n                </div>\n                <div class="col-sm-6 text-right">\n                    <div class="btn-group" style="margin-right: 5px;">\n                        <button class="btn btn-default" ng-click="ctrl.addDay()">&lt;</button>\n                        <button class="btn btn-default" ng-click="ctrl.goToToday()">Today</button>\n                        <button class="btn btn-default" ng-click="ctrl.substractDay()">&gt;</button>\n                    </div>\n\n                    <div class="form-inline pull-right">\n                        <input class="form-control" type="date" ng-model="ctrl.filterDate" ng-click="ctrl.loadDailySummaries()">\n                    </div>\n                </div>\n            </div>\n\n            <div class="panel">\n                <div class="panel-body">\n                    <div class="row">\n                        <div class="col-sm-6">\n                            <h4 style="margin-top: 0">{{ ctrl.authUser.name }}</h4>\n                        </div>\n                        <div class="col-sm-6">\n                        </div>\n                    </div>\n                    <div class="form-group">\n                        <form ng-submit="ctrl.createDailySummary()">\n                            <input\n                                type="text"\n                                class="form-control"\n                                ng-model="ctrl.dailySummaryBody"\n                                placeholder="Today I...">\n                        </form>\n                    </div>\n                    <table class="table">\n                        <tr ng-repeat="dailySummary in ctrl.selectedDailySummaries">\n                            <td>\n                                <div\n                                    ng-show="dailySummary != dailySummaryCopy"\n                                    ng-click="editDailySummary(dailySummary)">\n                                    {{ dailySummary.body }}\n                                </div>\n\n                                <div ng-show="dailySummary == dailySummaryCopy">\n                                    <input\n                                        type="text"\n                                        class="form-control"\n                                        ng-model="dailySummaryCopy.body"\n                                        v-on="\n                                            blur: updateDailySummary(dailySummary),\n                                            keyup: updateDailySummary(dailySummary) | key \'enter\',\n                                            keyup: cancelDailySummary(dailySummary) | key \'esc\'\n                                        ">\n                                </div>\n                            </td>\n                            <td class="text-right">\n                                <button\n                                    class="btn btn-primary"\n                                    ng-click="ctrl.editDailySummary(dailySummary)">\n                                    Edit\n                                </button>\n                                <button\n                                    class="btn btn-danger"\n                                    ng-click="ctrl.deleteDailySummary(userId, dailySummary)">\n                                    Delete\n                                </button>\n                            </td>\n                        </tr>\n                    </table>\n                </div>\n            </div>\n\n            <div\n                class="panel"\n                ng-repeat="user in ctrl.authUser.team.users"\n                ng-hide="user.id == ctrl.authUser.id">\n                <div class="panel-body">\n                    <h4 style="margin-top: 0">{{ user.name }}</h4>\n                    <table class="table">\n                        <tbody>\n                            <tr ng-show="! ctrl.dailySummaries[user.id].length">\n                                <td class="text-center">\n                                    <h5 class="text-muted">No entries.</h5>\n                                </td>\n                            </tr>\n                            <tr ng-repeat="dailySummary in ctrl.dailySummaries[user.id]">\n                                <td>{{ dailySummary.body }}</td>\n                            </tr>\n                        </tbody>\n                    </table>\n                </div>\n            </div>\n        </div>\n    </div>\n</div>\n';
 },{}],35:[function(require,module,exports){
-module.exports = '<style>\nnav {\n    margin: 0 !important;\n}\n</style>\n<div class="container-fluid" style="padding-top: 15px; box-shadow: 0 1px 2px -1px rgba(0, 0, 0, 0.3); background: white">\n    <div class="row" style="margin-bottom: 15px">\n        <div class="col-sm-8">\n            <div class="btn-group pull-left" style="margin-right: 10px;">\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        {{ ctrl.filters.tag.name || \'Tags\' }} <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li ng-click="ctrl.selectTagFilter(null)">\n                            <a href="#">Show All Tags</a>\n                        </li>\n                        <li class="divider"></li>\n                        <li\n                            ng-click="ctrl.selectTagFilter(tag)"\n                            ng-repeat="tag in ctrl.tags">\n                            <a href="#">{{ tag.name }}</a>\n                        </li>\n                    </ul>\n                </div>\n\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        <span ng-show="ctrl.assignedTo.name">{{ ctrl.assignedTo.name }}</span>\n                        <span ng-show="ctrl.assignedTo == \'no one\'">Assigned to no one</span>\n                        <span ng-show="ctrl.assignedTo == null">Assigned to</span>\n                        <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li ng-click="ctrl.selectAssignedToFilter(null)"><a href="#">Everyone</a></li>\n                        <li class="divider"></li>\n                        <li ng-click="ctrl.selectAssignedToFilter(ctrl.authUser)"><a href="#">Me</a></li>\n                        <li ng-click="ctrl.selectAssignedToFilter(\'no one\')"><a href="#">No One Assigned</a></li>\n                        <li\n                            ng-click="ctrl.selectAssignedToFilter(user)"\n                            ng-hide="user.id == ctrl.authUser.id"\n                            ng-repeat="user in ctrl.team.users">\n                            <a href="#">{{ user.name }}</a>\n                        </li>\n                    </ul>\n                </div>\n\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                         {{ ctrl.filters.quick || \'Quick filters\' }} <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li ng-click="ctrl.selectQuickFilter(null)"><a href="#">Show all</a></li>\n                        <li class="divider"></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'Created by me\')"><a href="#">Created by me</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'With subtasks\')"><a href="#">With subtasks</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'With impact\')"><a href="#">With impact</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'With comments\')"><a href="#">With comments</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'With files attached\')"><a href="#">With files attached</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'Tasks blocked\')"><a href="#">Tasks blocked</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'Tasks unblocked\')"><a href="#">Tasks unblocked</a></li>\n                    </ul>\n                </div>\n            </div>\n\n            <form class="form-inline">\n                <div class="form-group">\n                    <div ng-class="{ \'input-group\': ctrl.searchInput }">\n                        <input\n                            type="text"\n                            class="form-control"\n                            placeholder="Search cards..."\n                            ng-change="ctrl.updateSearchInput()"\n                            ng-model="ctrl.searchInput">\n                        <div\n                            class="input-group-addon btn btn-default"\n                            ng-show="ctrl.searchInput"\n                            ng-click="ctrl.clearSearchInput()">\n                            <i class="fa fa-times"></i>\n                        </div>\n                    </div>\n                </div>\n            </form>\n        </div>\n        <div class="col-sm-4 text-right">\n            <button\n                class="btn btn-primary"\n                ng-click="ctrl.openSortableProjects()">\n                Sort Projects\n            </button>\n            <button\n                class="btn btn-success"\n                ng-click="ctrl.createProject()">\n                Create Project\n            </button>\n        </div>\n    </div>\n</div>\n<div class="projects-container">\n    <div class="panel panel-default" ng-repeat="project in ctrl.projects">\n        <div class="panel-body">\n            <div class="stage-container" ng-hide="project.hidden">\n                <table class="table">\n                    <tr>\n                        <td>\n                            <div class="project-head">\n                                <h4>{{ project.name }}</h4>\n                                <div class="btn-group-vertical" style="width: 100%;">\n                                    <button\n                                        type="button"\n                                        class="btn btn-default btn-sm"\n                                        ng-click="ctrl.createCard(project)">\n                                        <i class="glyphicon glyphicon-plus text-success"></i> Add a Card\n                                    </button>\n                                    <button\n                                        class="btn btn-default btn-sm"\n                                        ng-click="ctrl.editProject(project)">\n                                        <i class="glyphicon glyphicon-pencil text-info"></i> Edit\n                                    </button>\n                                    <button\n                                        class="btn btn-default btn-sm"\n                                        ng-click="ctrl.deleteProject(project)">\n                                        <i class="glyphicon glyphicon-remove text-danger"></i> Delete\n                                    </button>\n                                </div>\n                            </div>\n                        </td>\n                        <td ng-repeat="(stageIndex, stage) in project.stages">\n                            <div class="stage-column">\n                                <div class="stage-header">\n                                    <div class="row">\n                                        <div class="col-sm-6">\n                                            <h5>{{ stage.name }}</h5>\n                                        </div>\n                                        <div class="col-sm-6">\n                                            <div class="btn-group  pull-right">\n                                                <button\n                                                    type="button"\n                                                    class="btn btn-link btn-sm dropdown-toggle pull-right"\n                                                    data-toggle="dropdown">\n                                                    <span class="fa fa-cog"></span>\n                                                </button>\n                                                <ul class="dropdown-menu dropdown-menu-right">\n                                                    <li>\n                                                        <a class="pointer" ng-click="ctrl.editStage(stage)">Rename</a>\n                                                    </li>\n                                                    <li>\n                                                        <a class="pointer" ng-click="ctrl.deleteAllCardsInStage(stage)">Delete All Cards</a>\n                                                    </li>\n                                                    <li role="separator" class="divider"></li>\n                                                    <li>\n                                                        <a ng-click="ctrl.deleteStage(project, stageIndex)">Delete</a>\n                                                    </li>\n                                                </ul>\n                                            </div>\n                                        </div>\n                                    </div>\n                                </div>\n\n                                <card-list data="stage.cards" search-input="ctrl.searchInput" applied-filters="ctrl.appliedFilters"></card-list>\n                            </div>\n                        </td>\n                    </tr>\n                </table>\n            </div>\n        </div>\n    </div>\n</div>\n<div ui-view></div>\n';
+module.exports = '<style>\nnav {\n    margin: 0 !important;\n}\n</style>\n<div class="container-fluid" style="padding-top: 15px; box-shadow: 0 1px 2px -1px rgba(0, 0, 0, 0.3); background: white">\n    <div class="row" style="margin-bottom: 15px">\n        <div class="col-sm-8">\n            <div class="btn-group pull-left" style="margin-right: 10px;">\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        {{ ctrl.filters.tag.name || \'Tags\' }} <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li ng-click="ctrl.selectTagFilter(null)">\n                            <a href="#">Show All Tags</a>\n                        </li>\n                        <li class="divider"></li>\n                        <li\n                            ng-click="ctrl.selectTagFilter(tag)"\n                            ng-repeat="tag in ctrl.tags">\n                            <a href="#">{{ tag.name }}</a>\n                        </li>\n                    </ul>\n                </div>\n\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        <span ng-show="ctrl.assignedTo.name">{{ ctrl.assignedTo.name }}</span>\n                        <span ng-show="ctrl.assignedTo == \'no one\'">Assigned to no one</span>\n                        <span ng-show="ctrl.assignedTo == null">Assigned to</span>\n                        <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li ng-click="ctrl.selectAssignedToFilter(null)"><a href="#">Everyone</a></li>\n                        <li class="divider"></li>\n                        <li ng-click="ctrl.selectAssignedToFilter(ctrl.authUser)"><a href="#">Me</a></li>\n                        <li ng-click="ctrl.selectAssignedToFilter(\'no one\')"><a href="#">No One Assigned</a></li>\n                        <li\n                            ng-click="ctrl.selectAssignedToFilter(user)"\n                            ng-hide="user.id == ctrl.authUser.id"\n                            ng-repeat="user in ctrl.team.users">\n                            <a href="#">{{ user.name }}</a>\n                        </li>\n                    </ul>\n                </div>\n\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                         {{ ctrl.filters.quick || \'Quick filters\' }} <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li ng-click="ctrl.selectQuickFilter(null)"><a href="#">Show all</a></li>\n                        <li class="divider"></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'Created by me\')"><a href="#">Created by me</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'With subtasks\')"><a href="#">With subtasks</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'With impact\')"><a href="#">With impact</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'With comments\')"><a href="#">With comments</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'With files attached\')"><a href="#">With files attached</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'Tasks blocked\')"><a href="#">Tasks blocked</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'Tasks unblocked\')"><a href="#">Tasks unblocked</a></li>\n                    </ul>\n                </div>\n            </div>\n\n            <form class="form-inline">\n                <div class="form-group">\n                    <div ng-class="{ \'input-group\': ctrl.searchInput }">\n                        <input\n                            type="text"\n                            class="form-control"\n                            placeholder="Search cards..."\n                            ng-change="ctrl.updateSearchInput()"\n                            ng-model="ctrl.searchInput">\n                        <div\n                            class="input-group-addon btn btn-default"\n                            ng-show="ctrl.searchInput"\n                            ng-click="ctrl.clearSearchInput()">\n                            <i class="fa fa-times"></i>\n                        </div>\n                    </div>\n                </div>\n            </form>\n        </div>\n        <div class="col-sm-4 text-right">\n            <button\n                class="btn btn-primary"\n                ng-click="ctrl.openSortableProjects()">\n                Sort Projects\n            </button>\n            <button\n                class="btn btn-success"\n                ng-click="ctrl.createProject()">\n                Create Project\n            </button>\n        </div>\n    </div>\n</div>\n<div class="projects-container">\n    <div class="panel panel-default" ng-repeat="project in ctrl.projects">\n        <div class="panel-body">\n            <div class="stage-container" ng-hide="project.hidden">\n                <table class="table">\n                    <tr>\n                        <td>\n                            <div class="project-head">\n                                <h4>{{ project.name }}</h4>\n                                <div class="btn-group-vertical" style="width: 100%;">\n                                    <button\n                                        type="button"\n                                        class="btn btn-default btn-sm"\n                                        ng-click="ctrl.createCard(project)">\n                                        <i class="glyphicon glyphicon-plus text-success"></i> Add a Card\n                                    </button>\n                                    <button\n                                        class="btn btn-default btn-sm"\n                                        ng-click="ctrl.editProject(project)">\n                                        <i class="glyphicon glyphicon-pencil text-info"></i> Edit\n                                    </button>\n                                    <button\n                                        class="btn btn-default btn-sm"\n                                        ng-click="ctrl.deleteProject(project)">\n                                        <i class="glyphicon glyphicon-remove text-danger"></i> Delete\n                                    </button>\n                                </div>\n                            </div>\n                        </td>\n                        <td ng-repeat="(stageIndex, stage) in project.stages">\n                            <div class="stage-column">\n                                <div class="stage-header">\n                                    <div class="row">\n                                        <div class="col-sm-6">\n                                            <h5>{{ stage.name }}</h5>\n                                        </div>\n                                        <div class="col-sm-6">\n                                            <div class="btn-group  pull-right">\n                                                <button\n                                                    type="button"\n                                                    class="btn btn-link btn-sm dropdown-toggle pull-right"\n                                                    data-toggle="dropdown">\n                                                    <span class="fa fa-cog"></span>\n                                                </button>\n                                                <ul class="dropdown-menu dropdown-menu-right">\n                                                    <li>\n                                                        <a class="pointer" ng-click="ctrl.editStage(stage)">Rename</a>\n                                                    </li>\n                                                    <li>\n                                                        <a class="pointer" ng-click="ctrl.deleteAllCardsInStage(stage)">Delete All Cards</a>\n                                                    </li>\n                                                    <li role="separator" class="divider"></li>\n                                                    <li>\n                                                        <a ng-click="ctrl.deleteStage(project, stageIndex)">Delete</a>\n                                                    </li>\n                                                </ul>\n                                            </div>\n                                        </div>\n                                    </div>\n                                </div>\n\n                                <ul\n                                    class="sortable"\n                                    ui-sortable="ctrl.sortableOptions"\n                                    ng-model="stage.cards">\n                                    <li\n                                        ng-click="ctrl.openEditCard(card)"\n                                        ng-repeat="card in stage.cards | filter:ctrl.searchInput | filter:ctrl.appliedFilters"\n                                        ng-class="{ \'card-blocked\': card.blocked }"\n                                        card-list-item\n                                        data="card">\n                                    </li>\n                                </ul>\n                            </div>\n                        </td>\n                    </tr>\n                </table>\n            </div>\n        </div>\n    </div>\n</div>\n<div ui-view></div>\n';
 },{}],36:[function(require,module,exports){
 module.exports = '<div class="row">\n    <div class="col-sm-6">\n        <div class="panel panel-default">\n            <div class="panel-heading">\n                <h5 class="panel-title">Your info</h5>\n            </div>\n            <div class="panel-body">\n                <form ng-submit="ctrl.updateUser()">\n                    <div class="form-group">\n                        <label>Name</label>\n                        <input\n                            type="text"\n                            class="form-control"\n                            ng-model="ctrl.authUser.name">\n                    </div>\n                    <div class="form-group">\n                        <label>Email</label>\n                        <input\n                            type="email"\n                            class="form-control"\n                            ng-model="ctrl.authUser.email">\n                    </div>\n                    <button\n                        type="submit"\n                        class="btn btn-primary">Submit</button>\n                </form>\n            </div>\n        </div>\n    </div>\n    <div class="col-sm-6">\n        <div class="panel panel-default">\n            <div class="panel-heading">\n                <h5 class="panel-title">Change your password</h5>\n            </div>\n            <div class="panel-body">\n                <form ng-submit="ctrl.updatePassword()">\n                    <div class="form-group">\n                        <label>Password</label>\n                        <input\n                            type="password"\n                            class="form-control"\n                            ng-model="ctrl.password">\n                    </div>\n                    <div class="form-group">\n                        <label>Password Confirmation</label>\n                        <input\n                            type="password"\n                            class="form-control"\n                            ng-model="ctrl.passwordConfirm">\n                    </div>\n                    <button class="btn btn-primary">Submit</button>\n                </form>\n            </div>\n        </div>\n    </div>\n</div>\n';
 },{}],37:[function(require,module,exports){
@@ -42533,18 +42541,18 @@ angular.module('simple.team.cardCacher', []).service('CardCacherService', functi
 'use strict';
 var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-module.exports = function($state, $rootScope, CardListFiltersService, CardCacherService) {
+module.exports = function($state, $http, $rootScope, CardListFiltersService, CardCacherService) {
   var CtrlFunc;
   CtrlFunc = (function() {
     function CtrlFunc($scope) {
       this.appliedFilters = bind(this.appliedFilters, this);
       this.authUser = $rootScope.authUser;
-      this.cards = $scope.data;
       this.filters = {
         tag: null,
         assignedTo: null,
         quick: null
       };
+      this.stage = $scope.data;
       this.searchInput = '';
       $rootScope.$on('filters:update', (function(_this) {
         return function(evt, data) {
@@ -42558,13 +42566,6 @@ module.exports = function($state, $rootScope, CardListFiltersService, CardCacher
       })(this));
     }
 
-    CtrlFunc.prototype.openEditCard = function(card) {
-      CardCacherService.set(card);
-      return $state.go('projects.card', {
-        cardId: card.id
-      });
-    };
-
     CtrlFunc.prototype.appliedFilters = function(card) {
       return CardListFiltersService.check(this.filters, this.authUser, card);
     };
@@ -42577,13 +42578,12 @@ module.exports = function($state, $rootScope, CardListFiltersService, CardCacher
       data: '='
     },
     controller: CtrlFunc,
-    controllerAs: 'ctrl',
-    template: require('./views/cardList.html')
+    controllerAs: 'ctrl'
   };
 };
 
 
-},{"./views/cardList.html":48}],47:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 'use strict';
 module.exports = function() {
   var CtrlFunc;
@@ -42606,16 +42606,14 @@ module.exports = function() {
 };
 
 
-},{"./views/cardListItem.html":49}],48:[function(require,module,exports){
-module.exports = '<ul\n    class="sortable"\n    ui-sortable="ctrl.sortableOptions"\n    ng-model="ctrl.cards">\n    <li\n        ng-click="ctrl.openEditCard(card)"\n        ng-repeat="card in ctrl.cards | filter:ctrl.searchInput | filter:ctrl.appliedFilters"\n        ng-class="{ \'card-blocked\': card.blocked }">\n        <card-list-item data="card"></card-list-item>\n    </li>\n</ul>\n';
-},{}],49:[function(require,module,exports){
+},{"./views/cardListItem.html":48}],48:[function(require,module,exports){
 module.exports = '<div class="row">\n    <div class="col-sm-12">\n        {{ ctrl.card.name }}\n    </div>\n</div>\n<div class="row" style="margin-bottom: 7px;" ng-show="ctrl.card.impact || ctrl.card.tags.length > 0">\n    <div class="col-sm-12">\n        <span ng-repeat="tag in ctrl.card.tags" ng-show="ctrl.card.tags.length > 0">\n            <span class="label label-primary">{{ tag.name }}</span>\n        </span>\n    </div>\n</div>\n<div class="row text-center text-muted">\n    <div class="col-sm-5ths" title="This ctrl.card has a description.">\n        <span ng-show="ctrl.card.description">\n            <i class="glyphicon glyphicon-align-left"></i>\n        </span>\n    </div>\n    <div class="col-sm-5ths" title="{{ ctrl.card.users.length }} user(s) assigned to this ctrl.card">\n        <span ng-show="ctrl.card.users.length">\n            <i class="glyphicon glyphicon-user"></i> {{ ctrl.card.users.length }}\n        </span>\n    </div>\n    <div class="col-sm-5ths" title="{{ ctrl.card.subtasks.length }} subtask(s)">\n        <span ng-show="ctrl.card.subtasks.length">\n            <i class="glyphicon glyphicon-ok"></i> {{ ctrl.card.subtasks.length }}\n        </span>\n    </div>\n    <div class="col-sm-5ths" title="{{ ctrl.card.attachments.length }} attachment(s)">\n        <span ng-show="ctrl.card.attachments.length">\n            <i class="glyphicon glyphicon-download-alt"></i> {{ ctrl.card.attachments.length }}\n        </span>\n    </div>\n    <div class="col-sm-5ths" title="{{ ctrl.card.comments.length }} comment(s)">\n        <span ng-show="ctrl.card.comments.length">\n            <i class="glyphicon glyphicon-comment"></i> {{ ctrl.card.comments.length }}\n        </span>\n    </div>\n</div>\n<div class="progress" ng-show="ctrl.card.impact">\n    <div\n        class="progress-bar progress-bar-info"\n        style="width: {{ ctrl.card.impact }}%;"\n        title="Impact this ctrl.card has on the project"></div>\n</div>\n';
-},{}],50:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 'use strict';
 angular.module('simple.team.cardList', []).directive('cardList', require('./directives/cardList.directive.coffee')).directive('cardListItem', require('./directives/cardListItem.directive.coffee')).service('CardListFiltersService', require('./services/cardList.filters.service.coffee'));
 
 
-},{"./directives/cardList.directive.coffee":46,"./directives/cardListItem.directive.coffee":47,"./services/cardList.filters.service.coffee":51}],51:[function(require,module,exports){
+},{"./directives/cardList.directive.coffee":46,"./directives/cardListItem.directive.coffee":47,"./services/cardList.filters.service.coffee":50}],50:[function(require,module,exports){
 'use strict';
 module.exports = function() {
   var CardListFilters;
@@ -42666,7 +42664,7 @@ module.exports = function() {
 };
 
 
-},{}],52:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 angular.module('simple.team.focusMe', []).directive('focusMe', [
   '$timeout', function($timeout) {
     return {
@@ -42687,7 +42685,7 @@ angular.module('simple.team.focusMe', []).directive('focusMe', [
 ]);
 
 
-},{}],53:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 'use strict';
 
 angular.module('simple.team.mediaComment', []).factory('Parser', [function () {
@@ -42819,7 +42817,7 @@ angular.module('simple.team.mediaComment', []).factory('Parser', [function () {
 	};
 }]);
 
-},{}],54:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 'use strict';
 angular.module('simple.team.navbar', []).directive('navbar', function() {
   return {
@@ -42902,9 +42900,9 @@ angular.module('simple.team.navbar', []).directive('navbar', function() {
 });
 
 
-},{"./view.html":55}],55:[function(require,module,exports){
+},{"./view.html":54}],54:[function(require,module,exports){
 module.exports = '<nav class="navbar navbar-default navbar-static-top">\n    <div class="container-fluid">\n        <ul class="nav navbar-nav">\n            <li class="dropdown">\n                <a href="#" class="dropdown-toggle" data-toggle="dropdown">{{ navCtrl.selectedTeam.name || \'Select a team...\' }} <span class="caret"></span></a>\n                <ul class="dropdown-menu">\n                    <li ng-repeat="team in navCtrl.teams" ng-click="navCtrl.setCurrentTeam(team)">\n                        <a href="#">{{ team.name }}</a>\n                    </li>\n                </ul>\n            </li>\n        </ul>\n        <ul class="nav navbar-nav navbar-right">\n            <li class="dropdown">\n                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Menu<span class="caret"></span></a>\n                <ul class="dropdown-menu">\n                    <li><a ui-sref="simple.settings.account">Account</a></li>\n                    <li><a ui-sref="simple.settings.teams">Teams</a></li>\n                    <li class="divider"></li>\n                    <li><a ui-sref="auth.logout">Sign Out</a></li>\n                </ul>\n            </li>\n        </ul>\n    </div>\n</nav>\n';
-},{}],56:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 "use strict";
 
 angular.module('simple.team.ngBindHtmlUnsafe', []).directive('ngBindHtmlUnsafe', [function () {
@@ -42916,7 +42914,7 @@ angular.module('simple.team.ngBindHtmlUnsafe', []).directive('ngBindHtmlUnsafe',
     };
 }]);
 
-},{}],57:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 'use strict';
 
 angular.module('simple.team.redactor', [])
@@ -42961,7 +42959,7 @@ angular.module('simple.team.redactor', [])
 	};
 }]);
 
-},{}],58:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 /**
  * Angular Selectize2
  * https://github.com/machineboy2045/angular-selectize
@@ -43071,7 +43069,7 @@ angular.module('selectize', []).value('selectizeConfig', {}).directive("selectiz
   };
 }]);
 
-},{}],59:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 angular.module('simple.team.sidebar', []).directive('sidebar', function() {
   return {
     restrict: 'E',
@@ -43080,9 +43078,9 @@ angular.module('simple.team.sidebar', []).directive('sidebar', function() {
 });
 
 
-},{"./view.html":60}],60:[function(require,module,exports){
+},{"./view.html":59}],59:[function(require,module,exports){
 module.exports = '<div class="wrapper">\n    <div class="sidebar">\n        <div class="title">simple.team</div>\n        <ul class="side-nav">\n            <li><a ui-sref="simple.projects.kanban">Kanban</a></li>\n            <li><a ui-sref="simple.projects.list">Projects List</a></li>\n            <!-- <li><a ui-sref="chat">Chat</a></li>\n            <li><a ui-sref="timeline">Timeline</a></li>\n            <li><a ui-sref="daily-summary">Daily Summary</a></li>\n            <li><a ui-sref="notes.list">Notes</a></li>\n            <li><a ui-sref="one-use-notes">Secure Notes</a></li>\n            <li><a ui-sref="designer">Designer</a></li>\n            <li><a ui-sref="settings.teams">Settings</a></li> -->\n        </ul>\n    </div>\n</div>\n';
-},{}],61:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 'use strict';
 
 angular.module('simple.team.strings', [])
@@ -43223,7 +43221,7 @@ angular.module('simple.team.strings', [])
 	};
 }]);
 
-},{}],62:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 'use strict';
 angular.module('simple.team.tagData', []).service('TagDataService', [
   '$http', function($http) {
@@ -43234,7 +43232,7 @@ angular.module('simple.team.tagData', []).service('TagDataService', [
 ]);
 
 
-},{}],63:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 'use strict';
 
 angular.module('simple.team.time', []).filter('moment', [function () {
@@ -43302,7 +43300,7 @@ angular.module('simple.team.time', []).filter('moment', [function () {
 	};
 }]);
 
-},{}],64:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 'use strict';
 angular.module('simple.team.userData', []).service('UserDataService', [
   '$http', function($http) {
@@ -43313,7 +43311,7 @@ angular.module('simple.team.userData', []).service('UserDataService', [
 ]);
 
 
-},{}],65:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 'use strict';
 
 module.exports = angular.module('simple.team.www', []).factory('$www', ['$http', function ($http) {
@@ -43368,7 +43366,7 @@ module.exports = angular.module('simple.team.www', []).factory('$www', ['$http',
 	return self;
 }]);
 
-},{}],66:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 angular.module('simple.team.routes', []).config([
   '$stateProvider', function($stateProvider) {
     return $stateProvider.state('projects', {

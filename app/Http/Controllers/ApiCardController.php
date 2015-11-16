@@ -99,7 +99,9 @@ class ApiCardController extends Controller
                 ]);
         }
 
-        return response()->json();
+        return response()->json([
+            'success' => true
+        ]);
     }
 
     public function updateStage($id)

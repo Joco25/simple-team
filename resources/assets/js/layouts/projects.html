@@ -166,7 +166,18 @@ nav {
                                     </div>
                                 </div>
 
-                                <card-list data="stage.cards" search-input="ctrl.searchInput" applied-filters="ctrl.appliedFilters"></card-list>
+                                <ul
+                                    class="sortable"
+                                    ui-sortable="ctrl.sortableOptions"
+                                    ng-model="stage.cards">
+                                    <li
+                                        ng-click="ctrl.openEditCard(card)"
+                                        ng-repeat="card in stage.cards | filter:ctrl.searchInput | filter:ctrl.appliedFilters"
+                                        ng-class="{ 'card-blocked': card.blocked }"
+                                        card-list-item
+                                        data="card">
+                                    </li>
+                                </ul>
                             </div>
                         </td>
                     </tr>

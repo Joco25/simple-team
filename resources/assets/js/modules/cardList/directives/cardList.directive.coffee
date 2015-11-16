@@ -1,14 +1,14 @@
 'use strict'
 
-module.exports = ($state, $rootScope, CardListFiltersService, CardCacherService) ->
+module.exports = ($state, $http, $rootScope, CardListFiltersService, CardCacherService) ->
     class CtrlFunc
         constructor: ($scope) ->
             @authUser = $rootScope.authUser
-            @cards = $scope.data
             @filters =
                 tag: null
                 assignedTo: null
                 quick: null
+            @stage = $scope.data
             @searchInput = ''
 
             $rootScope.$on 'filters:update', (evt, data) =>
@@ -16,12 +16,6 @@ module.exports = ($state, $rootScope, CardListFiltersService, CardCacherService)
 
             $rootScope.$on 'search:update', (evt, data) =>
                 @searchInput = data
-
-        openEditCard: (card) ->
-            CardCacherService.set(card)
-            $state.go 'projects.card',
-                cardId: card.id
-
 
         appliedFilters: (card) =>
             CardListFiltersService.check(@filters, @authUser, card)
@@ -31,5 +25,4 @@ module.exports = ($state, $rootScope, CardListFiltersService, CardCacherService)
             data: '='
         controller: CtrlFunc
         controllerAs: 'ctrl'
-        template: require('./views/cardList.html')
     }

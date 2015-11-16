@@ -1,8 +1,12 @@
 'use strict'
 
-module.exports = ($http, $state, $rootScope, $modal) ->
+module.exports = ($http, $state, $rootScope, $modal, CardCacherService) ->
     @s3BucketAttachmentsUrl = $rootScope.s3BucketAttachmentsUrl
     @authUser = $rootScope.authUser
+    @filters =
+        tag: null
+        assignedTo: null
+        quick: null
     @team = $rootScope.authUser.team
     @projects = []
     @tags = []
@@ -11,20 +15,14 @@ module.exports = ($http, $state, $rootScope, $modal) ->
     @selectedCommentBody = ''
     @selectedTaskBody = ''
     @searchInput = ''
-
-    @filters =
-        tag: null
-        assignedTo: null
-        quick: null
-
     @sortableOptions =
         placeholder: "sortable-preview"
         connectWith: ".sortable"
         delay: 100
-        stop: (evt, ui) ->
+        stop: (evt, ui) =>
             if ui.item.sortable.droptarget
                 stage = ui.item.sortable.droptarget.scope().stage
-                updateStageCards stage
+                @updateStageCards(stage)
 
     $rootScope.$on 'projects:reload', =>
         @loadProjects()
@@ -33,14 +31,19 @@ module.exports = ($http, $state, $rootScope, $modal) ->
         @loadProjects()
         @loadTags()
 
-    updateStageCards = (stage) ->
-        cardIds = _.pluck stage.cards, 'id'
+    @openEditCard = (card) ->
+        CardCacherService.set(card)
+        $state.go 'projects.card',
+            cardId: card.id
+
+    @updateStageCards = (stage) ->
+        cardIds = _.pluck(stage.cards, 'id')
         $http
             .put '/api/cards/stageOrder',
                 card_ids: cardIds
                 stage_id: stage.id
 
-    updateProjectOrder = (projects) ->
+    @updateProjectOrder = (projects) ->
         projectIds = _.pluck projects, 'id'
         $http
             .post '/api/projects/order',
@@ -73,7 +76,7 @@ module.exports = ($http, $state, $rootScope, $modal) ->
 
     @openSortableProjects = ->
         $modal
-            .open({
+            .open {
                 template: require '../layouts/sortableProjects.modal.html'
                 controller: require './sortableProjects.modal.ctrl.coffee'
                 controllerAs: 'ctrl'
@@ -82,11 +85,11 @@ module.exports = ($http, $state, $rootScope, $modal) ->
                     projects: =>
                         @projects
                 }
-            })
+            }
             .result
             .then (projects) =>
                 @projects = projects
-                updateProjectOrder(projects)
+                @updateProjectOrder(projects)
 
     @loadProjects = ->
         $http
