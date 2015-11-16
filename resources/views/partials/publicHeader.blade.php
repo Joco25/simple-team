@@ -8,7 +8,9 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand page-scroll" href="/">Simple.Team</a>
+            <a class="navbar-brand page-scroll" href="/">
+                <img src="/img/SimpleTeam01-small.png" height="20">
+            </a>
         </div>
 
         <!-- Collect the nav links, forms, and other content for toggling -->
