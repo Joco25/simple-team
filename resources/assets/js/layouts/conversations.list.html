@@ -61,7 +61,7 @@
 							<h5 ng-class='{ muted: !topic.is_unread }'>{{ topic.name }}</h5>
 						</td>
 						<td class="vert-align">
-							<img class='mrs img-rounded' ng-repeat='user in topic.users' ng-src='/image?size=25&type=square&image={{ user.image }}' title='{{ user.name }}'>
+							<img class="img-rounded" ng-repeat='user in topic.users' gravatar-src="user.email" gravatar-size="25" title="{{ user.name }}">
 						</td>
 						<td class='text-center vert-align'>{{ topic.post_count }}</td>
 						<td class='text-center vert-align'>

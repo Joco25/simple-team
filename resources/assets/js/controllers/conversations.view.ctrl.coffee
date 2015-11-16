@@ -97,6 +97,16 @@ module.exports = [
         @toggleNotification = =>
             if @watchNotification then @deleteNotification() else @createNotification()
 
+        @starTopic = (topicId) ->
+            $www.post('/api/topics/' + topicId + '/star')
+
+        @unstarTopic = (topicId) ->
+            $www.delete('/api/topics/' + topicId + '/star')
+
+        @toggleTopicUserStar = (topic) =>
+            if topic.is_starred then @unstarTopic(topic.id) else @starTopic(topic.id)
+            topic.is_starred = !topic.is_starred
+
         @loadTopic()
         @createTopicView()
         # @loadUserNotification()

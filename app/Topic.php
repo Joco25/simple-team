@@ -2,6 +2,7 @@
 
 namespace App;
 
+use DB;
 use Auth;
 use Illuminate\Database\Eloquent\Model;
 
@@ -69,13 +70,10 @@ class Topic extends Model
 	public function users()
 	{
 		return Topic::where('topics.id', '=', $this->id)
-			->where('topics.deleted', '=', 0)
 			->join('topic_posts', 'topic_posts.topic_id', '=', 'topics.id')
-			->where('topic_posts.deleted', '=', 0)
 			->join('users', 'users.id', '=', 'topic_posts.user_id')
-			->where('users.deleted', '=', 0)
 			->distinct()
-			->get(['users.name', 'users.image']);
+			->get(['users.name', 'users.email']);
 	}
 
 	public function updatePostCount()
@@ -123,7 +121,21 @@ class Topic extends Model
 				AND t.id = {$this->id}
 		");
 
-		return $query[0]->topic_count > 0;
+		$topicCounts = DB::table('topics')
+			->whereNotExists(function($query) {
+				$query->select(DB::raw('topic_views.topic_id, max(topic_views.created_at) as last_view, max(topic_posts.created_at) as last_post'))
+					->from('topic_views')
+					->join('topic_posts', function($join) {
+						$join->on('topic_views.topic_id', '=', 'topic_posts.topic_id')
+							->on('topic_views.created_at', '>', 'topic_posts.created_at');
+					})
+					->groupBy('topic_id')
+					->having('topics.id', '=', 'topic_id')
+					->having('topics.id', '=', $this->id);
+			})
+			->count();
+
+		return $topicCounts > 0;
 	}
 
 	public function notifications()
@@ -131,7 +143,7 @@ class Topic extends Model
 		return $this->hasMany('TopicNotification');
 	}
 
-	public function send_notifications($post)
+	public function sendNotifications($post)
 	{
 		$body = "
 		<table>

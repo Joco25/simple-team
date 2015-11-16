@@ -10,7 +10,7 @@ module.exports = ($http, $state, $rootScope, $modal) ->
     @selectedStage = null
     @selectedCommentBody = ''
     @selectedTaskBody = ''
-    @searchInput
+    @searchInput = ''
 
     @filters =
         tag: null
@@ -48,45 +48,22 @@ module.exports = ($http, $state, $rootScope, $modal) ->
 
     @selectAssignedToFilter = (newFilter) =>
         @filters.assignedTo = newFilter
+        $rootScope.$broadcast('filters:update', @filters)
 
     @selectTagFilter = (newFilter) =>
         @filters.tag = newFilter
+        $rootScope.$broadcast('filters:update', @filters)
 
     @selectQuickFilter = (newFilter) =>
         @filters.quick = newFilter
+        $rootScope.$broadcast('filters:update', @filters)
 
-    @appliedFilters = (card) =>
-        if @filters.tag isnt null and _.findIndex(card.tags, { id: @filters.tag.id }) is -1
-            return false
+    @updateSearchInput = =>
+        $rootScope.$broadcast('search:update', @searchInput)
 
-        if @filters.assignedTo is 'no one' and card.users.length > 0
-            return false
-
-        if _.isObject(@filters.assignedTo) and _.findIndex(card.users, { id: @filters.assignedTo.id }) is -1
-            return false
-
-        if @filters.quick is 'Created by me' and card.user_id isnt @authUser.id
-            return false
-
-        if @filters.quick is 'With subtasks' and card.subtasks and card.subtasks.length is 0
-            return false
-
-        if @filters.quick is 'With impact' and !card.impact
-            return false
-
-        if @filters.quick is 'With comments' and card.comments.length is 0
-            return false
-
-        if @filters.quick is 'With files attached' and card.attachments and card.attachments.length is 0
-            return false
-
-        if @filters.quick is 'Tasks blocked' and ! card.blocked
-            return false
-
-        if @filters.quick is 'Tasks unblocked' and card.blocked
-            return false
-
-        true
+    @clearSearchInput = =>
+        @searchInput = ''
+        @updateSearchInput()
 
     @loadTags = =>
         $http
@@ -212,10 +189,6 @@ module.exports = ($http, $state, $rootScope, $modal) ->
                 projectIndex = _.indexOf(@projects, _.find(@projects, { id: project.id }))
                 if cardIndex > -1
                     @projects.splice(projectIndex, 1, project)
-
-    @openEditCard = (card) ->
-        $state.go 'projects.card',
-            cardId: card.id
 
     init()
 

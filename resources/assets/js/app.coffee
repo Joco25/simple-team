@@ -24,6 +24,8 @@ require './modules/mediaComment'
 require './modules/redactor'
 require './modules/time'
 require './modules/www'
+require './modules/cardList/index.coffee'
+require './modules/cardCacher/index.coffee'
 
 angular
     .module 'simple.team', [
@@ -46,10 +48,13 @@ angular
         'simple.team.bytes'
         'simple.team.sidebar'
         'simple.team.navbar'
+        'simple.team.strings'
         'simple.team.auth'
         'simple.team.tagData'
         'simple.team.userData'
         'simple.team.www'
+        'simple.team.cardList'
+        'simple.team.cardCacher'
     ]
 
     .config ['$urlRouterProvider', 'cfpLoadingBarProvider', ($urlRouterProvider, cfpLoadingBarProvider) ->

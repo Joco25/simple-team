@@ -41040,7 +41040,11 @@ require('./modules/time');
 
 require('./modules/www');
 
-angular.module('simple.team', ['ngFileUpload', 'ui.router', 'ui.sortable', 'ui.gravatar', 'ui.bootstrap', 'selectize', 'angularMoment', 'angular-loading-bar', 'ng-showdown', 'LocalStorageModule', 'monospaced.elastic', 'textAngular', 'simple.team.routes', 'simple.team.focusMe', 'simple.team.ngBindHtmlUnsafe', 'simple.team.bytes', 'simple.team.sidebar', 'simple.team.navbar', 'simple.team.auth', 'simple.team.tagData', 'simple.team.userData', 'simple.team.www']).config([
+require('./modules/cardList/index.coffee');
+
+require('./modules/cardCacher/index.coffee');
+
+angular.module('simple.team', ['ngFileUpload', 'ui.router', 'ui.sortable', 'ui.gravatar', 'ui.bootstrap', 'selectize', 'angularMoment', 'angular-loading-bar', 'ng-showdown', 'LocalStorageModule', 'monospaced.elastic', 'textAngular', 'simple.team.routes', 'simple.team.focusMe', 'simple.team.ngBindHtmlUnsafe', 'simple.team.bytes', 'simple.team.sidebar', 'simple.team.navbar', 'simple.team.strings', 'simple.team.auth', 'simple.team.tagData', 'simple.team.userData', 'simple.team.www', 'simple.team.cardList', 'simple.team.cardCacher']).config([
   '$urlRouterProvider', 'cfpLoadingBarProvider', function($urlRouterProvider, cfpLoadingBarProvider) {
     $urlRouterProvider.otherwise('/projects');
     cfpLoadingBarProvider.includeSpinner = false;
@@ -41094,7 +41098,7 @@ angular.module('simple.team', ['ngFileUpload', 'ui.router', 'ui.sortable', 'ui.g
 ]);
 
 
-},{"./modules/auth/index.coffee":43,"./modules/bytes/index.coffee":44,"./modules/focusMe/index.coffee":45,"./modules/mediaComment":46,"./modules/navbar/index.coffee":47,"./modules/ngBindHtmlUnsafe":49,"./modules/redactor":50,"./modules/selectize":51,"./modules/sidebar/index.coffee":52,"./modules/strings":54,"./modules/tagData/index.coffee":55,"./modules/time":56,"./modules/userData/index.coffee":57,"./modules/www":58,"./routes.coffee":59,"angular-elastic":1,"angular-gravatar":2,"angular-local-storage":3,"angular-moment":4,"angular-ui-router":5,"angular-ui-sortable":6,"moment":7,"ng-showdown":8}],13:[function(require,module,exports){
+},{"./modules/auth/index.coffee":43,"./modules/bytes/index.coffee":44,"./modules/cardCacher/index.coffee":45,"./modules/cardList/index.coffee":50,"./modules/focusMe/index.coffee":52,"./modules/mediaComment":53,"./modules/navbar/index.coffee":54,"./modules/ngBindHtmlUnsafe":56,"./modules/redactor":57,"./modules/selectize":58,"./modules/sidebar/index.coffee":59,"./modules/strings":61,"./modules/tagData/index.coffee":62,"./modules/time":63,"./modules/userData/index.coffee":64,"./modules/www":65,"./routes.coffee":66,"angular-elastic":1,"angular-gravatar":2,"angular-local-storage":3,"angular-moment":4,"angular-ui-router":5,"angular-ui-sortable":6,"moment":7,"ng-showdown":8}],13:[function(require,module,exports){
 'use strict';
 module.exports = function($state, $stateParams, $modal) {
   var cardId, init;
@@ -41139,7 +41143,7 @@ module.exports = function($state, $stateParams, $modal) {
 
 },{"../layouts/card.modal.html":29,"./card.modal.ctrl.coffee":14}],14:[function(require,module,exports){
 'use strict';
-module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDataService, Upload, $modalInstance, cardId, $timeout) {
+module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDataService, Upload, $modalInstance, cardId, $timeout, CardCacherService) {
   var cardImpactHandle, init, projectId, stageId, updateCardTags, updateCardUsers;
   stageId = null;
   projectId = null;
@@ -41176,6 +41180,7 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
   };
   init = (function(_this) {
     return function() {
+      _this.selectedCard = CardCacherService.get();
       _this.loadTags();
       _this.loadCard();
       return _this.loadTeamUsers();
@@ -41668,6 +41673,22 @@ module.exports = [
         }
       };
     })(this);
+    this.starTopic = function(topicId) {
+      return $www.post('/api/topics/' + topicId + '/star');
+    };
+    this.unstarTopic = function(topicId) {
+      return $www["delete"]('/api/topics/' + topicId + '/star');
+    };
+    this.toggleTopicUserStar = (function(_this) {
+      return function(topic) {
+        if (topic.is_starred) {
+          _this.unstarTopic(topic.id);
+        } else {
+          _this.starTopic(topic.id);
+        }
+        return topic.is_starred = !topic.is_starred;
+      };
+    })(this);
     this.loadTopic();
     this.createTopicView();
   }
@@ -41785,7 +41806,7 @@ module.exports = function($http, $state, $rootScope, $modal) {
   this.selectedStage = null;
   this.selectedCommentBody = '';
   this.selectedTaskBody = '';
-  this.searchInput;
+  this.searchInput = '';
   this.filters = {
     tag: null,
     assignedTo: null,
@@ -41831,56 +41852,31 @@ module.exports = function($http, $state, $rootScope, $modal) {
   };
   this.selectAssignedToFilter = (function(_this) {
     return function(newFilter) {
-      return _this.filters.assignedTo = newFilter;
+      _this.filters.assignedTo = newFilter;
+      return $rootScope.$broadcast('filters:update', _this.filters);
     };
   })(this);
   this.selectTagFilter = (function(_this) {
     return function(newFilter) {
-      return _this.filters.tag = newFilter;
+      _this.filters.tag = newFilter;
+      return $rootScope.$broadcast('filters:update', _this.filters);
     };
   })(this);
   this.selectQuickFilter = (function(_this) {
     return function(newFilter) {
-      return _this.filters.quick = newFilter;
+      _this.filters.quick = newFilter;
+      return $rootScope.$broadcast('filters:update', _this.filters);
     };
   })(this);
-  this.appliedFilters = (function(_this) {
-    return function(card) {
-      if (_this.filters.tag !== null && _.findIndex(card.tags, {
-        id: _this.filters.tag.id
-      }) === -1) {
-        return false;
-      }
-      if (_this.filters.assignedTo === 'no one' && card.users.length > 0) {
-        return false;
-      }
-      if (_.isObject(_this.filters.assignedTo) && _.findIndex(card.users, {
-        id: _this.filters.assignedTo.id
-      }) === -1) {
-        return false;
-      }
-      if (_this.filters.quick === 'Created by me' && card.user_id !== _this.authUser.id) {
-        return false;
-      }
-      if (_this.filters.quick === 'With subtasks' && card.subtasks && card.subtasks.length === 0) {
-        return false;
-      }
-      if (_this.filters.quick === 'With impact' && !card.impact) {
-        return false;
-      }
-      if (_this.filters.quick === 'With comments' && card.comments.length === 0) {
-        return false;
-      }
-      if (_this.filters.quick === 'With files attached' && card.attachments && card.attachments.length === 0) {
-        return false;
-      }
-      if (_this.filters.quick === 'Tasks blocked' && !card.blocked) {
-        return false;
-      }
-      if (_this.filters.quick === 'Tasks unblocked' && card.blocked) {
-        return false;
-      }
-      return true;
+  this.updateSearchInput = (function(_this) {
+    return function() {
+      return $rootScope.$broadcast('search:update', _this.searchInput);
+    };
+  })(this);
+  this.clearSearchInput = (function(_this) {
+    return function() {
+      _this.searchInput = '';
+      return _this.updateSearchInput();
     };
   })(this);
   this.loadTags = (function(_this) {
@@ -42045,11 +42041,6 @@ module.exports = function($http, $state, $rootScope, $modal) {
         }
       };
     })(this));
-  };
-  this.openEditCard = function(card) {
-    return $state.go('projects.card', {
-      cardId: card.id
-    });
   };
   init();
 };
@@ -42458,13 +42449,13 @@ module.exports = '<div class="panel">\n	<div class="panel-body">\n		<form ng-sub
 },{}],31:[function(require,module,exports){
 module.exports = '<div class="container-fluid" ui-view></div>\n';
 },{}],32:[function(require,module,exports){
-module.exports = '<div class="panel">\n	<div class="panel-body">\n		<div class=\'row\'>\n			<div class=\'col-sm-12\'>\n				<div class=\'inner-medium\'>\n					<ul class="nav nav-pills pull-left mbn">\n						<li ng-class=\'{ active: ctrl.filters.type == "latest" }\'>\n							<a ui-sref=\'conversations.list({ type: "latest" })\'>Latest</a>\n						</li>\n\n						<li ng-class=\'{ active: ctrl.filters.type == "unread" }\'>\n							<a ui-sref=\'conversations.list({ type: "unread" })\'>\n								<i class=\'icon-bookmark\'></i> Unread\n							</a>\n						</li>\n\n						<li ng-class=\'{ active: ctrl.filters.type == "starred" }\'>\n							<a ui-sref=\'conversations.list({ type: "starred" })\'>\n								<i class=\'icon-star\'></i> Starred\n							</a>\n						</li>\n\n						<li ng-class=\'{ active: ctrl.filters.type == "top" }\'>\n							<a ui-sref=\'conversations.list({ type: "top" })\'>Top</a>\n						</li>\n					</ul>\n\n					<a ui-sref=\'conversations.create\' class=\'btn btn-success pull-right\'>\n						<i class=\'icon-plus text-success\'></i> Create Discussion\n					</a>\n				</div>\n			</div>\n		</div>\n	</div>\n</div>\n\n<div class="panel">\n	<div class="panel-body">\n		<div infinite-scroll-disabled=\'ctrl.filters.disableInfiniteScroll\' infinite-scroll=\'nextPage()\' infinite-scroll-distance=\'2\'>\n			<table class=\'table table-striped table-middle table-hover\' style="margin: 0;">\n				<thead>\n					<tr>\n						<th></th>\n						<th class=\'span5\'>Discussion</th>\n						<th>Users</th>\n						<th class=\'text-center\'>Posts</th>\n						<th class=\'text-center\'>Likes</th>\n						<th class=\'text-center\'>Views</th>\n						<th colspan=\'2\' class=\'text-center\'>Activity</th>\n					</tr>\n				</thead>\n				<tbody>\n					<tr ng-repeat=\'topic in ctrl.topics\'>\n						<td class=\'text-center vert-align\'>\n							<i\n								class=\'fa fa-star fa-2\'\n								ng-click=\'ctrl.toggleTopicUserStar(topic)\'\n								ng-class=\'{ "text-muted": !topic.is_starred, "text-orange": topic.is_starred }\'></i>\n						</td>\n						<td class=\'vert-align pointer\' ui-sref=\'conversations.view({ topicId: topic.id })\'>\n							<h5 ng-class=\'{ muted: !topic.is_unread }\'>{{ topic.name }}</h5>\n						</td>\n						<td class="vert-align">\n							<img class=\'mrs img-rounded\' ng-repeat=\'user in topic.users\' ng-src=\'/image?size=25&type=square&image={{ user.image }}\' title=\'{{ user.name }}\'>\n						</td>\n						<td class=\'text-center vert-align\'>{{ topic.post_count }}</td>\n						<td class=\'text-center vert-align\'>\n							<span ng-if=\'topic.like_count > 0\'>\n								{{ topic.like_count }} <i class=\'icon-heart text-red\'></i>\n							</span>\n						</td>\n						<td class=\'text-center vert-align\'>\n							<span ng-if=\'topic.view_count > 0\'>\n								{{ topic.view_count }}\n							</span>\n						</td>\n						<td class=\'text-center vert-align\'>{{ topic.created_at }}</td>\n						<td class=\'text-center vert-align\'>{{ topic.updated_at }}</td>\n					</tr>\n				</tbody>\n			</table>\n		</div>\n	</div>\n</div>\n';
+module.exports = '<div class="panel">\n	<div class="panel-body">\n		<div class=\'row\'>\n			<div class=\'col-sm-12\'>\n				<div class=\'inner-medium\'>\n					<ul class="nav nav-pills pull-left mbn">\n						<li ng-class=\'{ active: ctrl.filters.type == "latest" }\'>\n							<a ui-sref=\'conversations.list({ type: "latest" })\'>Latest</a>\n						</li>\n\n						<li ng-class=\'{ active: ctrl.filters.type == "unread" }\'>\n							<a ui-sref=\'conversations.list({ type: "unread" })\'>\n								<i class=\'icon-bookmark\'></i> Unread\n							</a>\n						</li>\n\n						<li ng-class=\'{ active: ctrl.filters.type == "starred" }\'>\n							<a ui-sref=\'conversations.list({ type: "starred" })\'>\n								<i class=\'icon-star\'></i> Starred\n							</a>\n						</li>\n\n						<li ng-class=\'{ active: ctrl.filters.type == "top" }\'>\n							<a ui-sref=\'conversations.list({ type: "top" })\'>Top</a>\n						</li>\n					</ul>\n\n					<a ui-sref=\'conversations.create\' class=\'btn btn-success pull-right\'>\n						<i class=\'icon-plus text-success\'></i> Create Discussion\n					</a>\n				</div>\n			</div>\n		</div>\n	</div>\n</div>\n\n<div class="panel">\n	<div class="panel-body">\n		<div infinite-scroll-disabled=\'ctrl.filters.disableInfiniteScroll\' infinite-scroll=\'nextPage()\' infinite-scroll-distance=\'2\'>\n			<table class=\'table table-striped table-middle table-hover\' style="margin: 0;">\n				<thead>\n					<tr>\n						<th></th>\n						<th class=\'span5\'>Discussion</th>\n						<th>Users</th>\n						<th class=\'text-center\'>Posts</th>\n						<th class=\'text-center\'>Likes</th>\n						<th class=\'text-center\'>Views</th>\n						<th colspan=\'2\' class=\'text-center\'>Activity</th>\n					</tr>\n				</thead>\n				<tbody>\n					<tr ng-repeat=\'topic in ctrl.topics\'>\n						<td class=\'text-center vert-align\'>\n							<i\n								class=\'fa fa-star fa-2\'\n								ng-click=\'ctrl.toggleTopicUserStar(topic)\'\n								ng-class=\'{ "text-muted": !topic.is_starred, "text-orange": topic.is_starred }\'></i>\n						</td>\n						<td class=\'vert-align pointer\' ui-sref=\'conversations.view({ topicId: topic.id })\'>\n							<h5 ng-class=\'{ muted: !topic.is_unread }\'>{{ topic.name }}</h5>\n						</td>\n						<td class="vert-align">\n							<img class="img-rounded" ng-repeat=\'user in topic.users\' gravatar-src="user.email" gravatar-size="25" title="{{ user.name }}">\n						</td>\n						<td class=\'text-center vert-align\'>{{ topic.post_count }}</td>\n						<td class=\'text-center vert-align\'>\n							<span ng-if=\'topic.like_count > 0\'>\n								{{ topic.like_count }} <i class=\'icon-heart text-red\'></i>\n							</span>\n						</td>\n						<td class=\'text-center vert-align\'>\n							<span ng-if=\'topic.view_count > 0\'>\n								{{ topic.view_count }}\n							</span>\n						</td>\n						<td class=\'text-center vert-align\'>{{ topic.created_at }}</td>\n						<td class=\'text-center vert-align\'>{{ topic.updated_at }}</td>\n					</tr>\n				</tbody>\n			</table>\n		</div>\n	</div>\n</div>\n';
 },{}],33:[function(require,module,exports){
-module.exports = '<div class="panel">\n	<div class="panel-body">\n		<h3 style="margin: 0;">\n			<i\n				class=\'icon-star pointer\'\n				ng-click=\'ctrl.toggleTopicUserStar(topic)\'\n				ng-class=\'{ muted: !ctrl.topic.is_starred, "text-orange": ctrl.topic.is_starred }\'></i>\n			{{ ctrl.topic.name }}\n		</h3>\n	</div>\n</div>\n\n<div class="panel">\n	<div class="panel-body">\n		<div class=\'row\'>\n			<div class=\'col-sm-12\'>\n				<div class="media" ng-repeat=\'post in ctrl.topic.posts\'>\n					<a class="pull-left" href="#">\n						<img width=\'50\' class="media-object" ng-src="/image?image={{ post.user.image }}&size=50&type=square">\n					</a>\n					<div class="media-body">\n						<h5 class="media-heading muted">{{ post.user.name }}</h5>\n						<div ng-show=\'!post.editMode\'>\n							{{ post.post.user.name }}\n							<div ng-bind-html-unsafe="post.body"></div>\n\n							<div class=\'row\' ng-show=\'$index == 0\'>\n								<div class=\'col-sm-12\'>\n									<div class=\'pull-right\'>\n										 <button\n										 	class=\'btn\'\n											ng-show=\'post.user_id !== ctrl.authUser.id\'\n											ng-class=\'{ active: post.is_liked }\'\n											ng-click=\'ctrl.togglePostUserLike(post)\'>\n											<i class=\'fa fa-heart\' ng-class=\'{ "text-red": post.is_liked }\'></i>\n										</button>\n										<button\n											class=\'btn\'\n											ng-click=\'ctrl.selectPost(post); post.editMode = true\'\n											ng-show=\'post.user_id === ctrl.authUser.id\'>\n											<i class=\'fa fa-pencil\'></i>\n										</button>\n										<button\n											class=\'btn\'\n											ng-show=\'post.user_id === ctrl.authUser.id && ctrl.topic.posts.length == 1\'\n											ng-click=\'ctrl.deleteTopic(ctrl.topic.id)\'\n											title=\'Delete this post?\'>\n											<i class=\'fa fa-trash\'></i>\n										</button>\n									</div>\n								</div>\n							</div>\n\n							<div class=\'row mbm\' ng-show=\'$index > 0\'>\n								<div class=\'col-sm-12\'>\n									<button class=\'btn\' ng-click=\'post.showReplies = !post.showReplies\' ng-show=\'post.posts.length > 0\'>\n										{{ post.posts.length }} Replies <i ng-class=\'{ "icon-chevron-down": !post.showReplies, "icon-chevron-up": post.showReplies }\'></i>\n									</button>\n\n									<div class=\'pull-right\'>\n										<button\n											class=\'btn\'\n											ng-show=\'post.user_id !== ctrl.authUser.id\'\n											ng-class=\'{ active: post.is_liked }\'\n											ng-click=\'ctrl.togglePostUserLike(post)\'>\n											<i class=\'fa fa-heart\' ng-class=\'{ "text-red": post.is_liked }\'></i>\n										</button>\n										<button\n											class=\'btn\'\n											ng-click=\'ctrl.selectPost(post); post.editMode = true\'\n											ng-show=\'post.user_id === ctrl.authUser.id\'>\n											<i class=\'fa fa-pencil\'></i>\n										</button>\n										<button\n											class=\'btn\'\n											ng-show=\'post.user_id === ctrl.authUser.id\'\n											ng-click=\'ctrl.deletePost(post.id)\'\n											title=\'Delete this post?\'>\n											<i class=\'fa fa-trash\'></i>\n										</button>\n										<button\n											class=\'btn btn-primary\'\n											ng-click=\'ctrl.selectPost(post); ctrl.newPost.topic_post_id = post.id; post.showNewPost = true\'>\n											<i class=\'fa fa-reply\'></i> Reply\n										</button>\n									</div>\n								</div>\n							</div>\n						</div>\n\n						<div ng-show=\'post.editMode\'>\n							<div class=\'row\'>\n								<div class=\'col-sm-12\'>\n									<div class=\'form-group\'>\n										<text-angular ng-model=\'ctrl.postCopy.body\'></text-angular>\n									</div>\n									<button class=\'btn btn-success\' ng-click=\'ctrl.updatePost()\'>\n										Submit\n									</button>\n								</div>\n							</div>\n						</div>\n					</div>\n					<div class=\'well well-sm\' ng-show=\'post.posts.length > 0 && post.showReplies\'>\n						<div ng-repeat=\'iPost in post.posts\'>\n							<div class="media" ng-repeat=\'iPost in post.posts\'>\n								<a class="pull-left" href="#">\n									<img width=\'50\' class="media-object" ng-src="/image?image={{ iPost.user.image }}&size=50&type=square">\n								</a>\n								<div class="media-body">\n									<h5 class="media-heading muted">{{ iPost.user.name }}</h5>\n									<div ng-bind-html-unsafe="iPost.body"></div>\n								</div>\n							</div>\n						</div>\n					</div>\n\n					<div class=\'row\' ng-show=\'post.showNewPost\'>\n						<div class=\'col-sm-12\'>\n							<form class=\'mbn\' ng-submit=\'ctrl.createPost()\'>\n								<text-angular ng-model=\'ctrl.newPost.body\'></text-angular>\n								<button type=\'submit\' class=\'btn btn-success\'>\n									Submit\n								</button>\n								<button ng-show=\'ctrl.newPost.body.length > 0\' confirm=\'ctrl.resetNewPost()\' title=\'Abandon your response?\' type=\'button\' class=\'btn btn-link\'>\n									Cancel\n								</button>\n								<button ng-show=\'!ctrl.newPost.body\' type=\'button\' ng-click=\'ctrl.resetNewPost()\' class=\'btn btn-link\'>\n									Cancel\n								</button>\n							</form>\n						</div>\n					</div>\n					<hr>\n				</div>\n			</div>\n		</div>\n\n		<div class=\'row mbm\'>\n			<div class=\'col-sm-12\'>\n				<button class=\'btn\' ng-class=\'{ active: ctrl.topic.is_starred }\' ng-click=\'toggleTopicUserStar(topic)\'>\n					<i class=\'icon-star\' ng-class=\'{ "text-orange": ctrl.topic.is_starred }\'></i> Star\n				</button>\n\n				<button class=\'btn btn-primary\' ng-click=\'filters.showNewPost = true\'>\n					<i class=\'icon-plus\'></i> Reply\n				</button>\n\n				<button class="btn" ng-click=\'ctrl.toggleNotification()\'>\n					<span ng-show=\'watchNotification\'>Stop Notifications</span>\n					<span ng-show=\'!watchNotification\'>Get Notifications</span>\n				</button>\n			</div>\n		</div>\n\n		<div class=\'row\' ng-show=\'filters.showNewPost\'>\n			<div class=\'col-sm-12\'>\n				<form ng-submit=\'ctrl.createPost()\' class=\'form-horizontal\'>\n					<!-- <div class=\'mbm\'>\n						<select class=\'input-full\' placeholder=\'Tag Users\'ui-select2 multiple ng-model=\'newctrl.topic.user_ids\'>\n							<option ng-repeat="user in main.users" value=\'{{ user.id }}\'>{{ user.name }}</option>\n						</select>\n					</div> -->\n\n					<text-angular ng-model=\'ctrl.newPost.body\'></text-angular>\n\n					<button type=\'submit\' class=\'btn btn-success\'>\n						Submit\n					</button>\n					<button ng-show=\'ctrl.newPost.body.length > 0\' confirm=\'ctrl.resetNewPost(post)\' title=\'Abandon your response?\' type=\'button\' class=\'btn btn-link\'>\n						Cancel\n					</button>\n					<button ng-show=\'!ctrl.newPost.body\' type=\'button\' ng-click=\'ctrl.resetNewPost(post)\' class=\'btn btn-link\'>\n						Cancel\n					</button>\n				</form>\n			</div>\n		</div>\n	</div>\n</div>\n';
+module.exports = '<div class="panel">\n	<div class="panel-body">\n		<h3 style="margin: 0;">\n			<i\n				class=\'icon-star pointer\'\n				ng-click=\'ctrl.toggleTopicUserStar(topic)\'\n				ng-class=\'{ muted: !ctrl.topic.is_starred, "text-orange": ctrl.topic.is_starred }\'></i>\n			{{ ctrl.topic.name }}\n		</h3>\n	</div>\n</div>\n\n<div class="panel">\n	<div class="panel-body">\n		<div class=\'row\'>\n			<div class=\'col-sm-12\'>\n				<div class="media" ng-repeat=\'post in ctrl.topic.posts\'>\n					<a class="pull-left" href="#">\n						<img width="50" class="media-object" gravatar-src="post.user.email" gravatar-size="50">\n					</a>\n					<div class="media-body">\n						<h5 class="media-heading muted">{{ post.user.name }}</h5>\n						<div ng-show=\'!post.editMode\'>\n							{{ post.post.user.name }}\n							<div ng-bind-html-unsafe="post.body"></div>\n\n							<div class=\'row\' ng-show=\'$index == 0\'>\n								<div class=\'col-sm-12\'>\n									<div class=\'pull-right\'>\n										 <button\n										 	class=\'btn\'\n											ng-show=\'post.user_id !== ctrl.authUser.id\'\n											ng-class=\'{ active: post.is_liked }\'\n											ng-click=\'ctrl.togglePostUserLike(post)\'>\n											<i class=\'fa fa-heart\' ng-class=\'{ "text-red": post.is_liked }\'></i>\n										</button>\n										<button\n											class=\'btn\'\n											ng-click=\'ctrl.selectPost(post); post.editMode = true\'\n											ng-show=\'post.user_id === ctrl.authUser.id\'>\n											<i class=\'fa fa-pencil\'></i>\n										</button>\n										<button\n											class=\'btn\'\n											ng-show=\'post.user_id === ctrl.authUser.id && ctrl.topic.posts.length == 1\'\n											ng-click=\'ctrl.deleteTopic(ctrl.topic.id)\'\n											title=\'Delete this post?\'>\n											<i class=\'fa fa-trash\'></i>\n										</button>\n									</div>\n								</div>\n							</div>\n\n							<div class=\'row mbm\' ng-show=\'$index > 0\'>\n								<div class=\'col-sm-12\'>\n									<button class=\'btn\' ng-click=\'post.showReplies = !post.showReplies\' ng-show=\'post.posts.length > 0\'>\n										{{ post.posts.length }} Replies <i ng-class=\'{ "icon-chevron-down": !post.showReplies, "icon-chevron-up": post.showReplies }\'></i>\n									</button>\n\n									<div class=\'pull-right\'>\n										<button\n											class=\'btn\'\n											ng-show=\'post.user_id !== ctrl.authUser.id\'\n											ng-class=\'{ active: post.is_liked }\'\n											ng-click=\'ctrl.togglePostUserLike(post)\'>\n											<i class=\'fa fa-heart\' ng-class=\'{ "text-red": post.is_liked }\'></i>\n										</button>\n										<button\n											class=\'btn\'\n											ng-click=\'ctrl.selectPost(post); post.editMode = true\'\n											ng-show=\'post.user_id === ctrl.authUser.id\'>\n											<i class=\'fa fa-pencil\'></i>\n										</button>\n										<button\n											class=\'btn\'\n											ng-show=\'post.user_id === ctrl.authUser.id\'\n											ng-click=\'ctrl.deletePost(post.id)\'\n											title=\'Delete this post?\'>\n											<i class=\'fa fa-trash\'></i>\n										</button>\n										<button\n											class=\'btn btn-primary\'\n											ng-click=\'ctrl.selectPost(post); ctrl.newPost.topic_post_id = post.id; post.showNewPost = true\'>\n											<i class=\'fa fa-reply\'></i> Reply\n										</button>\n									</div>\n								</div>\n							</div>\n						</div>\n\n						<div ng-show=\'post.editMode\'>\n							<div class=\'row\'>\n								<div class=\'col-sm-12\'>\n									<div class=\'form-group\'>\n										<text-angular ng-model=\'ctrl.postCopy.body\'></text-angular>\n									</div>\n									<button class=\'btn btn-success\' ng-click=\'ctrl.updatePost()\'>\n										Submit\n									</button>\n								</div>\n							</div>\n						</div>\n					</div>\n					<div class=\'well well-sm\' ng-show=\'post.posts.length > 0 && post.showReplies\'>\n						<div ng-repeat=\'iPost in post.posts\'>\n							<div class="media" ng-repeat=\'iPost in post.posts\'>\n								<a class="pull-left" href="#">\n									<img width="50" class="media-object" gravatar-src="iPost.user.email" gravatar-size="50">\n								</a>\n								<div class="media-body">\n									<h5 class="media-heading muted">{{ iPost.user.name }}</h5>\n									<div ng-bind-html-unsafe="iPost.body"></div>\n								</div>\n							</div>\n						</div>\n					</div>\n\n					<div class=\'row\' ng-show=\'post.showNewPost\'>\n						<div class=\'col-sm-12\'>\n							<form class=\'mbn\' ng-submit=\'ctrl.createPost()\'>\n								<text-angular ng-model=\'ctrl.newPost.body\'></text-angular>\n								<button type=\'submit\' class=\'btn btn-success\'>\n									Submit\n								</button>\n								<button ng-show=\'ctrl.newPost.body.length > 0\' confirm=\'ctrl.resetNewPost()\' title=\'Abandon your response?\' type=\'button\' class=\'btn btn-link\'>\n									Cancel\n								</button>\n								<button ng-show=\'!ctrl.newPost.body\' type=\'button\' ng-click=\'ctrl.resetNewPost()\' class=\'btn btn-link\'>\n									Cancel\n								</button>\n							</form>\n						</div>\n					</div>\n					<hr>\n				</div>\n			</div>\n		</div>\n\n		<div class=\'row mbm\'>\n			<div class=\'col-sm-12\'>\n				<button class=\'btn\' ng-class=\'{ active: ctrl.topic.is_starred }\' ng-click=\'toggleTopicUserStar(topic)\'>\n					<i class=\'icon-star\' ng-class=\'{ "text-orange": ctrl.topic.is_starred }\'></i> Star\n				</button>\n\n				<button class=\'btn btn-primary\' ng-click=\'filters.showNewPost = true\'>\n					<i class=\'icon-plus\'></i> Reply\n				</button>\n\n				<button class="btn" ng-click=\'ctrl.toggleNotification()\'>\n					<span ng-show=\'watchNotification\'>Stop Notifications</span>\n					<span ng-show=\'!watchNotification\'>Get Notifications</span>\n				</button>\n			</div>\n		</div>\n\n		<div class=\'row\' ng-show=\'filters.showNewPost\'>\n			<div class=\'col-sm-12\'>\n				<form ng-submit=\'ctrl.createPost()\' class=\'form-horizontal\'>\n					<!-- <div class=\'mbm\'>\n						<select class=\'input-full\' placeholder=\'Tag Users\'ui-select2 multiple ng-model=\'newctrl.topic.user_ids\'>\n							<option ng-repeat="user in main.users" value=\'{{ user.id }}\'>{{ user.name }}</option>\n						</select>\n					</div> -->\n\n					<text-angular ng-model=\'ctrl.newPost.body\'></text-angular>\n\n					<button type=\'submit\' class=\'btn btn-success\'>\n						Submit\n					</button>\n					<button ng-show=\'ctrl.newPost.body.length > 0\' confirm=\'ctrl.resetNewPost(post)\' title=\'Abandon your response?\' type=\'button\' class=\'btn btn-link\'>\n						Cancel\n					</button>\n					<button ng-show=\'!ctrl.newPost.body\' type=\'button\' ng-click=\'ctrl.resetNewPost(post)\' class=\'btn btn-link\'>\n						Cancel\n					</button>\n				</form>\n			</div>\n		</div>\n	</div>\n</div>\n';
 },{}],34:[function(require,module,exports){
 module.exports = '<div class="container-fluid">\n    <div class="row">\n        <div class="col-sm-12">\n            <div class="row" style="margin-bottom: 10px">\n                <div class="col-sm-6">\n                    {{ ctrl.filterDate | date:\'EEEE, MMMM d, y\' }}\n                </div>\n                <div class="col-sm-6 text-right">\n                    <div class="btn-group" style="margin-right: 5px;">\n                        <button class="btn btn-default" ng-click="ctrl.addDay()">&lt;</button>\n                        <button class="btn btn-default" ng-click="ctrl.goToToday()">Today</button>\n                        <button class="btn btn-default" ng-click="ctrl.substractDay()">&gt;</button>\n                    </div>\n\n                    <div class="form-inline pull-right">\n                        <input class="form-control" type="date" ng-model="ctrl.filterDate" ng-click="ctrl.loadDailySummaries()">\n                    </div>\n                </div>\n            </div>\n\n            <div class="panel">\n                <div class="panel-body">\n                    <div class="row">\n                        <div class="col-sm-6">\n                            <h4 style="margin-top: 0">{{ ctrl.authUser.name }}</h4>\n                        </div>\n                        <div class="col-sm-6">\n                        </div>\n                    </div>\n                    <div class="form-group">\n                        <form ng-submit="ctrl.createDailySummary()">\n                            <input\n                                type="text"\n                                class="form-control"\n                                ng-model="ctrl.dailySummaryBody"\n                                placeholder="Today I...">\n                        </form>\n                    </div>\n                    <table class="table">\n                        <tr ng-repeat="dailySummary in ctrl.selectedDailySummaries">\n                            <td>\n                                <div\n                                    ng-show="dailySummary != dailySummaryCopy"\n                                    ng-click="editDailySummary(dailySummary)">\n                                    {{ dailySummary.body }}\n                                </div>\n\n                                <div ng-show="dailySummary == dailySummaryCopy">\n                                    <input\n                                        type="text"\n                                        class="form-control"\n                                        ng-model="dailySummaryCopy.body"\n                                        v-on="\n                                            blur: updateDailySummary(dailySummary),\n                                            keyup: updateDailySummary(dailySummary) | key \'enter\',\n                                            keyup: cancelDailySummary(dailySummary) | key \'esc\'\n                                        ">\n                                </div>\n                            </td>\n                            <td class="text-right">\n                                <button\n                                    class="btn btn-primary"\n                                    ng-click="ctrl.editDailySummary(dailySummary)">\n                                    Edit\n                                </button>\n                                <button\n                                    class="btn btn-danger"\n                                    ng-click="ctrl.deleteDailySummary(userId, dailySummary)">\n                                    Delete\n                                </button>\n                            </td>\n                        </tr>\n                    </table>\n                </div>\n            </div>\n\n            <div\n                class="panel"\n                ng-repeat="user in ctrl.authUser.team.users"\n                ng-hide="user.id == ctrl.authUser.id">\n                <div class="panel-body">\n                    <h4 style="margin-top: 0">{{ user.name }}</h4>\n                    <table class="table">\n                        <tbody>\n                            <tr ng-show="! ctrl.dailySummaries[user.id].length">\n                                <td class="text-center">\n                                    <h5 class="text-muted">No entries.</h5>\n                                </td>\n                            </tr>\n                            <tr ng-repeat="dailySummary in ctrl.dailySummaries[user.id]">\n                                <td>{{ dailySummary.body }}</td>\n                            </tr>\n                        </tbody>\n                    </table>\n                </div>\n            </div>\n        </div>\n    </div>\n</div>\n';
 },{}],35:[function(require,module,exports){
-module.exports = '<style>\nnav {\n    margin: 0 !important;\n}\n</style>\n<div class="container-fluid" style="padding-top: 15px; box-shadow: 0 1px 2px -1px rgba(0, 0, 0, 0.3); background: white">\n    <div class="row" style="margin-bottom: 15px">\n        <div class="col-sm-8">\n            <div class="btn-group pull-left" style="margin-right: 10px;">\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        {{ ctrl.filters.tag.name || \'Tags\' }} <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li ng-click="ctrl.selectTagFilter(null)">\n                            <a href="#">Show All Tags</a>\n                        </li>\n                        <li class="divider"></li>\n                        <li\n                            ng-click="ctrl.selectTagFilter(tag)"\n                            ng-repeat="tag in ctrl.tags">\n                            <a href="#">{{ tag.name }}</a>\n                        </li>\n                    </ul>\n                </div>\n\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        <span ng-show="ctrl.assignedTo.name">{{ ctrl.assignedTo.name }}</span>\n                        <span ng-show="ctrl.assignedTo == \'no one\'">Assigned to no one</span>\n                        <span ng-show="ctrl.assignedTo == null">Assigned to</span>\n                        <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li ng-click="ctrl.selectAssignedToFilter(null)"><a href="#">Everyone</a></li>\n                        <li class="divider"></li>\n                        <li ng-click="ctrl.selectAssignedToFilter(ctrl.authUser)"><a href="#">Me</a></li>\n                        <li ng-click="ctrl.selectAssignedToFilter(\'no one\')"><a href="#">No One Assigned</a></li>\n                        <li\n                            ng-click="ctrl.selectAssignedToFilter(user)"\n                            ng-hide="user.id == ctrl.authUser.id"\n                            ng-repeat="user in ctrl.team.users">\n                            <a href="#">{{ user.name }}</a>\n                        </li>\n                    </ul>\n                </div>\n\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                         {{ ctrl.filters.quick || \'Quick filters\' }} <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li ng-click="ctrl.selectQuickFilter(null)"><a href="#">Show all</a></li>\n                        <li class="divider"></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'Created by me\')"><a href="#">Created by me</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'With subtasks\')"><a href="#">With subtasks</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'With impact\')"><a href="#">With impact</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'With comments\')"><a href="#">With comments</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'With files attached\')"><a href="#">With files attached</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'Tasks blocked\')"><a href="#">Tasks blocked</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'Tasks unblocked\')"><a href="#">Tasks unblocked</a></li>\n                    </ul>\n                </div>\n            </div>\n\n            <form class="form-inline">\n                <div class="form-group">\n                    <div ng-class="{ \'input-group\': ctrl.searchInput }">\n                        <input\n                            type="text"\n                            class="form-control"\n                            placeholder="Search cards..."\n                            ng-model="ctrl.searchInput">\n                        <div\n                            class="input-group-addon btn btn-default"\n                            ng-show="ctrl.searchInput"\n                            ng-click="ctrl.searchInput = \'\'">\n                            <i class="fa fa-times"></i>\n                        </div>\n                    </div>\n                </div>\n            </form>\n        </div>\n        <div class="col-sm-4 text-right">\n            <button\n                class="btn btn-primary"\n                ng-click="ctrl.openSortableProjects()">\n                Sort Projects\n            </button>\n            <button\n                class="btn btn-success"\n                ng-click="ctrl.createProject()">\n                Create Project\n            </button>\n        </div>\n    </div>\n</div>\n<div class="projects-container">\n    <div class="panel panel-default" ng-repeat="project in ctrl.projects">\n        <div class="panel-body">\n            <div class="stage-container" ng-hide="project.hidden">\n                <table class="table">\n                    <tr>\n                        <td>\n                            <div class="project-head">\n                                <h4>{{ project.name }}</h4>\n                                <div class="btn-group-vertical" style="width: 100%;">\n                                    <button\n                                        type="button"\n                                        class="btn btn-default btn-sm"\n                                        ng-click="ctrl.createCard(project)">\n                                        <i class="glyphicon glyphicon-plus text-success"></i> Add a Card\n                                    </button>\n                                    <button\n                                        class="btn btn-default btn-sm"\n                                        ng-click="ctrl.editProject(project)">\n                                        <i class="glyphicon glyphicon-pencil text-info"></i> Edit\n                                    </button>\n                                    <button\n                                        class="btn btn-default btn-sm"\n                                        ng-click="ctrl.deleteProject(project)">\n                                        <i class="glyphicon glyphicon-remove text-danger"></i> Delete\n                                    </button>\n                                </div>\n                            </div>\n                        </td>\n                        <td ng-repeat="(stageIndex, stage) in project.stages">\n                            <div class="stage-column">\n                                <div class="stage-header">\n                                    <div class="row">\n                                        <div class="col-sm-6">\n                                            <h5>{{ stage.name }}</h5>\n                                        </div>\n                                        <div class="col-sm-6">\n                                            <div class="btn-group  pull-right">\n                                                <button\n                                                    type="button"\n                                                    class="btn btn-link btn-sm dropdown-toggle pull-right"\n                                                    data-toggle="dropdown">\n                                                    <span class="fa fa-cog"></span>\n                                                </button>\n                                                <ul class="dropdown-menu dropdown-menu-right">\n                                                    <li>\n                                                        <a class="pointer" ng-click="ctrl.editStage(stage)">Rename</a>\n                                                    </li>\n                                                    <li>\n                                                        <a class="pointer" ng-click="ctrl.deleteAllCardsInStage(stage)">Delete All Cards</a>\n                                                    </li>\n                                                    <li role="separator" class="divider"></li>\n                                                    <li>\n                                                        <a ng-click="ctrl.deleteStage(project, stageIndex)">Delete</a>\n                                                    </li>\n                                                </ul>\n                                            </div>\n                                        </div>\n                                    </div>\n                                </div>\n\n                                <ul\n                                    class="sortable"\n                                    ui-sortable="ctrl.sortableOptions"\n                                    ng-model="stage.cards">\n                                    <li\n                                        ng-click="ctrl.openEditCard(card)"\n                                        ng-repeat="(cardIndex, card) in stage.cards | filter:ctrl.searchInput | filter:ctrl.appliedFilters"\n                                        ng-class="{ \'card-blocked\': card.blocked }">\n                                        <div class="row">\n                                            <div class="col-sm-12">\n                                                {{ card.name }}\n                                            </div>\n                                        </div>\n                                        <div class="row" style="margin-bottom: 7px;" ng-show="card.impact || card.tags.length > 0">\n                                            <div class="col-sm-12">\n                                                <span ng-repeat="tag in card.tags" ng-show="card.tags.length > 0">\n                                                    <span class="label label-primary">{{ tag.name }}</span>\n                                                </span>\n                                            </div>\n                                        </div>\n                                        <div class="row text-center text-muted">\n                                            <div class="col-sm-5ths" title="This card has a description.">\n                                                <span ng-show="card.description">\n                                                    <i class="glyphicon glyphicon-align-left"></i>\n                                                </span>\n                                            </div>\n                                            <div class="col-sm-5ths" title="{{ card.users.length }} user(s) assigned to this card">\n                                                <span ng-show="card.users.length">\n                                                    <i class="glyphicon glyphicon-user"></i> {{ card.users.length }}\n                                                </span>\n                                            </div>\n                                            <div class="col-sm-5ths" title="{{ card.subtasks.length }} subtask(s)">\n                                                <span ng-show="card.subtasks.length">\n                                                    <i class="glyphicon glyphicon-ok"></i> {{ card.subtasks.length }}\n                                                </span>\n                                            </div>\n                                            <div class="col-sm-5ths" title="{{ card.attachments.length }} attachment(s)">\n                                                <span ng-show="card.attachments.length">\n                                                    <i class="glyphicon glyphicon-download-alt"></i> {{ card.attachments.length }}\n                                                </span>\n                                            </div>\n                                            <div class="col-sm-5ths" title="{{ card.comments.length }} comment(s)">\n                                                <span ng-show="card.comments.length">\n                                                    <i class="glyphicon glyphicon-comment"></i> {{ card.comments.length }}\n                                                </span>\n                                            </div>\n                                        </div>\n                                        <div class="progress" ng-show="card.impact">\n                                            <div\n                                                class="progress-bar progress-bar-info"\n                                                style="width: {{ card.impact }}%;"\n                                                title="Impact this card has on the project"></div>\n                                        </div>\n                                    </li>\n                                </ul>\n                            </div>\n                        </td>\n                    </tr>\n                </table>\n            </div>\n        </div>\n    </div>\n</div>\n<div ui-view></div>\n';
+module.exports = '<style>\nnav {\n    margin: 0 !important;\n}\n</style>\n<div class="container-fluid" style="padding-top: 15px; box-shadow: 0 1px 2px -1px rgba(0, 0, 0, 0.3); background: white">\n    <div class="row" style="margin-bottom: 15px">\n        <div class="col-sm-8">\n            <div class="btn-group pull-left" style="margin-right: 10px;">\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        {{ ctrl.filters.tag.name || \'Tags\' }} <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li ng-click="ctrl.selectTagFilter(null)">\n                            <a href="#">Show All Tags</a>\n                        </li>\n                        <li class="divider"></li>\n                        <li\n                            ng-click="ctrl.selectTagFilter(tag)"\n                            ng-repeat="tag in ctrl.tags">\n                            <a href="#">{{ tag.name }}</a>\n                        </li>\n                    </ul>\n                </div>\n\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        <span ng-show="ctrl.assignedTo.name">{{ ctrl.assignedTo.name }}</span>\n                        <span ng-show="ctrl.assignedTo == \'no one\'">Assigned to no one</span>\n                        <span ng-show="ctrl.assignedTo == null">Assigned to</span>\n                        <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li ng-click="ctrl.selectAssignedToFilter(null)"><a href="#">Everyone</a></li>\n                        <li class="divider"></li>\n                        <li ng-click="ctrl.selectAssignedToFilter(ctrl.authUser)"><a href="#">Me</a></li>\n                        <li ng-click="ctrl.selectAssignedToFilter(\'no one\')"><a href="#">No One Assigned</a></li>\n                        <li\n                            ng-click="ctrl.selectAssignedToFilter(user)"\n                            ng-hide="user.id == ctrl.authUser.id"\n                            ng-repeat="user in ctrl.team.users">\n                            <a href="#">{{ user.name }}</a>\n                        </li>\n                    </ul>\n                </div>\n\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                         {{ ctrl.filters.quick || \'Quick filters\' }} <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li ng-click="ctrl.selectQuickFilter(null)"><a href="#">Show all</a></li>\n                        <li class="divider"></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'Created by me\')"><a href="#">Created by me</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'With subtasks\')"><a href="#">With subtasks</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'With impact\')"><a href="#">With impact</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'With comments\')"><a href="#">With comments</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'With files attached\')"><a href="#">With files attached</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'Tasks blocked\')"><a href="#">Tasks blocked</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'Tasks unblocked\')"><a href="#">Tasks unblocked</a></li>\n                    </ul>\n                </div>\n            </div>\n\n            <form class="form-inline">\n                <div class="form-group">\n                    <div ng-class="{ \'input-group\': ctrl.searchInput }">\n                        <input\n                            type="text"\n                            class="form-control"\n                            placeholder="Search cards..."\n                            ng-change="ctrl.updateSearchInput()"\n                            ng-model="ctrl.searchInput">\n                        <div\n                            class="input-group-addon btn btn-default"\n                            ng-show="ctrl.searchInput"\n                            ng-click="ctrl.clearSearchInput()">\n                            <i class="fa fa-times"></i>\n                        </div>\n                    </div>\n                </div>\n            </form>\n        </div>\n        <div class="col-sm-4 text-right">\n            <button\n                class="btn btn-primary"\n                ng-click="ctrl.openSortableProjects()">\n                Sort Projects\n            </button>\n            <button\n                class="btn btn-success"\n                ng-click="ctrl.createProject()">\n                Create Project\n            </button>\n        </div>\n    </div>\n</div>\n<div class="projects-container">\n    <div class="panel panel-default" ng-repeat="project in ctrl.projects">\n        <div class="panel-body">\n            <div class="stage-container" ng-hide="project.hidden">\n                <table class="table">\n                    <tr>\n                        <td>\n                            <div class="project-head">\n                                <h4>{{ project.name }}</h4>\n                                <div class="btn-group-vertical" style="width: 100%;">\n                                    <button\n                                        type="button"\n                                        class="btn btn-default btn-sm"\n                                        ng-click="ctrl.createCard(project)">\n                                        <i class="glyphicon glyphicon-plus text-success"></i> Add a Card\n                                    </button>\n                                    <button\n                                        class="btn btn-default btn-sm"\n                                        ng-click="ctrl.editProject(project)">\n                                        <i class="glyphicon glyphicon-pencil text-info"></i> Edit\n                                    </button>\n                                    <button\n                                        class="btn btn-default btn-sm"\n                                        ng-click="ctrl.deleteProject(project)">\n                                        <i class="glyphicon glyphicon-remove text-danger"></i> Delete\n                                    </button>\n                                </div>\n                            </div>\n                        </td>\n                        <td ng-repeat="(stageIndex, stage) in project.stages">\n                            <div class="stage-column">\n                                <div class="stage-header">\n                                    <div class="row">\n                                        <div class="col-sm-6">\n                                            <h5>{{ stage.name }}</h5>\n                                        </div>\n                                        <div class="col-sm-6">\n                                            <div class="btn-group  pull-right">\n                                                <button\n                                                    type="button"\n                                                    class="btn btn-link btn-sm dropdown-toggle pull-right"\n                                                    data-toggle="dropdown">\n                                                    <span class="fa fa-cog"></span>\n                                                </button>\n                                                <ul class="dropdown-menu dropdown-menu-right">\n                                                    <li>\n                                                        <a class="pointer" ng-click="ctrl.editStage(stage)">Rename</a>\n                                                    </li>\n                                                    <li>\n                                                        <a class="pointer" ng-click="ctrl.deleteAllCardsInStage(stage)">Delete All Cards</a>\n                                                    </li>\n                                                    <li role="separator" class="divider"></li>\n                                                    <li>\n                                                        <a ng-click="ctrl.deleteStage(project, stageIndex)">Delete</a>\n                                                    </li>\n                                                </ul>\n                                            </div>\n                                        </div>\n                                    </div>\n                                </div>\n\n                                <card-list data="stage.cards" search-input="ctrl.searchInput" applied-filters="ctrl.appliedFilters"></card-list>\n                            </div>\n                        </td>\n                    </tr>\n                </table>\n            </div>\n        </div>\n    </div>\n</div>\n<div ui-view></div>\n';
 },{}],36:[function(require,module,exports){
 module.exports = '<div class="row">\n    <div class="col-sm-6">\n        <div class="panel panel-default">\n            <div class="panel-heading">\n                <h5 class="panel-title">Your info</h5>\n            </div>\n            <div class="panel-body">\n                <form ng-submit="ctrl.updateUser()">\n                    <div class="form-group">\n                        <label>Name</label>\n                        <input\n                            type="text"\n                            class="form-control"\n                            ng-model="ctrl.authUser.name">\n                    </div>\n                    <div class="form-group">\n                        <label>Email</label>\n                        <input\n                            type="email"\n                            class="form-control"\n                            ng-model="ctrl.authUser.email">\n                    </div>\n                    <button\n                        type="submit"\n                        class="btn btn-primary">Submit</button>\n                </form>\n            </div>\n        </div>\n    </div>\n    <div class="col-sm-6">\n        <div class="panel panel-default">\n            <div class="panel-heading">\n                <h5 class="panel-title">Change your password</h5>\n            </div>\n            <div class="panel-body">\n                <form ng-submit="ctrl.updatePassword()">\n                    <div class="form-group">\n                        <label>Password</label>\n                        <input\n                            type="password"\n                            class="form-control"\n                            ng-model="ctrl.password">\n                    </div>\n                    <div class="form-group">\n                        <label>Password Confirmation</label>\n                        <input\n                            type="password"\n                            class="form-control"\n                            ng-model="ctrl.passwordConfirm">\n                    </div>\n                    <button class="btn btn-primary">Submit</button>\n                </form>\n            </div>\n        </div>\n    </div>\n</div>\n';
 },{}],37:[function(require,module,exports){
@@ -42513,6 +42504,165 @@ angular.module('simple.team.bytes', []).filter('bytes', function() {
 
 
 },{}],45:[function(require,module,exports){
+'use strict';
+angular.module('simple.team.cardCacher', []).service('CardCacherService', function() {
+  this.card = null;
+  return {
+    set: (function(_this) {
+      return function(card) {
+        return _this.card = card;
+      };
+    })(this),
+    get: (function(_this) {
+      return function() {
+        var card;
+        card = _this.card;
+        _this.card = null;
+        return card;
+      };
+    })(this)
+  };
+});
+
+
+},{}],46:[function(require,module,exports){
+'use strict';
+var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+
+module.exports = function($state, $rootScope, CardListFiltersService, CardCacherService) {
+  var CtrlFunc;
+  CtrlFunc = (function() {
+    function CtrlFunc($scope) {
+      this.appliedFilters = bind(this.appliedFilters, this);
+      this.authUser = $rootScope.authUser;
+      this.cards = $scope.data;
+      this.filters = {
+        tag: null,
+        assignedTo: null,
+        quick: null
+      };
+      this.searchInput = '';
+      $rootScope.$on('filters:update', (function(_this) {
+        return function(evt, data) {
+          return _this.filters = data;
+        };
+      })(this));
+      $rootScope.$on('search:update', (function(_this) {
+        return function(evt, data) {
+          return _this.searchInput = data;
+        };
+      })(this));
+    }
+
+    CtrlFunc.prototype.openEditCard = function(card) {
+      CardCacherService.set(card);
+      return $state.go('projects.card', {
+        cardId: card.id
+      });
+    };
+
+    CtrlFunc.prototype.appliedFilters = function(card) {
+      return CardListFiltersService.check(this.filters, this.authUser, card);
+    };
+
+    return CtrlFunc;
+
+  })();
+  return {
+    scope: {
+      data: '='
+    },
+    controller: CtrlFunc,
+    controllerAs: 'ctrl',
+    template: require('./views/cardList.html')
+  };
+};
+
+
+},{"./views/cardList.html":48}],47:[function(require,module,exports){
+'use strict';
+module.exports = function() {
+  var CtrlFunc;
+  CtrlFunc = (function() {
+    function CtrlFunc($scope) {
+      this.card = $scope.data;
+    }
+
+    return CtrlFunc;
+
+  })();
+  return {
+    scope: {
+      data: '='
+    },
+    controller: CtrlFunc,
+    controllerAs: 'ctrl',
+    template: require('./views/cardListItem.html')
+  };
+};
+
+
+},{"./views/cardListItem.html":49}],48:[function(require,module,exports){
+module.exports = '<ul\n    class="sortable"\n    ui-sortable="ctrl.sortableOptions"\n    ng-model="ctrl.cards">\n    <li\n        ng-click="ctrl.openEditCard(card)"\n        ng-repeat="card in ctrl.cards | filter:ctrl.searchInput | filter:ctrl.appliedFilters"\n        ng-class="{ \'card-blocked\': card.blocked }">\n        <card-list-item data="card"></card-list-item>\n    </li>\n</ul>\n';
+},{}],49:[function(require,module,exports){
+module.exports = '<div class="row">\n    <div class="col-sm-12">\n        {{ ctrl.card.name }}\n    </div>\n</div>\n<div class="row" style="margin-bottom: 7px;" ng-show="ctrl.card.impact || ctrl.card.tags.length > 0">\n    <div class="col-sm-12">\n        <span ng-repeat="tag in ctrl.card.tags" ng-show="ctrl.card.tags.length > 0">\n            <span class="label label-primary">{{ tag.name }}</span>\n        </span>\n    </div>\n</div>\n<div class="row text-center text-muted">\n    <div class="col-sm-5ths" title="This ctrl.card has a description.">\n        <span ng-show="ctrl.card.description">\n            <i class="glyphicon glyphicon-align-left"></i>\n        </span>\n    </div>\n    <div class="col-sm-5ths" title="{{ ctrl.card.users.length }} user(s) assigned to this ctrl.card">\n        <span ng-show="ctrl.card.users.length">\n            <i class="glyphicon glyphicon-user"></i> {{ ctrl.card.users.length }}\n        </span>\n    </div>\n    <div class="col-sm-5ths" title="{{ ctrl.card.subtasks.length }} subtask(s)">\n        <span ng-show="ctrl.card.subtasks.length">\n            <i class="glyphicon glyphicon-ok"></i> {{ ctrl.card.subtasks.length }}\n        </span>\n    </div>\n    <div class="col-sm-5ths" title="{{ ctrl.card.attachments.length }} attachment(s)">\n        <span ng-show="ctrl.card.attachments.length">\n            <i class="glyphicon glyphicon-download-alt"></i> {{ ctrl.card.attachments.length }}\n        </span>\n    </div>\n    <div class="col-sm-5ths" title="{{ ctrl.card.comments.length }} comment(s)">\n        <span ng-show="ctrl.card.comments.length">\n            <i class="glyphicon glyphicon-comment"></i> {{ ctrl.card.comments.length }}\n        </span>\n    </div>\n</div>\n<div class="progress" ng-show="ctrl.card.impact">\n    <div\n        class="progress-bar progress-bar-info"\n        style="width: {{ ctrl.card.impact }}%;"\n        title="Impact this ctrl.card has on the project"></div>\n</div>\n';
+},{}],50:[function(require,module,exports){
+'use strict';
+angular.module('simple.team.cardList', []).directive('cardList', require('./directives/cardList.directive.coffee')).directive('cardListItem', require('./directives/cardListItem.directive.coffee')).service('CardListFiltersService', require('./services/cardList.filters.service.coffee'));
+
+
+},{"./directives/cardList.directive.coffee":46,"./directives/cardListItem.directive.coffee":47,"./services/cardList.filters.service.coffee":51}],51:[function(require,module,exports){
+'use strict';
+module.exports = function() {
+  var CardListFilters;
+  return CardListFilters = (function() {
+    function CardListFilters() {}
+
+    CardListFilters.check = function(filters, authUser, card) {
+      if (filters.tag !== null && _.findIndex(card.tags, {
+        id: filters.tag.id
+      }) === -1) {
+        return false;
+      }
+      if (filters.assignedTo === 'no one' && card.users.length > 0) {
+        return false;
+      }
+      if (_.isObject(filters.assignedTo) && _.findIndex(card.users, {
+        id: filters.assignedTo.id
+      }) === -1) {
+        return false;
+      }
+      if (filters.quick === 'Created by me' && card.user_id !== authUser.id) {
+        return false;
+      }
+      if (filters.quick === 'With subtasks' && card.subtasks && card.subtasks.length === 0) {
+        return false;
+      }
+      if (filters.quick === 'With impact' && !card.impact) {
+        return false;
+      }
+      if (filters.quick === 'With comments' && card.comments.length === 0) {
+        return false;
+      }
+      if (filters.quick === 'With files attached' && card.attachments && card.attachments.length === 0) {
+        return false;
+      }
+      if (filters.quick === 'Tasks blocked' && !card.blocked) {
+        return false;
+      }
+      if (filters.quick === 'Tasks unblocked' && card.blocked) {
+        return false;
+      }
+      return true;
+    };
+
+    return CardListFilters;
+
+  })();
+};
+
+
+},{}],52:[function(require,module,exports){
 angular.module('simple.team.focusMe', []).directive('focusMe', [
   '$timeout', function($timeout) {
     return {
@@ -42533,7 +42683,7 @@ angular.module('simple.team.focusMe', []).directive('focusMe', [
 ]);
 
 
-},{}],46:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 'use strict';
 
 angular.module('simple.team.mediaComment', []).factory('Parser', [function () {
@@ -42665,7 +42815,7 @@ angular.module('simple.team.mediaComment', []).factory('Parser', [function () {
 	};
 }]);
 
-},{}],47:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 'use strict';
 angular.module('simple.team.navbar', []).directive('navbar', function() {
   return {
@@ -42748,9 +42898,9 @@ angular.module('simple.team.navbar', []).directive('navbar', function() {
 });
 
 
-},{"./view.html":48}],48:[function(require,module,exports){
+},{"./view.html":55}],55:[function(require,module,exports){
 module.exports = '<nav class="navbar navbar-default navbar-static-top">\n    <div class="container-fluid">\n        <ul class="nav navbar-nav">\n            <li class="dropdown">\n                <a href="#" class="dropdown-toggle" data-toggle="dropdown">{{ navCtrl.selectedTeam.name || \'Select a team...\' }} <span class="caret"></span></a>\n                <ul class="dropdown-menu">\n                    <li ng-repeat="team in navCtrl.teams" ng-click="navCtrl.setCurrentTeam(team)">\n                        <a href="#">{{ team.name }}</a>\n                    </li>\n                </ul>\n            </li>\n        </ul>\n        <ul class="nav navbar-nav navbar-right">\n            <li class="dropdown">\n                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Menu<span class="caret"></span></a>\n                <ul class="dropdown-menu">\n                    <li><a ui-sref="simple.settings.account">Account</a></li>\n                    <li><a ui-sref="simple.settings.teams">Teams</a></li>\n                    <li class="divider"></li>\n                    <li><a ui-sref="auth.logout">Sign Out</a></li>\n                </ul>\n            </li>\n        </ul>\n    </div>\n</nav>\n';
-},{}],49:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 "use strict";
 
 angular.module('simple.team.ngBindHtmlUnsafe', []).directive('ngBindHtmlUnsafe', [function () {
@@ -42762,7 +42912,7 @@ angular.module('simple.team.ngBindHtmlUnsafe', []).directive('ngBindHtmlUnsafe',
     };
 }]);
 
-},{}],50:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 'use strict';
 
 angular.module('simple.team.redactor', [])
@@ -42807,7 +42957,7 @@ angular.module('simple.team.redactor', [])
 	};
 }]);
 
-},{}],51:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 /**
  * Angular Selectize2
  * https://github.com/machineboy2045/angular-selectize
@@ -42917,7 +43067,7 @@ angular.module('selectize', []).value('selectizeConfig', {}).directive("selectiz
   };
 }]);
 
-},{}],52:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 angular.module('simple.team.sidebar', []).directive('sidebar', function() {
   return {
     restrict: 'E',
@@ -42926,9 +43076,9 @@ angular.module('simple.team.sidebar', []).directive('sidebar', function() {
 });
 
 
-},{"./view.html":53}],53:[function(require,module,exports){
+},{"./view.html":60}],60:[function(require,module,exports){
 module.exports = '<div class="wrapper">\n    <div class="sidebar">\n        <div class="title">simple.team</div>\n        <ul class="side-nav">\n            <li><a ui-sref="simple.projects.kanban">Kanban</a></li>\n            <li><a ui-sref="simple.projects.list">Projects List</a></li>\n            <!-- <li><a ui-sref="chat">Chat</a></li>\n            <li><a ui-sref="timeline">Timeline</a></li>\n            <li><a ui-sref="daily-summary">Daily Summary</a></li>\n            <li><a ui-sref="notes.list">Notes</a></li>\n            <li><a ui-sref="one-use-notes">Secure Notes</a></li>\n            <li><a ui-sref="designer">Designer</a></li>\n            <li><a ui-sref="settings.teams">Settings</a></li> -->\n        </ul>\n    </div>\n</div>\n';
-},{}],54:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 'use strict';
 
 angular.module('simple.team.strings', [])
@@ -43069,7 +43219,7 @@ angular.module('simple.team.strings', [])
 	};
 }]);
 
-},{}],55:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 'use strict';
 angular.module('simple.team.tagData', []).service('TagDataService', [
   '$http', function($http) {
@@ -43080,7 +43230,7 @@ angular.module('simple.team.tagData', []).service('TagDataService', [
 ]);
 
 
-},{}],56:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 'use strict';
 
 angular.module('simple.team.time', []).filter('moment', [function () {
@@ -43148,7 +43298,7 @@ angular.module('simple.team.time', []).filter('moment', [function () {
 	};
 }]);
 
-},{}],57:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 'use strict';
 angular.module('simple.team.userData', []).service('UserDataService', [
   '$http', function($http) {
@@ -43159,7 +43309,7 @@ angular.module('simple.team.userData', []).service('UserDataService', [
 ]);
 
 
-},{}],58:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 'use strict';
 
 module.exports = angular.module('simple.team.www', []).factory('$www', ['$http', function ($http) {
@@ -43214,7 +43364,7 @@ module.exports = angular.module('simple.team.www', []).factory('$www', ['$http',
 	return self;
 }]);
 
-},{}],59:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 angular.module('simple.team.routes', []).config([
   '$stateProvider', function($stateProvider) {
     return $stateProvider.state('projects', {

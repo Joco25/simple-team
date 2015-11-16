@@ -26,13 +26,13 @@ class ApiTopicController extends Controller
 			->orderBy('updated_at', 'desc')
 			->get();
 
-		// foreach ($topics as $topic) {
-			// $topic->is_starred = $topic->is_starred(Auth::user()->id);
-			// $topic->users = $topic->users();
-			// $topic->is_unread = $topic->is_unread();
+		foreach ($topics as $topic) {
+			$topic->is_starred = $topic->isStarred(Auth::user()->id);
+			$topic->users = $topic->users();
+			$topic->is_unread = $topic->isUnread();
 			// $topic->created_at = from_utc($topic->created_at, $account->timezone);
 			// $topic->updated_at = from_utc($topic->updated_at, $account->timezone);
-		// }
+		}
 
 		return response()->json([
 			'topics' => $topics

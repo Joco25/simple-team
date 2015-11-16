@@ -16,7 +16,7 @@
 			<div class='col-sm-12'>
 				<div class="media" ng-repeat='post in ctrl.topic.posts'>
 					<a class="pull-left" href="#">
-						<img width='50' class="media-object" ng-src="/image?image={{ post.user.image }}&size=50&type=square">
+						<img width="50" class="media-object" gravatar-src="post.user.email" gravatar-size="50">
 					</a>
 					<div class="media-body">
 						<h5 class="media-heading muted">{{ post.user.name }}</h5>
@@ -105,7 +105,7 @@
 						<div ng-repeat='iPost in post.posts'>
 							<div class="media" ng-repeat='iPost in post.posts'>
 								<a class="pull-left" href="#">
-									<img width='50' class="media-object" ng-src="/image?image={{ iPost.user.image }}&size=50&type=square">
+									<img width="50" class="media-object" gravatar-src="iPost.user.email" gravatar-size="50">
 								</a>
 								<div class="media-body">
 									<h5 class="media-heading muted">{{ iPost.user.name }}</h5>

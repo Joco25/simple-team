@@ -79,11 +79,12 @@ nav {
                             type="text"
                             class="form-control"
                             placeholder="Search cards..."
+                            ng-change="ctrl.updateSearchInput()"
                             ng-model="ctrl.searchInput">
                         <div
                             class="input-group-addon btn btn-default"
                             ng-show="ctrl.searchInput"
-                            ng-click="ctrl.searchInput = ''">
+                            ng-click="ctrl.clearSearchInput()">
                             <i class="fa fa-times"></i>
                         </div>
                     </div>
@@ -165,61 +166,7 @@ nav {
                                     </div>
                                 </div>
 
-                                <ul
-                                    class="sortable"
-                                    ui-sortable="ctrl.sortableOptions"
-                                    ng-model="stage.cards">
-                                    <li
-                                        ng-click="ctrl.openEditCard(card)"
-                                        ng-repeat="(cardIndex, card) in stage.cards | filter:ctrl.searchInput | filter:ctrl.appliedFilters"
-                                        ng-class="{ 'card-blocked': card.blocked }">
-                                        <div class="row">
-                                            <div class="col-sm-12">
-                                                {{ card.name }}
-                                            </div>
-                                        </div>
-                                        <div class="row" style="margin-bottom: 7px;" ng-show="card.impact || card.tags.length > 0">
-                                            <div class="col-sm-12">
-                                                <span ng-repeat="tag in card.tags" ng-show="card.tags.length > 0">
-                                                    <span class="label label-primary">{{ tag.name }}</span>
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="row text-center text-muted">
-                                            <div class="col-sm-5ths" title="This card has a description.">
-                                                <span ng-show="card.description">
-                                                    <i class="glyphicon glyphicon-align-left"></i>
-                                                </span>
-                                            </div>
-                                            <div class="col-sm-5ths" title="{{ card.users.length }} user(s) assigned to this card">
-                                                <span ng-show="card.users.length">
-                                                    <i class="glyphicon glyphicon-user"></i> {{ card.users.length }}
-                                                </span>
-                                            </div>
-                                            <div class="col-sm-5ths" title="{{ card.subtasks.length }} subtask(s)">
-                                                <span ng-show="card.subtasks.length">
-                                                    <i class="glyphicon glyphicon-ok"></i> {{ card.subtasks.length }}
-                                                </span>
-                                            </div>
-                                            <div class="col-sm-5ths" title="{{ card.attachments.length }} attachment(s)">
-                                                <span ng-show="card.attachments.length">
-                                                    <i class="glyphicon glyphicon-download-alt"></i> {{ card.attachments.length }}
-                                                </span>
-                                            </div>
-                                            <div class="col-sm-5ths" title="{{ card.comments.length }} comment(s)">
-                                                <span ng-show="card.comments.length">
-                                                    <i class="glyphicon glyphicon-comment"></i> {{ card.comments.length }}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="progress" ng-show="card.impact">
-                                            <div
-                                                class="progress-bar progress-bar-info"
-                                                style="width: {{ card.impact }}%;"
-                                                title="Impact this card has on the project"></div>
-                                        </div>
-                                    </li>
-                                </ul>
+                                <card-list data="stage.cards" search-input="ctrl.searchInput" applied-filters="ctrl.appliedFilters"></card-list>
                             </div>
                         </td>
                     </tr>

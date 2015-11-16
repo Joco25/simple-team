@@ -1,6 +1,6 @@
 'use strict'
 
-module.exports = ($state, $stateParams, $scope, $http, $rootScope, TagDataService, Upload, $modalInstance, cardId, $timeout) ->
+module.exports = ($state, $stateParams, $scope, $http, $rootScope, TagDataService, Upload, $modalInstance, cardId, $timeout, CardCacherService) ->
     stageId = null
     projectId = null
     @selectedCard = null
@@ -33,6 +33,7 @@ module.exports = ($state, $stateParams, $scope, $http, $rootScope, TagDataServic
             updateCardUsers users.split('|')
 
     init = =>
+        @selectedCard = CardCacherService.get()
         @loadTags()
         @loadCard()
         @loadTeamUsers()
