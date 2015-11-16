@@ -1,3 +1,14 @@
+html, body {
+  font-family: 'Source Sans Pro','Helvetica Neue',Arial,sans-serif;
+  text-rendering: optimizelegibility; }
+
+html {
+  overflow-x: hidden;
+  font-family: 'Source Sans Pro'; }
+
+body {
+  font-family: 'Source Sans Pro'; }
+
 #loading-bar .bar {
   background: #f05f40;
   opacity: .8; }
@@ -568,13 +579,6 @@ button.close {
 .selectize-dropdown .optgroup:first-child {
   border-top: 0 none; }
 
-html {
-  overflow-x: hidden;
-  font-family: 'Source Sans Pro'; }
-
-body {
-  font-family: 'Source Sans Pro'; }
-
 .home-page {
   font-family: 'Source Sans Pro','Helvetica Neue',Arial,sans-serif;
   text-rendering: optimizelegibility; }
@@ -757,5 +761,83 @@ body {
   display: inline; }
 
 /* IE7 */
+.features-page {
+  color: #525252;
+  font-size: 16px; }
+  .features-page h1,
+  .features-page h2,
+  .features-page h3,
+  .features-page h4,
+  .features-page h5,
+  .features-page h6 {
+    font-family: 'Source Sans Pro', 'Helvetica Neue', Arial, sans-serif;
+    font-weight: normal;
+    color: #525252;
+    margin-bottom: 15px; }
+  .features-page h1 {
+    margin-top: 50px; }
+  .features-page section p {
+    margin: 10px 0 20px; }
+  .features-page h2 {
+    position: relative; }
+  .features-page i {
+    color: #A8539B;
+    position: absolute;
+    left: -26px;
+    top: 8px;
+    font-size: 20px; }
+  .features-page .navbar-default {
+    border: 0;
+    border-radius: 0;
+    background-image: url("/img/home-bg.jpg");
+    background-size: cover;
+    padding: 20px 0;
+    font-family: 'Source Sans Pro','Helvetica Neue',Arial,sans-serif;
+    margin: 0; }
+    .features-page .navbar-default .navbar-btn > .btn {
+      color: #fff;
+      font-size: 16px; }
+  .features-page .navbar-default .navbar-header .navbar-brand {
+    text-transform: lowercase;
+    font-family: 'Source Sans Pro', 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 400;
+    font-size: 22px;
+    color: #fff; }
+  .features-page .navbar-default .nav > li > a,
+  .features-page .navbar-default .nav > li > a:focus {
+    text-transform: uppercase;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff; }
+  .features-page .navbar-default .nav > li.active > a,
+  .features-page .navbar-default .nav > li.active > a:focus {
+    color: #fff !important;
+    background-color: transparent; }
+  .features-page .navbar-default .nav > li.active > a:hover,
+  .features-page .navbar-default .nav > li.active > a:focus:hover {
+    background-color: transparent; }
+  .features-page section {
+    padding: 0 125px 15px 50px;
+    clear: both;
+    width: 100%; }
+  .features-page .features-menu > ul {
+    list-style: none;
+    padding: 0;
+    margin: 0; }
+  .features-page .features-menu > ul > li {
+    font-size: 18px;
+    font-weight: 400;
+    padding: 0 0 10px;
+    margin: 25px 0 0px; }
+  .features-page .features-menu > ul > li > ul {
+    border-top: 1px dashed rgba(0, 0, 0, 0.1);
+    display: block;
+    list-style: none;
+    margin: 10px 0 0 0;
+    padding: 10px 0 0 0;
+    font-size: 14px; }
+  .features-page .features-menu a {
+    color: #A8539B;
+    line-height: 1.5; }
 
 /*# sourceMappingURL=app.css.map */
