@@ -12,18 +12,18 @@ class CreateAttachmentsTable extends Migration {
 	 */
 	public function up()
 	{
-		Schema::create('attachments', function(Blueprint $table)
-		{
-			$table->increments('id');
-			$table->integer('card_id')->nullable();
-			$table->integer('user_id')->nullable();
-			$table->integer('team_id')->nullable();
-			$table->string('filename', 400)->nullable();
-			$table->string('original_filename', 1000)->nullable();
-			$table->string('file_url', 600)->nullable();
-			$table->string('file_size', 200)->nullable();
-			$table->timestamps();
-		});
+		// Schema::create('attachments', function(Blueprint $table)
+		// {
+		// 	$table->increments('id');
+		// 	$table->integer('card_id')->nullable();
+		// 	$table->integer('user_id')->nullable();
+		// 	$table->integer('team_id')->nullable();
+		// 	$table->string('filename', 400)->nullable();
+		// 	$table->string('original_filename', 1000)->nullable();
+		// 	$table->string('file_url', 600)->nullable();
+		// 	$table->string('file_size', 200)->nullable();
+		// 	$table->timestamps();
+		// });
 	}
 
 
@@ -34,7 +34,7 @@ class CreateAttachmentsTable extends Migration {
 	 */
 	public function down()
 	{
-		Schema::drop('attachments');
+		// Schema::drop('attachments');
 	}
 
 }
