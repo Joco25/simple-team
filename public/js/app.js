@@ -41477,13 +41477,12 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
 module.exports = [
   '$scope', '$www', '$state', function($scope, $www, $state) {
     $scope.newTopic = {};
-    $scope.createTopic = function() {
+    return $scope.createTopic = function() {
       if (!$scope.newTopic.name || !$scope.newTopic.body) {
-        toastr.error('You are missing some info!');
-        return;
+        alert('You are missing some info!');
       }
-      $www.post('/api/topics', $scope.newTopic).success(function(data) {
-        $state.go('conversations.view', {
+      return $www.post('/api/topics', $scope.newTopic).success(function(data) {
+        return $state.go('conversations.view', {
           topicId: data.topic.id
         });
       });
