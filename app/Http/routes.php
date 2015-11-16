@@ -11,6 +11,9 @@
 |
 */
 Route::get('/', 'HomeController@index');
+Route::get('/features', 'HomeController@projects');
+Route::get('/features/projects', 'FeaturesController@projects');
+Route::get('/features/conversations', 'FeaturesController@projects');
 
 // Authentication routes...
 Route::get('auth/login', 'Auth\AuthController@getLogin');
