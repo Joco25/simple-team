@@ -9,6 +9,8 @@
 
     <title>simple.team - Simple and effective project management for teams</title>
 
+    <link rel="icon" type="image/png" href="/img/SimpleTeam01-favicon.png">
+
     <!-- Bootstrap Core CSS -->
     <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
 	<link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
