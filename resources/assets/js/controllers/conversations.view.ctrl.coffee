@@ -30,6 +30,9 @@ module.exports = [
                     if data.error then $state.go 'conversations.list'
                     @topic = data.topic
 
+        @resetCurrentPost = =>
+            @selectedPost.editMode = false
+
         @updatePost = =>
             @selectedPost.body = @postCopy.body
             @selectedPost.editMode = false

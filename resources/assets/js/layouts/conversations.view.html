@@ -97,6 +97,9 @@
 									<button class='btn btn-success' ng-click='ctrl.updatePost()'>
 										Submit
 									</button>
+									<button class='btn btn-link' ng-click='ctrl.resetCurrentPost()'>
+										Cancel
+									</button>
 								</div>
 							</div>
 						</div>
@@ -122,10 +125,10 @@
 								<button type='submit' class='btn btn-success'>
 									Submit
 								</button>
-								<button ng-show='ctrl.newPost.body.length > 0' confirm='ctrl.resetNewPost()' title='Abandon your response?' type='button' class='btn btn-link'>
-									Cancel
-								</button>
-								<button ng-show='!ctrl.newPost.body' type='button' ng-click='ctrl.resetNewPost()' class='btn btn-link'>
+								<button
+									type='button'
+									ng-click='ctrl.resetNewPost()'
+									class='btn btn-link'>
 									Cancel
 								</button>
 							</form>
@@ -167,10 +170,11 @@
 					<button type='submit' class='btn btn-success'>
 						Submit
 					</button>
-					<button ng-show='ctrl.newPost.body.length > 0' confirm='ctrl.resetNewPost(post)' title='Abandon your response?' type='button' class='btn btn-link'>
-						Cancel
-					</button>
-					<button ng-show='!ctrl.newPost.body' type='button' ng-click='ctrl.resetNewPost(post)' class='btn btn-link'>
+					<button
+						ng-show='!ctrl.newPost.body'
+						type='button'
+						ng-click='ctrl.resetNewPost(post)'
+						class='btn btn-link'>
 						Cancel
 					</button>
 				</form>
