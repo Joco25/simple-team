@@ -58,7 +58,7 @@
 								ng-class='{ "text-muted": !topic.is_starred, "text-orange": topic.is_starred }'></i>
 						</td>
 						<td class='vert-align pointer' ui-sref='conversations.view({ topicId: topic.id })'>
-							<h5 ng-class='{ muted: !topic.is_unread }'>{{ topic.name }}</h5>
+							<h5 ng-class='{ "text-muted": !topic.is_unread }'>{{ topic.name }}</h5>
 						</td>
 						<td class="vert-align">
 							<img class="img-rounded" ng-repeat='user in topic.users' gravatar-src="user.email" gravatar-size="25" title="{{ user.name }}">

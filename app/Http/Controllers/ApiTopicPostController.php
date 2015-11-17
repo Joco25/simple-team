@@ -81,30 +81,36 @@ class ApiTopicPostController extends Controller
 		]);
 	}
 
-	public function post_like($id)
+	public function createLike()
 	{
-		$post = TopicPost::find($id);
-		if (! $post) {
-			return Api::error("Can't find post.");
-		}
+		$post = TopicPost::whereId(Input::get('topic_post_id'))
+			->whereTeamId(Auth::user()->team_id)
+			->first();
 
-		$post->create_like(Auth::user()->id);
-		$post->topic->update_like_count();
+		if (! $post) abort(422);
 
-		return Api::success();
+		$success = $post->createLike(Auth::user()->id);
+		$post->topic->updateLikeCount();
+
+		return response()->json([
+			'success' => (bool) $success
+		]);
 	}
 
-	public function delete_like($id = 0)
+	public function deleteLike()
 	{
-		$post = TopicPost::find($id);
-		if (! $post) {
-			return Api::error("Can't find post.");
-		}
+		$post = TopicPost::whereId(Input::get('topic_post_id'))
+			->whereTeamId(Auth::user()->team_id)
+			->first();
 
-		$post->delete_like(Auth::user()->id);
-		$post->topic->update_like_count();
+		if (! $post) abort(422);
 
-		return Api::success();
+		$success = $post->deleteLike(Auth::user()->id);
+		$post->topic->updateLikeCount();
+
+		return response()->json([
+			'success' => (bool) $success
+		]);
 	}
 
 }

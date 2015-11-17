@@ -41532,6 +41532,26 @@ module.exports = [
         return _this.loadConversations();
       };
     })(this);
+    this.toggleTopicUserStar = (function(_this) {
+      return function(topic) {
+        if (topic.is_starred) {
+          _this.unstarTopic(topic.id);
+        } else {
+          _this.starTopic(topic.id);
+        }
+        return topic.is_starred = !topic.is_starred;
+      };
+    })(this);
+    this.starTopic = function(topicId) {
+      return $www.post('/api/topicStars', {
+        topic_id: topicId
+      });
+    };
+    this.unstarTopic = function(topicId) {
+      return $www["delete"]('/api/topicStars', {
+        topic_id: topicId
+      });
+    };
     this.loadConversations();
   }
 ];
@@ -41613,23 +41633,21 @@ module.exports = [
         });
       };
     })(this);
-    this.deleteTopic = (function(_this) {
-      return function(topicId) {
-        return $www["delete"]('/api/topics/' + topicId).success(function() {
-          return $state.go('conversations.list');
-        });
-      };
-    })(this);
-    this.likePost = (function(_this) {
-      return function(postId) {
-        return $www.post('/api/topicPostLikes/' + postId);
-      };
-    })(this);
-    this.unlikePost = (function(_this) {
-      return function(postId) {
-        return $www["delete"]('/api/topicPostLikes/' + postId);
-      };
-    })(this);
+    this.deleteTopic = function(topicId) {
+      return $www["delete"]('/api/topics/' + topicId).success(function() {
+        return $state.go('conversations.list');
+      });
+    };
+    this.likePost = function(postId) {
+      return $www.post('/api/topicPostLikes', {
+        topic_post_id: postId
+      });
+    };
+    this.unlikePost = function(postId) {
+      return $www["delete"]('/api/topicPostLikes', {
+        topic_post_id: postId
+      });
+    };
     this.togglePostUserLike = (function(_this) {
       return function(post) {
         if (post.is_liked) {
@@ -42461,7 +42479,7 @@ module.exports = '<div class="panel">\n	<div class="panel-body">\n		<form ng-sub
 },{}],31:[function(require,module,exports){
 module.exports = '<div class="container-fluid" ui-view></div>\n';
 },{}],32:[function(require,module,exports){
-module.exports = '<div class="panel">\n	<div class="panel-body">\n		<div class=\'row\'>\n			<div class=\'col-sm-12\'>\n				<div class=\'inner-medium\'>\n					<ul class="nav nav-pills pull-left mbn">\n						<li ng-class=\'{ active: ctrl.filters.type == "latest" }\'>\n							<a ui-sref=\'conversations.list({ type: "latest" })\'>Latest</a>\n						</li>\n\n						<li ng-class=\'{ active: ctrl.filters.type == "unread" }\'>\n							<a ui-sref=\'conversations.list({ type: "unread" })\'>\n								<i class=\'icon-bookmark\'></i> Unread\n							</a>\n						</li>\n\n						<li ng-class=\'{ active: ctrl.filters.type == "starred" }\'>\n							<a ui-sref=\'conversations.list({ type: "starred" })\'>\n								<i class=\'icon-star\'></i> Starred\n							</a>\n						</li>\n\n						<li ng-class=\'{ active: ctrl.filters.type == "top" }\'>\n							<a ui-sref=\'conversations.list({ type: "top" })\'>Top</a>\n						</li>\n					</ul>\n\n					<a ui-sref=\'conversations.create\' class=\'btn btn-success pull-right\'>\n						<i class=\'icon-plus text-success\'></i> Create Discussion\n					</a>\n				</div>\n			</div>\n		</div>\n	</div>\n</div>\n\n<div class="panel">\n	<div class="panel-body">\n		<div infinite-scroll-disabled=\'ctrl.filters.disableInfiniteScroll\' infinite-scroll=\'nextPage()\' infinite-scroll-distance=\'2\'>\n			<table class=\'table table-striped table-middle table-hover\' style="margin: 0;">\n				<thead>\n					<tr>\n						<th></th>\n						<th class=\'span5\'>Discussion</th>\n						<th>Users</th>\n						<th class=\'text-center\'>Posts</th>\n						<th class=\'text-center\'>Likes</th>\n						<th class=\'text-center\'>Views</th>\n						<th colspan=\'2\' class=\'text-center\'>Activity</th>\n					</tr>\n				</thead>\n				<tbody>\n					<tr ng-repeat=\'topic in ctrl.topics\'>\n						<td class=\'text-center vert-align\'>\n							<i\n								class=\'fa fa-star fa-2\'\n								ng-click=\'ctrl.toggleTopicUserStar(topic)\'\n								ng-class=\'{ "text-muted": !topic.is_starred, "text-orange": topic.is_starred }\'></i>\n						</td>\n						<td class=\'vert-align pointer\' ui-sref=\'conversations.view({ topicId: topic.id })\'>\n							<h5 ng-class=\'{ muted: !topic.is_unread }\'>{{ topic.name }}</h5>\n						</td>\n						<td class="vert-align">\n							<img class="img-rounded" ng-repeat=\'user in topic.users\' gravatar-src="user.email" gravatar-size="25" title="{{ user.name }}">\n						</td>\n						<td class=\'text-center vert-align\'>{{ topic.post_count }}</td>\n						<td class=\'text-center vert-align\'>\n							<span ng-if=\'topic.like_count > 0\'>\n								{{ topic.like_count }} <i class=\'icon-heart text-red\'></i>\n							</span>\n						</td>\n						<td class=\'text-center vert-align\'>\n							<span ng-if=\'topic.view_count > 0\'>\n								{{ topic.view_count }}\n							</span>\n						</td>\n						<td class=\'text-center vert-align\'>{{ topic.created_at }}</td>\n						<td class=\'text-center vert-align\'>{{ topic.updated_at }}</td>\n					</tr>\n				</tbody>\n			</table>\n		</div>\n	</div>\n</div>\n';
+module.exports = '<div class="panel">\n	<div class="panel-body">\n		<div class=\'row\'>\n			<div class=\'col-sm-12\'>\n				<div class=\'inner-medium\'>\n					<ul class="nav nav-pills pull-left mbn">\n						<li ng-class=\'{ active: ctrl.filters.type == "latest" }\'>\n							<a ui-sref=\'conversations.list({ type: "latest" })\'>Latest</a>\n						</li>\n\n						<li ng-class=\'{ active: ctrl.filters.type == "unread" }\'>\n							<a ui-sref=\'conversations.list({ type: "unread" })\'>\n								<i class=\'icon-bookmark\'></i> Unread\n							</a>\n						</li>\n\n						<li ng-class=\'{ active: ctrl.filters.type == "starred" }\'>\n							<a ui-sref=\'conversations.list({ type: "starred" })\'>\n								<i class=\'icon-star\'></i> Starred\n							</a>\n						</li>\n\n						<li ng-class=\'{ active: ctrl.filters.type == "top" }\'>\n							<a ui-sref=\'conversations.list({ type: "top" })\'>Top</a>\n						</li>\n					</ul>\n\n					<a ui-sref=\'conversations.create\' class=\'btn btn-success pull-right\'>\n						<i class=\'icon-plus text-success\'></i> Create Discussion\n					</a>\n				</div>\n			</div>\n		</div>\n	</div>\n</div>\n\n<div class="panel">\n	<div class="panel-body">\n		<div infinite-scroll-disabled=\'ctrl.filters.disableInfiniteScroll\' infinite-scroll=\'nextPage()\' infinite-scroll-distance=\'2\'>\n			<table class=\'table table-striped table-middle table-hover\' style="margin: 0;">\n				<thead>\n					<tr>\n						<th></th>\n						<th class=\'span5\'>Discussion</th>\n						<th>Users</th>\n						<th class=\'text-center\'>Posts</th>\n						<th class=\'text-center\'>Likes</th>\n						<th class=\'text-center\'>Views</th>\n						<th colspan=\'2\' class=\'text-center\'>Activity</th>\n					</tr>\n				</thead>\n				<tbody>\n					<tr ng-repeat=\'topic in ctrl.topics\'>\n						<td class=\'text-center vert-align\'>\n							<i\n								class=\'fa fa-star fa-2\'\n								ng-click=\'ctrl.toggleTopicUserStar(topic)\'\n								ng-class=\'{ "text-muted": !topic.is_starred, "text-orange": topic.is_starred }\'></i>\n						</td>\n						<td class=\'vert-align pointer\' ui-sref=\'conversations.view({ topicId: topic.id })\'>\n							<h5 ng-class=\'{ "text-muted": !topic.is_unread }\'>{{ topic.name }}</h5>\n						</td>\n						<td class="vert-align">\n							<img class="img-rounded" ng-repeat=\'user in topic.users\' gravatar-src="user.email" gravatar-size="25" title="{{ user.name }}">\n						</td>\n						<td class=\'text-center vert-align\'>{{ topic.post_count }}</td>\n						<td class=\'text-center vert-align\'>\n							<span ng-if=\'topic.like_count > 0\'>\n								{{ topic.like_count }} <i class=\'icon-heart text-red\'></i>\n							</span>\n						</td>\n						<td class=\'text-center vert-align\'>\n							<span ng-if=\'topic.view_count > 0\'>\n								{{ topic.view_count }}\n							</span>\n						</td>\n						<td class=\'text-center vert-align\'>{{ topic.created_at }}</td>\n						<td class=\'text-center vert-align\'>{{ topic.updated_at }}</td>\n					</tr>\n				</tbody>\n			</table>\n		</div>\n	</div>\n</div>\n';
 },{}],33:[function(require,module,exports){
 module.exports = '<div class="panel">\n	<div class="panel-body">\n		<h3 style="margin: 0;">\n			<i\n				class=\'icon-star pointer\'\n				ng-click=\'ctrl.toggleTopicUserStar(topic)\'\n				ng-class=\'{ muted: !ctrl.topic.is_starred, "text-orange": ctrl.topic.is_starred }\'></i>\n			{{ ctrl.topic.name }}\n		</h3>\n	</div>\n</div>\n\n<div class="panel">\n	<div class="panel-body">\n		<div class=\'row\'>\n			<div class=\'col-sm-12\'>\n				<div class="media" ng-repeat=\'post in ctrl.topic.posts\'>\n					<a class="pull-left" href="#">\n						<img width="50" class="media-object" gravatar-src="post.user.email" gravatar-size="50">\n					</a>\n					<div class="media-body">\n						<h5 class="media-heading muted">{{ post.user.name }}</h5>\n						<div ng-show=\'!post.editMode\'>\n							{{ post.post.user.name }}\n							<div ng-bind-html-unsafe="post.body"></div>\n\n							<div class=\'row\' ng-show=\'$index == 0\'>\n								<div class=\'col-sm-12\'>\n									<div class=\'pull-right\'>\n										 <button\n										 	class=\'btn\'\n											ng-show=\'post.user_id !== ctrl.authUser.id\'\n											ng-class=\'{ active: post.is_liked }\'\n											ng-click=\'ctrl.togglePostUserLike(post)\'>\n											<i class=\'fa fa-heart\' ng-class=\'{ "text-red": post.is_liked }\'></i>\n										</button>\n										<button\n											class=\'btn\'\n											ng-click=\'ctrl.selectPost(post); post.editMode = true\'\n											ng-show=\'post.user_id === ctrl.authUser.id\'>\n											<i class=\'fa fa-pencil\'></i>\n										</button>\n										<button\n											class=\'btn\'\n											ng-show=\'post.user_id === ctrl.authUser.id && ctrl.topic.posts.length == 1\'\n											ng-click=\'ctrl.deleteTopic(ctrl.topic.id)\'\n											title=\'Delete this post?\'>\n											<i class=\'fa fa-trash\'></i>\n										</button>\n									</div>\n								</div>\n							</div>\n\n							<div class=\'row mbm\' ng-show=\'$index > 0\'>\n								<div class=\'col-sm-12\'>\n									<button class=\'btn\' ng-click=\'post.showReplies = !post.showReplies\' ng-show=\'post.posts.length > 0\'>\n										{{ post.posts.length }} Replies <i ng-class=\'{ "icon-chevron-down": !post.showReplies, "icon-chevron-up": post.showReplies }\'></i>\n									</button>\n\n									<div class=\'pull-right\'>\n										<button\n											class=\'btn\'\n											ng-show=\'post.user_id !== ctrl.authUser.id\'\n											ng-class=\'{ active: post.is_liked }\'\n											ng-click=\'ctrl.togglePostUserLike(post)\'>\n											<i class=\'fa fa-heart\' ng-class=\'{ "text-red": post.is_liked }\'></i>\n										</button>\n										<button\n											class=\'btn\'\n											ng-click=\'ctrl.selectPost(post); post.editMode = true\'\n											ng-show=\'post.user_id === ctrl.authUser.id\'>\n											<i class=\'fa fa-pencil\'></i>\n										</button>\n										<button\n											class=\'btn\'\n											ng-show=\'post.user_id === ctrl.authUser.id\'\n											ng-click=\'ctrl.deletePost(post.id)\'\n											title=\'Delete this post?\'>\n											<i class=\'fa fa-trash\'></i>\n										</button>\n										<button\n											class=\'btn btn-primary\'\n											ng-click=\'ctrl.selectPost(post); ctrl.newPost.topic_post_id = post.id; post.showNewPost = true\'>\n											<i class=\'fa fa-reply\'></i> Reply\n										</button>\n									</div>\n								</div>\n							</div>\n						</div>\n\n						<div ng-show=\'post.editMode\'>\n							<div class=\'row\'>\n								<div class=\'col-sm-12\'>\n									<div class=\'form-group\'>\n										<text-angular ng-model=\'ctrl.postCopy.body\'></text-angular>\n									</div>\n									<button class=\'btn btn-success\' ng-click=\'ctrl.updatePost()\'>\n										Submit\n									</button>\n									<button class=\'btn btn-link\' ng-click=\'ctrl.resetCurrentPost()\'>\n										Cancel\n									</button>\n								</div>\n							</div>\n						</div>\n					</div>\n					<div class=\'well well-sm\' ng-show=\'post.posts.length > 0 && post.showReplies\'>\n						<div ng-repeat=\'iPost in post.posts\'>\n							<div class="media" ng-repeat=\'iPost in post.posts\'>\n								<a class="pull-left" href="#">\n									<img width="50" class="media-object" gravatar-src="iPost.user.email" gravatar-size="50">\n								</a>\n								<div class="media-body">\n									<h5 class="media-heading muted">{{ iPost.user.name }}</h5>\n									<div ng-bind-html-unsafe="iPost.body"></div>\n								</div>\n							</div>\n						</div>\n					</div>\n\n					<div class=\'row\' ng-show=\'post.showNewPost\'>\n						<div class=\'col-sm-12\'>\n							<form class=\'mbn\' ng-submit=\'ctrl.createPost()\'>\n								<text-angular ng-model=\'ctrl.newPost.body\'></text-angular>\n								<button type=\'submit\' class=\'btn btn-success\'>\n									Submit\n								</button>\n								<button\n									type=\'button\'\n									ng-click=\'ctrl.resetNewPost()\'\n									class=\'btn btn-link\'>\n									Cancel\n								</button>\n							</form>\n						</div>\n					</div>\n					<hr>\n				</div>\n			</div>\n		</div>\n\n		<div class=\'row mbm\'>\n			<div class=\'col-sm-12\'>\n				<button class=\'btn\' ng-class=\'{ active: ctrl.topic.is_starred }\' ng-click=\'toggleTopicUserStar(topic)\'>\n					<i class=\'icon-star\' ng-class=\'{ "text-orange": ctrl.topic.is_starred }\'></i> Star\n				</button>\n\n				<button class=\'btn btn-primary\' ng-click=\'filters.showNewPost = true\'>\n					<i class=\'icon-plus\'></i> Reply\n				</button>\n\n				<button class="btn" ng-click=\'ctrl.toggleNotification()\'>\n					<span ng-show=\'watchNotification\'>Stop Notifications</span>\n					<span ng-show=\'!watchNotification\'>Get Notifications</span>\n				</button>\n			</div>\n		</div>\n\n		<div class=\'row\' ng-show=\'filters.showNewPost\'>\n			<div class=\'col-sm-12\'>\n				<form ng-submit=\'ctrl.createPost()\' class=\'form-horizontal\'>\n					<!-- <div class=\'mbm\'>\n						<select class=\'input-full\' placeholder=\'Tag Users\'ui-select2 multiple ng-model=\'newctrl.topic.user_ids\'>\n							<option ng-repeat="user in main.users" value=\'{{ user.id }}\'>{{ user.name }}</option>\n						</select>\n					</div> -->\n\n					<text-angular ng-model=\'ctrl.newPost.body\'></text-angular>\n\n					<button type=\'submit\' class=\'btn btn-success\'>\n						Submit\n					</button>\n					<button\n						ng-show=\'!ctrl.newPost.body\'\n						type=\'button\'\n						ng-click=\'ctrl.resetNewPost(post)\'\n						class=\'btn btn-link\'>\n						Cancel\n					</button>\n				</form>\n			</div>\n		</div>\n	</div>\n</div>\n';
 },{}],34:[function(require,module,exports){

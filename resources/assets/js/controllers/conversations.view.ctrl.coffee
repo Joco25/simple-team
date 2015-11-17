@@ -59,17 +59,21 @@ module.exports = [
                 .success =>
                     @topic.posts = _.reject(@topic.posts, id: +postId)
 
-        @deleteTopic = (topicId) =>
+        @deleteTopic = (topicId) ->
             $www
                 .delete '/api/topics/' + topicId
-                .success =>
+                .success ->
                     $state.go 'conversations.list'
 
-        @likePost = (postId) =>
-            $www.post '/api/topicPostLikes/' + postId
+        @likePost = (postId) ->
+            $www.post('/api/topicPostLikes', {
+                topic_post_id: postId
+            })
 
-        @unlikePost = (postId) =>
-            $www.delete '/api/topicPostLikes/' + postId
+        @unlikePost = (postId) ->
+            $www.delete('/api/topicPostLikes', {
+                topic_post_id: postId
+            })
 
         @togglePostUserLike = (post) =>
             if post.is_liked then @unlikePost(post.id) else @likePost(post.id)

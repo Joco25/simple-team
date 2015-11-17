@@ -31,6 +31,20 @@ module.exports = [
             @filters.page += 1
             @loadConversations()
 
+        @toggleTopicUserStar = (topic) =>
+            if topic.is_starred then @unstarTopic(topic.id) else @starTopic(topic.id)
+            topic.is_starred = !topic.is_starred
+
+        @starTopic = (topicId) ->
+            $www.post('/api/topicStars', {
+                topic_id: topicId
+            })
+
+        @unstarTopic = (topicId) ->
+            $www.delete('/api/topicStars', {
+                topic_id: topicId
+            })
+
         @loadConversations()
 
         return

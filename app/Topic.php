@@ -28,9 +28,9 @@ class Topic extends Model
 
 	public function isStarred($user_id)
 	{
-		$count = DB::table('topic_stars')
-			->whereUserId($user_id)
+		$count = TopicStar::whereUserId($user_id)
 			->whereTopicId($this->id)
+			->whereTeamId(Auth::user()->team_id)
 			->count();
 
 		return $count > 0;
@@ -46,7 +46,8 @@ class Topic extends Model
 	{
 		return TopicStar::create([
 			'user_id' => $user_id,
-			'topic_id' => $this->id
+			'topic_id' => $this->id,
+			'team_id' => Auth::user()->team_id
 		]);
 	}
 
@@ -54,16 +55,15 @@ class Topic extends Model
 	{
 		return TopicStar::whereUserId($user_id)
 			->whereTopicId($this->id)
+			->whereTeamId(Auth::user()->team_id)
 			->delete();
 	}
 
 	public function likeCount()
 	{
 		return Topic::where('topics.id', '=', $this->id)
-			->where('topics.deleted', '=', 0)
 			->join('topic_posts', 'topic_posts.topic_id', '=', 'topics.id')
-			->where('topic_posts.deleted', '=', 0)
-			->join('topic_post_user_likes', 'topic_post_user_likes.topic_post_id', '=', 'topic_posts.id')
+			->join('topic_post_likes', 'topic_post_likes.topic_post_id', '=', 'topic_posts.id')
 			->count();
 	}
 

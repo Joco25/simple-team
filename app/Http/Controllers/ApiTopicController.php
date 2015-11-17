@@ -23,6 +23,7 @@ class ApiTopicController extends Controller
 		]);
 
 		$topics = Topic::forPage($inputs['page'], $inputs['take'])
+			->whereTeamId(Auth::user()->team_id)
 			->orderBy('updated_at', 'desc')
 			->get();
 
@@ -47,18 +48,19 @@ class ApiTopicController extends Controller
 		]);
 
 		$topics = Topic::join('topic_stars', 'topic_stars.topic_id', '=', 'topics.id')
+			->where('topics.team_id', '=', Auth::user()->team_id)
 			->where('topic_stars.user_id', '=', Auth::user()->id)
 			->orderBy('topic_stars.id', 'desc')
 			->forPage($inputs['page'], $inputs['take'])
 			->get(['topics.id', 'topics.name', 'topics.updated_at', 'topics.created_at']);
 
-		// _::each($d['topics'], function($topic) use ($account) {
-		// 	$topic->is_starred = $topic->is_starred(Auth::user()->id);
-		// 	$topic->users = $topic->users();
-		// 	$topic->is_unread = $topic->is_unread();
-		// 	$topic->created_at = from_utc($topic->created_at, $account->timezone);
-		// 	$topic->updated_at = from_utc($topic->updated_at, $account->timezone);
-		// });
+		_::each($topics, function($topic) {
+			$topic->is_starred = $topic->isStarred(Auth::user()->id);
+			$topic->users = $topic->users();
+			$topic->is_unread = $topic->isUnread();
+			// $topic->created_at = from_utc($topic->created_at, $account->timezone);
+			// $topic->updated_at = from_utc($topic->updated_at, $account->timezone);
+		});
 
 		return response()->json([
 			'topics' => $topics
@@ -90,6 +92,7 @@ class ApiTopicController extends Controller
 		// );
 
 		$topics = DB::table('topics')
+			->where('topics.team_id', '=', Auth::user()->team_id)
 			->whereNotExists(function($query) {
 				$query->select(DB::raw('topic_views.topic_id, max(topic_views.created_at) as last_view, max(topic_posts.created_at) as last_post'))
 					->from('topic_views')
@@ -111,13 +114,13 @@ class ApiTopicController extends Controller
 		$d['topics'] = Topic::whereIn('id', $topic_ids)
 			->get();
 
-		// _::each($d['topics'], function($topic) use ($account) {
-		// 	$topic->is_starred = $topic->is_starred(Auth::user()->id);
-		// 	$topic->users = $topic->users();
-		// 	$topic->is_unread = $topic->is_unread();
-		// 	$topic->created_at = from_utc($topic->created_at, $account->timezone);
-		// 	$topic->updated_at = from_utc($topic->updated_at, $account->timezone);
-		// });
+		_::each($d['topics'], function($topic) {
+			$topic->is_starred = $topic->is_starred(Auth::user()->id);
+			$topic->users = $topic->users();
+			$topic->is_unread = $topic->is_unread();
+			// $topic->created_at = from_utc($topic->created_at, $account->timezone);
+			// $topic->updated_at = from_utc($topic->updated_at, $account->timezone);
+		});
 
 		return response()->json([
 			'topics' => $topics
@@ -149,6 +152,7 @@ class ApiTopicController extends Controller
 				'updated_at',
 				DB::raw("((post_count * {$post_weight}) + (like_count * {$like_weight}) + (view_count * {$view_weight}) + (UNIX_TIMESTAMP(created_at) * {$created_at_weight}) + (UNIX_TIMESTAMP(updated_at) * {$updated_at_weight})) as popularity_score")
 			])
+			->whereTeamId(Auth::user()->team_id)
 			->forPage($inputs['page'], $inputs['take'])
 			->orderBy('popularity_score', 'desc')
 			->get(['name']);
@@ -247,24 +251,34 @@ class ApiTopicController extends Controller
 		]);
 	}
 
-	public function post_star($id = 0)
+	public function createStar()
 	{
-		$topic = Topic::find($id);
-		if (! $topic) {
-			return Api::error("Can't find topic.");
-		}
+		$topic = Topic::whereId(Input::get('topic_id'))
+			->whereTeamId(Auth::user()->team_id)
+			->first();
 
-		$topic->create_star(Auth::user()->id);
+		if (! $topic) abort(422);
+
+		$success = $topic->createStar(Auth::user()->id);
+
+		return response()->json([
+			'success' => (bool) $success
+		]);
 	}
 
-	public function delete_star($id = 0)
+	public function deleteStar()
 	{
-		$topic = Topic::find($id);
-		if (! $topic) {
-			return Api::error("Can't find topic.");
-		}
+		$topic = Topic::whereId(Input::get('topic_id'))
+			->whereTeamId(Auth::user()->team_id)
+			->first();
 
-		$topic->delete_star(Auth::user()->id);
+		if (! $topic) abort(422);
+
+		$success = $topic->deleteStar(Auth::user()->id);
+
+		return response()->json([
+			'success' => (bool) $success
+		]);
 	}
 
 	public function post_view($id = 0)
@@ -278,7 +292,7 @@ class ApiTopicController extends Controller
 
 		TopicUserView::create([
 			'user_id' => Auth::user()->id,
-			'account_user_id' => Auth::user()->account_user_id,
+			'account_user_id' => Auth::user()->team_id,
 			'topic_id' => $id
 		]);
 

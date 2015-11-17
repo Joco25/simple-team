@@ -59,17 +59,17 @@ Route::group(['middleware' => 'auth'], function () {
 	Route::get('api/topics/top', 'ApiTopicController@top');
     Route::resource('api/topics', 'ApiTopicController');
 
-	Route::post('api/topics/(:num)/star', 'ApiTopicPostController@star');
-	Route::delete('api/topics/(:num)/star', 'ApiTopicPostController@star');
-	Route::get('api/topics/(:num)/users/(:num)/notification', 'ApiTopicPostController@user_notification');
-	Route::post('api/topics/(:num)/users/(:num)/notification', 'ApiTopicPostController@user_notification');
-	Route::delete('api/topics/(:num)/users/(:num)/notification', 'ApiTopicPostController@user_notification');
+	Route::post('api/topicStars', 'ApiTopicController@createStar');
+	Route::delete('api/topicStars', 'ApiTopicController@deleteStar');
+	// Route::get('api/topics/(:num)/users/(:num)/notification', 'ApiTopicPostController@user_notification');
+	// Route::post('api/topics/(:num)/users/(:num)/notification', 'ApiTopicPostController@user_notification');
+	// Route::delete('api/topics/(:num)/users/(:num)/notification', 'ApiTopicPostController@user_notification');
 
     /**
      * Topic Posts
      */
-	Route::post('api/topicPosts/(:num)/like', 'ApiTopicPostController@like');
-	Route::delete('api/topicPosts/(:num)/like', 'ApiTopicPostController@like');
+	Route::post('api/topicPostLikes', 'ApiTopicPostController@createLike');
+	Route::delete('api/topicPostLikes', 'ApiTopicPostController@deleteLike');
     Route::resource('api/topicPosts', 'ApiTopicPostController');
 
     /**

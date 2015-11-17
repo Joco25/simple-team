@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Auth;
 use Illuminate\Database\Eloquent\Model;
 
 class TopicPost extends Model
@@ -25,7 +26,8 @@ class TopicPost extends Model
 
 	public function isLiked($user_id)
 	{
-		$count = TopicPostUserLike::whereUserId($user_id)
+		$count = TopicPostLike::whereUserId($user_id)
+            ->whereTeamId(Auth::user()->team_id)
 			->whereTopicPostId($this->id)
 			->count();
 
@@ -34,16 +36,18 @@ class TopicPost extends Model
 
 	public function createLike($user_id)
 	{
-		return TopicPostUserLike::create([
+		return TopicPostLike::create([
 			'user_id' => $user_id,
+            'team_id' => Auth::user()->team_id,
 			'topic_post_id' => $this->id
 		]);
 	}
 
 	public function deleteLike($user_id)
 	{
-		return TopicPostUserLike::whereUserId($user_id)
+		return TopicPostLike::whereUserId($user_id)
 			->whereTopicPostId($this->id)
+            ->whereTeamId(Auth::user()->team_id)
 			->delete();
 	}
 }
