@@ -10,12 +10,7 @@ var elixir = require('laravel-elixir');
  | file for our application, as well as publishing vendor resources.
  |
  */
-
- elixir.config.js.browserify.transformers.push({
-     name: 'coffeeify'
- });
-
 elixir(function(mix) {
     mix.sass('app.scss');
-    mix.browserify('app.coffee');
+    mix.browserify('app.js');
 });

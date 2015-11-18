@@ -40993,145 +40993,113 @@ if (typeof module !== 'undefined' && module.exports) {
 }).call(this);
 
 },{}],12:[function(require,module,exports){
-'use strict';
+"use strict";
+
 require('moment');
-
 require('angular-ui-router');
-
 require('angular-ui-sortable');
-
 require('angular-gravatar');
-
 require('angular-elastic');
-
 require('angular-local-storage');
-
 require('angular-moment');
-
 require('ng-showdown');
 
-require('./routes.coffee');
-
-require('./modules/focusMe/index.coffee');
-
+require('./routes.js');
+require('./modules/focusMe');
 require('./modules/selectize');
-
-require('./modules/tagData/index.coffee');
-
-require('./modules/userData/index.coffee');
-
-require('./modules/auth/index.coffee');
-
-require('./modules/bytes/index.coffee');
-
-require('./modules/sidebar/index.coffee');
-
-require('./modules/navbar/index.coffee');
-
+require('./modules/tagData');
+require('./modules/userData');
+require('./modules/auth');
+require('./modules/bytes');
 require('./modules/ngBindHtmlUnsafe');
-
 require('./modules/strings');
-
 require('./modules/mediaComment');
-
 require('./modules/redactor');
-
 require('./modules/time');
-
 require('./modules/www');
+require('./modules/cardList');
+require('./modules/cardCacher');
 
-require('./modules/cardList/index.coffee');
-
-require('./modules/cardCacher/index.coffee');
-
-angular.module('simple.team', ['ngFileUpload', 'ui.router', 'ui.sortable', 'ui.gravatar', 'ui.bootstrap', 'selectize', 'angularMoment', 'angular-loading-bar', 'ng-showdown', 'LocalStorageModule', 'monospaced.elastic', 'textAngular', 'simple.team.routes', 'simple.team.focusMe', 'simple.team.ngBindHtmlUnsafe', 'simple.team.bytes', 'simple.team.sidebar', 'simple.team.navbar', 'simple.team.strings', 'simple.team.auth', 'simple.team.tagData', 'simple.team.userData', 'simple.team.www', 'simple.team.cardList', 'simple.team.cardCacher']).config([
-  '$urlRouterProvider', 'cfpLoadingBarProvider', function($urlRouterProvider, cfpLoadingBarProvider) {
+angular.module('simple.team', ['ngFileUpload', 'ui.router', 'ui.sortable', 'ui.gravatar', 'ui.bootstrap', 'selectize', 'angularMoment', 'angular-loading-bar', 'ng-showdown', 'LocalStorageModule', 'monospaced.elastic', 'textAngular', 'simple.team.routes', 'simple.team.focusMe', 'simple.team.ngBindHtmlUnsafe', 'simple.team.bytes', 'simple.team.strings', 'simple.team.auth', 'simple.team.tagData', 'simple.team.userData', 'simple.team.www', 'simple.team.cardList', 'simple.team.cardCacher']).config(function ($urlRouterProvider, cfpLoadingBarProvider) {
     $urlRouterProvider.otherwise('/projects');
     cfpLoadingBarProvider.includeSpinner = false;
-  }
-]).controller('AppCtrl', [
-  '$state', '$http', '$rootScope', function($state, $http, $rootScope) {
-    var init;
+}).controller('AppCtrl', function ($state, $http, $rootScope) {
+    var ctrl = this;
     $rootScope.teams = angular.copy(ENV.teams);
     $rootScope.authUser = angular.copy(ENV.authUser);
     $rootScope.s3BucketAttachmentsUrl = angular.copy(ENV.s3BucketAttachmentsUrl);
-    this.state = $state;
-    this.s3BucketAttachmentsUrl = $rootScope.s3BucketAttachmentsUrl;
-    this.teams = $rootScope.teams;
-    $rootScope.$broadcast('teams:loaded', this.teams);
-    this.authUser = $rootScope.authUser;
-    $rootScope.$broadcast('user:loaded', this.authUser);
-    $rootScope.$on('teams:reload', this.loadTeams);
-    init = (function(_this) {
-      return function() {
-        return _this.loadTeams();
-      };
-    })(this);
-    this.loadTeams = function() {
-      return $http.get('/api/teams').success((function(_this) {
-        return function(data) {
-          _this.teams = data.teams;
-          return $rootScope.teams = data.teams;
-        };
-      })(this));
+
+    ctrl.state = $state;
+    ctrl.s3BucketAttachmentsUrl = $rootScope.s3BucketAttachmentsUrl;
+    ctrl.teams = $rootScope.teams;
+    $rootScope.$broadcast('teams:loaded', ctrl.teams);
+
+    ctrl.authUser = $rootScope.authUser;
+    $rootScope.$broadcast('user:loaded', ctrl.authUser);
+    $rootScope.$on('teams:reload', ctrl.loadTeams);
+
+    var init = function init() {
+        ctrl.loadTeams();
     };
-    this.setCurrentTeam = function(team) {
-      var previousTeam;
-      previousTeam = angular.copy(this.authUser.team);
-      this.authUser.team = team;
-      return $http.put('/api/me/team', {
-        team_id: team.id
-      }).success((function(_this) {
-        return function(data) {
-          if (!data.success) {
-            return _this.authUser.team = previousTeam;
-          }
-          $state.go($state.current, {}, {
-            reload: true
-          });
-          return $rootScope.$broadcast('team:changed');
-        };
-      })(this));
+
+    ctrl.loadTeams = function () {
+        $http.get('/api/teams').success(function (data) {
+            ctrl.teams = data.teams;
+            $rootScope.teams = data.teams;
+        });
     };
+
+    ctrl.setCurrentTeam = function (team) {
+        previousTeam = angular.copy(ctrl.authUser.team);
+        ctrl.authUser.team = team;
+        $http.put('/api/me/team', {
+            team_id: team.id
+        }).success(function (data) {
+            if (!data.success) ctrl.authUser.team = previousTeam;
+            return;
+
+            $state.go($state.current, {}, { reload: true });
+            $rootScope.$broadcast('team:changed');
+        });
+    };
+
     init();
-  }
-]);
+});
 
-
-},{"./modules/auth/index.coffee":43,"./modules/bytes/index.coffee":44,"./modules/cardCacher/index.coffee":45,"./modules/cardList/index.coffee":49,"./modules/focusMe/index.coffee":51,"./modules/mediaComment":52,"./modules/navbar/index.coffee":53,"./modules/ngBindHtmlUnsafe":55,"./modules/redactor":56,"./modules/selectize":57,"./modules/sidebar/index.coffee":58,"./modules/strings":60,"./modules/tagData/index.coffee":61,"./modules/time":62,"./modules/userData/index.coffee":63,"./modules/www":64,"./routes.coffee":65,"angular-elastic":1,"angular-gravatar":2,"angular-local-storage":3,"angular-moment":4,"angular-ui-router":5,"angular-ui-sortable":6,"moment":7,"ng-showdown":8}],13:[function(require,module,exports){
+},{"./modules/auth":37,"./modules/bytes":38,"./modules/cardCacher":39,"./modules/cardList":43,"./modules/focusMe":45,"./modules/mediaComment":46,"./modules/ngBindHtmlUnsafe":47,"./modules/redactor":48,"./modules/selectize":49,"./modules/strings":50,"./modules/tagData":51,"./modules/time":52,"./modules/userData":53,"./modules/www":54,"./routes.js":55,"angular-elastic":1,"angular-gravatar":2,"angular-local-storage":3,"angular-moment":4,"angular-ui-router":5,"angular-ui-sortable":6,"moment":7,"ng-showdown":8}],13:[function(require,module,exports){
 'use strict';
-module.exports = function($state, $stateParams, $modal) {
-  var cardId, init;
-  cardId = $stateParams.cardId;
-  init = (function(_this) {
-    return function() {
+module.exports = function ($state, $stateParams, $modal) {
+  var _cardId, init;
+  _cardId = $stateParams.cardId;
+  init = (function (_this) {
+    return function () {
       return _this.openModal();
     };
   })(this);
-  this.openModal = function(size) {
+  this.openModal = function (size) {
     var modalInstance;
     modalInstance = $modal.open({
       template: require('../layouts/card.modal.html'),
-      controller: require('./card.modal.ctrl.coffee'),
+      controller: require('./card.modal.ctrl.js'),
       controllerAs: 'ctrl',
       size: 'lg',
       resolve: {
-        cardId: function() {
-          return cardId;
+        cardId: function cardId() {
+          return _cardId;
         }
       }
     });
-    return modalInstance.result.then((function(_this) {
-      return function(selectedItem) {
+    return modalInstance.result.then((function (_this) {
+      return function (selectedItem) {
         return _this.closeEditCard();
       };
-    })(this), (function(_this) {
-      return function() {
+    })(this), (function (_this) {
+      return function () {
         return _this.closeEditCard();
       };
     })(this));
   };
-  this.closeEditCard = function() {
+  this.closeEditCard = function () {
     if ($state.current.name.indexOf('projects') > -1) {
       return $state.go('projects');
     }
@@ -41140,10 +41108,12 @@ module.exports = function($state, $stateParams, $modal) {
   init();
 };
 
+// ---
+// generated by coffee-script 1.9.2
 
-},{"../layouts/card.modal.html":29,"./card.modal.ctrl.coffee":14}],14:[function(require,module,exports){
+},{"../layouts/card.modal.html":26,"./card.modal.ctrl.js":14}],14:[function(require,module,exports){
 'use strict';
-module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDataService, Upload, $modalInstance, cardId, $timeout, CardCacherService) {
+module.exports = function ($state, $stateParams, $scope, $http, $rootScope, TagDataService, Upload, $modalInstance, cardId, $timeout, CardCacherService) {
   var cardImpactHandle, init, projectId, stageId, updateCardTags, updateCardUsers;
   stageId = null;
   projectId = null;
@@ -41164,7 +41134,7 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
     delimiter: '|',
     placeholder: 'Add a tag...',
     create: true,
-    onChange: function(tags) {
+    onChange: function onChange(tags) {
       return updateCardTags(tags.split('|'));
     }
   };
@@ -41174,47 +41144,47 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
     delimiter: '|',
     placeholder: 'Assign a user...',
     create: false,
-    onChange: function(users) {
+    onChange: function onChange(users) {
       return updateCardUsers(users.split('|'));
     }
   };
-  init = (function(_this) {
-    return function() {
+  init = (function (_this) {
+    return function () {
       _this.selectedCard = CardCacherService.get();
       _this.loadTags();
       _this.loadCard();
       return _this.loadTeamUsers();
     };
   })(this);
-  updateCardTags = (function(_this) {
-    return function(tags) {
+  updateCardTags = (function (_this) {
+    return function (tags) {
       return $http.post('/api/cards/tags', {
         tags: tags,
         card_id: _this.selectedCard.id
-      }).success(function() {
+      }).success(function () {
         return $rootScope.$emit('projects:reload');
       });
     };
   })(this);
-  updateCardUsers = (function(_this) {
-    return function(userIds) {
+  updateCardUsers = (function (_this) {
+    return function (userIds) {
       return $http.post('/api/cards/users', {
         user_ids: userIds,
         card_id: _this.selectedCard.id
-      }).success(function() {
+      }).success(function () {
         return $rootScope.$emit('projects:reload');
       });
     };
   })(this);
-  this.updateStage = (function(_this) {
-    return function(stage) {
+  this.updateStage = (function (_this) {
+    return function (stage) {
       if (stage.id === _this.selectedCard.stage.id) {
         return;
       }
       _this.selectedCard.stage = stage;
       return $http.put('/api/cards/' + _this.selectedCard.id + '/updateStage', {
         stage_id: stage.id
-      }).success(function(data) {
+      }).success(function (data) {
         _this.selectedCard = data.card;
         _this.selectedCard.tagNames = _.pluck(data.card.tags, 'name');
         _this.selectedCard.userIds = _.pluck(data.card.users, 'id');
@@ -41223,23 +41193,23 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
       });
     };
   })(this);
-  this.loadTags = (function(_this) {
-    return function() {
-      return TagDataService.loadTags().success(function(data) {
+  this.loadTags = (function (_this) {
+    return function () {
+      return TagDataService.loadTags().success(function (data) {
         return _this.tags = data.tags;
       });
     };
   })(this);
-  this.loadTeamUsers = function() {
-    return $http.get('/api/users').success((function(_this) {
-      return function(data) {
+  this.loadTeamUsers = function () {
+    return $http.get('/api/users').success((function (_this) {
+      return function (data) {
         return _this.users = data.users;
       };
     })(this));
   };
-  this.loadCard = (function(_this) {
-    return function() {
-      return $http.get('/api/cards/' + cardId).success(function(data) {
+  this.loadCard = (function (_this) {
+    return function () {
+      return $http.get('/api/cards/' + cardId).success(function (data) {
         _this.selectedCard = data.card;
         _this.selectedCard.tagNames = _.pluck(data.card.tags, 'name');
         _this.selectedCard.userIds = _.pluck(data.card.users, 'id');
@@ -41248,53 +41218,53 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
     };
   })(this);
   cardImpactHandle = null;
-  this.updateCardImpact = (function(_this) {
-    return function() {
+  this.updateCardImpact = (function (_this) {
+    return function () {
       $timeout.cancel(cardImpactHandle);
-      return cardImpactHandle = $timeout(function() {
+      return cardImpactHandle = $timeout(function () {
         return _this.updateCard();
       }, 500);
     };
   })(this);
-  this.updateCard = (function(_this) {
-    return function() {
+  this.updateCard = (function (_this) {
+    return function () {
       return $http.put('/api/cards/' + cardId, {
         name: _this.selectedCard.name,
         description: _this.selectedCard.description,
         blocked: _this.selectedCard.blocked,
         impact: _this.selectedCard.impact
-      }).success(function() {
+      }).success(function () {
         return $rootScope.$emit('projects:reload');
       });
     };
   })(this);
-  this.deleteCard = (function(_this) {
-    return function() {
+  this.deleteCard = (function (_this) {
+    return function () {
       if (!confirm('Delete this card?')) {
         return;
       }
-      return $http["delete"]('/api/cards/' + _this.selectedCard.id).success(function(data) {
+      return $http["delete"]('/api/cards/' + _this.selectedCard.id).success(function (data) {
         $rootScope.$emit('projects:reload');
         return _this.ok();
       });
     };
   })(this);
-  this.updateCardName = (function(_this) {
-    return function() {
+  this.updateCardName = (function (_this) {
+    return function () {
       _this.selectedCard.name = angular.copy(_this.selectedCardName.replace("\n", ''));
       _this.selectedCard.editName = false;
       return _this.updateCard();
     };
   })(this);
-  this.selectCardDescription = (function(_this) {
-    return function() {
+  this.selectCardDescription = (function (_this) {
+    return function () {
       _this.selectedCard.description = _this.selectedCard.description || '';
       _this.selectedCardDescription = angular.copy(_this.selectedCard.description);
       return _this.showCardDescription = true;
     };
   })(this);
-  this.updateCardDescription = (function(_this) {
-    return function() {
+  this.updateCardDescription = (function (_this) {
+    return function () {
       if (!_this.selectedCardDescription) {
         return;
       }
@@ -41304,134 +41274,134 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
       return _this.updateCard();
     };
   })(this);
-  this.createSubtask = (function(_this) {
-    return function() {
+  this.createSubtask = (function (_this) {
+    return function () {
       _this.newSubtaskBody = _this.newSubtaskBody.replace("\n", '');
       $http.post('/api/subtasks', {
         body: _this.newSubtaskBody,
         checked: false,
         card_id: cardId
-      }).success(function(data) {
+      }).success(function (data) {
         _this.selectedCard.subtasks.push(data.subtask);
         return $rootScope.$emit('projects:reload');
       });
       return _this.newSubtaskBody = '';
     };
   })(this);
-  this.editSubtask = function(task) {
+  this.editSubtask = function (task) {
     task.editMode = true;
     return task.newBody = angular.copy(task.body);
   };
-  this.updateSubtask = function(task) {
+  this.updateSubtask = function (task) {
     task.editMode = false;
     task.body = task.newBody.replace("\n", '');
     task.newBody = null;
-    return $http.put('/api/subtasks/' + task.id, task).success(function(data) {
+    return $http.put('/api/subtasks/' + task.id, task).success(function (data) {
       return $rootScope.$emit('projects:reload');
     });
   };
-  this.cancelSubtaskEdit = function(task) {
+  this.cancelSubtaskEdit = function (task) {
     task.editMode = false;
     return task.newBody = null;
   };
-  this.deleteSubtask = (function(_this) {
-    return function(task) {
+  this.deleteSubtask = (function (_this) {
+    return function (task) {
       if (!confirm('Delete this subtask?')) {
         return;
       }
       _.remove(_this.selectedCard.subtasks, task);
-      return $http["delete"]('/api/subtasks/' + task.id).success(function() {
+      return $http["delete"]('/api/subtasks/' + task.id).success(function () {
         return $rootScope.$emit('projects:reload');
       });
     };
   })(this);
-  this.toggleSubtask = (function(_this) {
-    return function(task) {
+  this.toggleSubtask = (function (_this) {
+    return function (task) {
       task.checked = !task.checked;
       return _this.updateTask(task);
     };
   })(this);
-  this.updateTask = function(task) {
-    return $http.put('/api/subtasks/' + task.id, task).success(function() {
+  this.updateTask = function (task) {
+    return $http.put('/api/subtasks/' + task.id, task).success(function () {
       return $rootScope.$emit('projects:reload');
     });
   };
-  this.createComment = (function(_this) {
-    return function() {
+  this.createComment = (function (_this) {
+    return function () {
       if (!_this.newCommentBody) {
         return;
       }
       $http.post('/api/comments', {
         body: _this.newCommentBody,
         card_id: _this.selectedCard.id
-      }).success(function(data) {
+      }).success(function (data) {
         _this.selectedCard.comments.push(data.comment);
         return $rootScope.$emit('projects:reload');
       });
       return _this.newCommentBody = '';
     };
   })(this);
-  this.deleteComment = (function(_this) {
-    return function(comment) {
+  this.deleteComment = (function (_this) {
+    return function (comment) {
       if (!confirm('Delete this comment?')) {
         return;
       }
-      $http["delete"]('/api/comments/' + comment.id).success(function() {
+      $http["delete"]('/api/comments/' + comment.id).success(function () {
         return $rootScope.$emit('projects:reload');
       });
       return _.remove(_this.selectedCard.comments, comment);
     };
   })(this);
-  this.cancelCommentEdit = function(comment) {
+  this.cancelCommentEdit = function (comment) {
     comment.editMode = false;
     return comment.newBody = null;
   };
-  this.updateComment = function(comment) {
+  this.updateComment = function (comment) {
     comment.body = angular.copy(comment.newBody);
     comment.editMode = false;
     comment.newBody = null;
     return $http.put('/api/comments/' + comment.id, comment);
   };
-  this.editComment = function(comment) {
+  this.editComment = function (comment) {
     comment.editMode = true;
     return comment.newBody = angular.copy(comment.body);
   };
-  this.blockToggleSelectedCard = (function(_this) {
-    return function() {
+  this.blockToggleSelectedCard = (function (_this) {
+    return function () {
       _this.selectedCard.blocked = !_this.selectedCard.blocked;
       return _this.updateCard();
     };
   })(this);
-  this.submit = (function(_this) {
-    return function() {
+  this.submit = (function (_this) {
+    return function () {
       if (form.file.$valid && _this.file && !_this.file.$error) {
         return _this.upload(_this.file);
       }
     };
   })(this);
-  this.upload = (function(_this) {
-    return function(file) {
+  this.upload = (function (_this) {
+    return function (file) {
       return Upload.upload({
         url: '/api/attachments',
         fields: {
           'card_id': cardId
         },
         file: file
-      }).progress(function(evt) {
+      }).progress(function (evt) {
         var progressPercentage;
         _this.states.uploading = true;
         return progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
-      }).success(function(data, status, headers, config) {
+      }).success(function (data, status, headers, config) {
         _this.states.uploading = false;
         return _this.selectedCard.attachments.push(data.attachment);
-      }).error(function(data, status, headers, config) {
+      }).error(function (data, status, headers, config) {
         this.states.uploading = false;
         return console.log('error status: ' + status);
       });
     };
   })(this);
-  this.uploadFiles = (function(_this) {
-    return function(files) {
+  this.uploadFiles = (function (_this) {
+    return function (files) {
       var i, results;
       console.log('files', files);
       if (files && files.length) {
@@ -41445,8 +41415,8 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
       }
     };
   })(this);
-  this.deleteAttachment = (function(_this) {
-    return function(attachment) {
+  this.deleteAttachment = (function (_this) {
+    return function (attachment) {
       if (!confirm('Delete this attachment?')) {
         return;
       }
@@ -41454,7 +41424,7 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
       return _.remove(_this.selectedCard.attachments, attachment);
     };
   })(this);
-  this.downloadAttachment = function(attachment) {
+  this.downloadAttachment = function (attachment) {
     var a;
     a = document.createElement("a");
     a.download = attachment.filename;
@@ -41462,737 +41432,652 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
     a.href = attachment.file_url;
     a.click();
   };
-  this.ok = function() {
+  this.ok = function () {
     return $modalInstance.close();
   };
-  this.cancel = function() {
+  this.cancel = function () {
     return $modalInstance.dismiss('cancel');
   };
   init();
 };
 
+// ---
+// generated by coffee-script 1.9.2
 
 },{}],15:[function(require,module,exports){
 'use strict';
-module.exports = [
-  '$scope', '$www', '$state', function($scope, $www, $state) {
-    $scope.newTopic = {};
-    return $scope.createTopic = function() {
-      if (!$scope.newTopic.name || !$scope.newTopic.body) {
-        alert('You are missing some info!');
-      }
-      return $www.post('/api/topics', $scope.newTopic).success(function(data) {
-        return $state.go('conversations.view', {
-          topicId: data.topic.id
-        });
+module.exports = ['$scope', '$www', '$state', function ($scope, $www, $state) {
+  $scope.newTopic = {};
+  return $scope.createTopic = function () {
+    if (!$scope.newTopic.name || !$scope.newTopic.body) {
+      alert('You are missing some info!');
+    }
+    return $www.post('/api/topics', $scope.newTopic).success(function (data) {
+      return $state.go('conversations.view', {
+        topicId: data.topic.id
       });
-    };
-  }
-];
+    });
+  };
+}];
 
+// ---
+// generated by coffee-script 1.9.2
 
 },{}],16:[function(require,module,exports){
 'use strict';
-module.exports = [function() {}];
+module.exports = [function () {}];
 
+// ---
+// generated by coffee-script 1.9.2
 
 },{}],17:[function(require,module,exports){
 'use strict';
-module.exports = [
-  '$stateParams', '$www', function($stateParams, $www) {
-    this.topics = [];
-    this.filters = {
-      type: $stateParams.type || 'latest',
-      busy: false,
-      page: 1,
-      disableInfiniteScroll: false
-    };
-    this.loadConversations = (function(_this) {
-      return function() {
-        if (_this.filters.busy) {
-          return;
-        }
-        _this.filters.busy = true;
-        return $www.get('/api/topics/' + _this.filters.type, {
-          take: 50,
-          page: _this.filters.page
-        }).success(function(data) {
-          _this.topics = _this.topics.concat(data.topics);
-          _this.filters.busy = false;
-          return _this.filters.disableInfiniteScroll = data.topics.length === 0 ? true : false;
-        });
-      };
-    })(this);
-    this.nextPage = (function(_this) {
-      return function() {
-        if (_this.filters.busy) {
-          return;
-        }
-        _this.filters.page += 1;
-        return _this.loadConversations();
-      };
-    })(this);
-    this.toggleTopicUserStar = (function(_this) {
-      return function(topic) {
-        if (topic.is_starred) {
-          _this.unstarTopic(topic.id);
-        } else {
-          _this.starTopic(topic.id);
-        }
-        return topic.is_starred = !topic.is_starred;
-      };
-    })(this);
-    this.starTopic = function(topicId) {
-      return $www.post('/api/topicStars', {
-        topic_id: topicId
+module.exports = ['$stateParams', '$www', function ($stateParams, $www) {
+  this.topics = [];
+  this.filters = {
+    type: $stateParams.type || 'latest',
+    busy: false,
+    page: 1,
+    disableInfiniteScroll: false
+  };
+  this.loadConversations = (function (_this) {
+    return function () {
+      if (_this.filters.busy) {
+        return;
+      }
+      _this.filters.busy = true;
+      return $www.get('/api/topics/' + _this.filters.type, {
+        take: 50,
+        page: _this.filters.page
+      }).success(function (data) {
+        _this.topics = _this.topics.concat(data.topics);
+        _this.filters.busy = false;
+        return _this.filters.disableInfiniteScroll = data.topics.length === 0 ? true : false;
       });
     };
-    this.unstarTopic = function(topicId) {
-      return $www["delete"]('/api/topicStars', {
-        topic_id: topicId
-      });
+  })(this);
+  this.nextPage = (function (_this) {
+    return function () {
+      if (_this.filters.busy) {
+        return;
+      }
+      _this.filters.page += 1;
+      return _this.loadConversations();
     };
-    this.loadConversations();
-  }
-];
+  })(this);
+  this.toggleTopicUserStar = (function (_this) {
+    return function (topic) {
+      if (topic.is_starred) {
+        _this.unstarTopic(topic.id);
+      } else {
+        _this.starTopic(topic.id);
+      }
+      return topic.is_starred = !topic.is_starred;
+    };
+  })(this);
+  this.starTopic = function (topicId) {
+    return $www.post('/api/topicStars', {
+      topic_id: topicId
+    });
+  };
+  this.unstarTopic = function (topicId) {
+    return $www["delete"]('/api/topicStars', {
+      topic_id: topicId
+    });
+  };
+  this.loadConversations();
+}];
 
+// ---
+// generated by coffee-script 1.9.2
 
 },{}],18:[function(require,module,exports){
 'use strict';
-module.exports = [
-  '$stateParams', '$www', '$state', '$rootScope', function($stateParams, $www, $state, $rootScope) {
-    this.authUser = $rootScope.authUser;
-    this.topicId = $stateParams.topicId;
-    this.newPost = {};
-    this.topic = null;
-    this.filters = {
-      showNewPost: false
+module.exports = ['$stateParams', '$www', '$state', '$rootScope', function ($stateParams, $www, $state, $rootScope) {
+  this.authUser = $rootScope.authUser;
+  this.topicId = $stateParams.topicId;
+  this.newPost = {};
+  this.topic = null;
+  this.filters = {
+    showNewPost: false
+  };
+  this.selectPost = (function (_this) {
+    return function (post) {
+      _this.selectedPost = post;
+      return _this.postCopy = angular.copy(post);
     };
-    this.selectPost = (function(_this) {
-      return function(post) {
-        _this.selectedPost = post;
-        return _this.postCopy = angular.copy(post);
-      };
-    })(this);
-    this.resetNewPost = (function(_this) {
-      return function() {
+  })(this);
+  this.resetNewPost = (function (_this) {
+    return function () {
+      if (_this.selectedPost) {
+        _this.selectedPost.showNewPost = false;
+      }
+      _this.filters.showNewPost = false;
+      _this.selectedPost = void 0;
+      _this.postCopy = angular.copy(void 0);
+      return _this.newPost = {};
+    };
+  })(this);
+  this.loadTopic = (function (_this) {
+    return function () {
+      return $www.get('/api/topics/' + _this.topicId).success(function (data) {
+        if (data.error) {
+          $state.go('conversations.list');
+        }
+        return _this.topic = data.topic;
+      });
+    };
+  })(this);
+  this.resetCurrentPost = (function (_this) {
+    return function () {
+      return _this.selectedPost.editMode = false;
+    };
+  })(this);
+  this.updatePost = (function (_this) {
+    return function () {
+      _this.selectedPost.body = _this.postCopy.body;
+      _this.selectedPost.editMode = false;
+      return $www.put('/api/topicPosts/' + _this.postCopy.id, {
+        body: _this.postCopy.body
+      }).success(function () {
+        return _this.postCopy = void 0;
+      });
+    };
+  })(this);
+  this.createPost = (function (_this) {
+    return function () {
+      _this.newPost.topic_id = _this.topicId;
+      return $www.post('/api/topicPosts', _this.newPost).success(function (data) {
+        _this.topic.posts.push(data.post);
         if (_this.selectedPost) {
-          _this.selectedPost.showNewPost = false;
+          _this.selectedPost.posts = _this.selectedPost.posts || [];
+          _this.selectedPost.posts.push(data.post);
         }
-        _this.filters.showNewPost = false;
-        _this.selectedPost = void 0;
-        _this.postCopy = angular.copy(void 0);
-        return _this.newPost = {};
-      };
-    })(this);
-    this.loadTopic = (function(_this) {
-      return function() {
-        return $www.get('/api/topics/' + _this.topicId).success(function(data) {
-          if (data.error) {
-            $state.go('conversations.list');
-          }
-          return _this.topic = data.topic;
-        });
-      };
-    })(this);
-    this.resetCurrentPost = (function(_this) {
-      return function() {
-        return _this.selectedPost.editMode = false;
-      };
-    })(this);
-    this.updatePost = (function(_this) {
-      return function() {
-        _this.selectedPost.body = _this.postCopy.body;
-        _this.selectedPost.editMode = false;
-        return $www.put('/api/topicPosts/' + _this.postCopy.id, {
-          body: _this.postCopy.body
-        }).success(function() {
-          return _this.postCopy = void 0;
-        });
-      };
-    })(this);
-    this.createPost = (function(_this) {
-      return function() {
-        _this.newPost.topic_id = _this.topicId;
-        return $www.post('/api/topicPosts', _this.newPost).success(function(data) {
-          _this.topic.posts.push(data.post);
-          if (_this.selectedPost) {
-            _this.selectedPost.posts = _this.selectedPost.posts || [];
-            _this.selectedPost.posts.push(data.post);
-          }
-          return _this.resetNewPost();
-        });
-      };
-    })(this);
-    this.deletePost = (function(_this) {
-      return function(postId) {
-        return $www["delete"]('/api/topicPosts/' + postId).success(function() {
-          return _this.topic.posts = _.reject(_this.topic.posts, {
-            id: +postId
-          });
-        });
-      };
-    })(this);
-    this.deleteTopic = function(topicId) {
-      return $www["delete"]('/api/topics/' + topicId).success(function() {
-        return $state.go('conversations.list');
+        return _this.resetNewPost();
       });
     };
-    this.likePost = function(postId) {
-      return $www.post('/api/topicPostLikes', {
-        topic_post_id: postId
+  })(this);
+  this.deletePost = (function (_this) {
+    return function (postId) {
+      return $www["delete"]('/api/topicPosts/' + postId).success(function () {
+        return _this.topic.posts = _.reject(_this.topic.posts, {
+          id: +postId
+        });
       });
     };
-    this.unlikePost = function(postId) {
-      return $www["delete"]('/api/topicPostLikes', {
-        topic_post_id: postId
+  })(this);
+  this.deleteTopic = function (topicId) {
+    return $www["delete"]('/api/topics/' + topicId).success(function () {
+      return $state.go('conversations.list');
+    });
+  };
+  this.likePost = function (postId) {
+    return $www.post('/api/topicPostLikes', {
+      topic_post_id: postId
+    });
+  };
+  this.unlikePost = function (postId) {
+    return $www["delete"]('/api/topicPostLikes', {
+      topic_post_id: postId
+    });
+  };
+  this.togglePostUserLike = (function (_this) {
+    return function (post) {
+      if (post.is_liked) {
+        _this.unlikePost(post.id);
+      } else {
+        _this.likePost(post.id);
+      }
+      return post.is_liked = !post.is_liked;
+    };
+  })(this);
+  this.createTopicView = (function (_this) {
+    return function () {
+      return $www.post('/api/topicViews', {
+        topic_id: _this.topicId
       });
     };
-    this.togglePostUserLike = (function(_this) {
-      return function(post) {
-        if (post.is_liked) {
-          _this.unlikePost(post.id);
-        } else {
-          _this.likePost(post.id);
-        }
-        return post.is_liked = !post.is_liked;
-      };
-    })(this);
-    this.createTopicView = (function(_this) {
-      return function() {
-        return $www.post('/api/topicViews', {
-          topic_id: _this.topicId
-        });
-      };
-    })(this);
-    this.loadUserNotification = (function(_this) {
-      return function() {
-        return $www.get('/api/topicNotifications/' + _this.topicId + '/users/' + _this.main.authUser.id + '/notification').success(function(data) {
-          return _this.watchNotification = data.notification;
-        });
-      };
-    })(this);
-    this.createNotification = (function(_this) {
-      return function() {
-        return $www.post('/api/topicNotifications/' + _this.topicId + '/users/' + _this.main.authUser.id + '/notification').success(function(data) {
-          return _this.watchNotification = data.notification;
-        });
-      };
-    })(this);
-    this.deleteNotification = (function(_this) {
-      return function() {
-        return $www["delete"]('/api/topicNotifications/' + _this.topicId + '/users/' + _this.main.authUser.id + '/notification').success(function() {
-          return _this.watchNotification = false;
-        });
-      };
-    })(this);
-    this.toggleNotification = (function(_this) {
-      return function() {
-        if (_this.watchNotification) {
-          return _this.deleteNotification();
-        } else {
-          return _this.createNotification();
-        }
-      };
-    })(this);
-    this.starTopic = function(topicId) {
-      return $www.post('/api/topics/' + topicId + '/star');
+  })(this);
+  this.loadUserNotification = (function (_this) {
+    return function () {
+      return $www.get('/api/topicNotifications/' + _this.topicId + '/users/' + _this.main.authUser.id + '/notification').success(function (data) {
+        return _this.watchNotification = data.notification;
+      });
     };
-    this.unstarTopic = function(topicId) {
-      return $www["delete"]('/api/topics/' + topicId + '/star');
+  })(this);
+  this.createNotification = (function (_this) {
+    return function () {
+      return $www.post('/api/topicNotifications/' + _this.topicId + '/users/' + _this.main.authUser.id + '/notification').success(function (data) {
+        return _this.watchNotification = data.notification;
+      });
     };
-    this.toggleTopicUserStar = (function(_this) {
-      return function(topic) {
-        if (topic.is_starred) {
-          _this.unstarTopic(topic.id);
-        } else {
-          _this.starTopic(topic.id);
-        }
-        return topic.is_starred = !topic.is_starred;
-      };
-    })(this);
-    this.loadTopic();
-    this.createTopicView();
-  }
-];
+  })(this);
+  this.deleteNotification = (function (_this) {
+    return function () {
+      return $www["delete"]('/api/topicNotifications/' + _this.topicId + '/users/' + _this.main.authUser.id + '/notification').success(function () {
+        return _this.watchNotification = false;
+      });
+    };
+  })(this);
+  this.toggleNotification = (function (_this) {
+    return function () {
+      if (_this.watchNotification) {
+        return _this.deleteNotification();
+      } else {
+        return _this.createNotification();
+      }
+    };
+  })(this);
+  this.starTopic = function (topicId) {
+    return $www.post('/api/topics/' + topicId + '/star');
+  };
+  this.unstarTopic = function (topicId) {
+    return $www["delete"]('/api/topics/' + topicId + '/star');
+  };
+  this.toggleTopicUserStar = (function (_this) {
+    return function (topic) {
+      if (topic.is_starred) {
+        _this.unstarTopic(topic.id);
+      } else {
+        _this.starTopic(topic.id);
+      }
+      return topic.is_starred = !topic.is_starred;
+    };
+  })(this);
+  this.loadTopic();
+  this.createTopicView();
+}];
 
+// ---
+// generated by coffee-script 1.9.2
 
 },{}],19:[function(require,module,exports){
 'use strict';
-var moment;
 
-moment = require('moment');
-
-module.exports = [
-  '$http', '$rootScope', function($http, $rootScope) {
-    var groupDailySummariesUser, init;
-    this.dailySummaryBody = '';
-    this.dailySummaries = [];
-    this.dailySummaryCopy = {};
-    this.filterDate = new Date();
-    this.usersById = {};
-    init = (function(_this) {
-      return function() {
-        _this.authUser = $rootScope.authUser;
-        return _this.loadDailySummaries();
-      };
-    })(this);
-    groupDailySummariesUser = (function(_this) {
-      return function(dailySummaries) {
-        _this.dailySummaries = _.groupBy(dailySummaries, function(summary) {
-          _this.usersById[summary.user_id] = summary.user;
-          return summary.user_id;
-        });
-        return _this.selectedDailySummaries = _this.dailySummaries[_this.authUser.id];
-      };
-    })(this);
-    this.addDay = (function(_this) {
-      return function() {
-        _this.filterDate = moment(_this.filterDate).add(1, 'days').toDate();
-        console.log(_this.filterDate);
-        return _this.loadDailySummaries();
-      };
-    })(this);
-    this.subtractDay = (function(_this) {
-      return function() {
-        _this.filterDate = moment(_this.filterDate).subtract(1, 'days').toDate();
-        return _this.loadDailySummaries();
-      };
-    })(this);
-    this.goToToday = (function(_this) {
-      return function() {
-        _this.filterDate = moment().subtract(1, 'days').toDate();
-        return _this.loadDailySummaries();
-      };
-    })(this);
-    this.loadDailySummaries = function() {
-      return $http.get('/api/dailySummaries?date=' + moment(this.filterDate).format("YYYY-MM-DD")).success(function(data) {
-        return groupDailySummariesUser(data.dailySummaries);
-      });
+module.exports = function ($http, $state, $rootScope, $modal, CardCacherService, CardListFiltersService) {
+    var init;
+    var ctrl = this;
+    this.s3BucketAttachmentsUrl = $rootScope.s3BucketAttachmentsUrl;
+    this.authUser = $rootScope.authUser;
+    this.filters = {
+        tag: null,
+        assignedTo: null,
+        quick: null
     };
-    this.deleteDailySummary = (function(_this) {
-      return function(userId, dailySummary) {
-        if (!confirm("Delete this daily summary?")) {
-          return;
+    this.team = $rootScope.authUser.team;
+    this.projects = [];
+    this.tags = [];
+    this.currentUser = null;
+    this.selectedStage = null;
+    this.selectedCommentBody = '';
+    this.selectedTaskBody = '';
+    this.searchInput = '';
+    this.sortableOptions = {
+        placeholder: "sortable-preview",
+        connectWith: ".sortable",
+        delay: 100,
+        stop: (function (_this) {
+            return function (evt, ui) {
+                var stage;
+                if (ui.item.sortable.droptarget) {
+                    stage = ui.item.sortable.droptarget.scope().stage;
+                    return _this.updateStageCards(stage);
+                }
+            };
+        })(this)
+    };
+    $rootScope.$on('projects:reload', (function (_this) {
+        return function () {
+            return _this.loadProjects();
+        };
+    })(this));
+    init = (function (_this) {
+        return function () {
+            _this.loadProjects();
+            return _this.loadTags();
+        };
+    })(this);
+    this.openEditCard = function (card) {
+        CardCacherService.set(card);
+        return $state.go('projects.card', {
+            cardId: card.id
+        });
+    };
+    this.updateStageCards = function (stage) {
+        var cardIds;
+        cardIds = _.pluck(stage.cards, 'id');
+        return $http.put('/api/cards/stageOrder', {
+            card_ids: cardIds,
+            stage_id: stage.id
+        });
+    };
+    this.updateProjectOrder = function (projects) {
+        var projectIds;
+        projectIds = _.pluck(projects, 'id');
+        return $http.post('/api/projects/order', {
+            project_ids: projectIds
+        });
+    };
+    this.selectAssignedToFilter = (function (_this) {
+        return function (newFilter) {
+            _this.filters.assignedTo = newFilter;
+            return $rootScope.$broadcast('filters:update', _this.filters);
+        };
+    })(this);
+    this.selectTagFilter = (function (_this) {
+        return function (newFilter) {
+            _this.filters.tag = newFilter;
+            return $rootScope.$broadcast('filters:update', _this.filters);
+        };
+    })(this);
+    this.selectQuickFilter = (function (_this) {
+        return function (newFilter) {
+            _this.filters.quick = newFilter;
+            return $rootScope.$broadcast('filters:update', _this.filters);
+        };
+    })(this);
+    this.updateSearchInput = (function (_this) {
+        return function () {
+            return $rootScope.$broadcast('search:update', _this.searchInput);
+        };
+    })(this);
+    this.clearSearchInput = (function (_this) {
+        return function () {
+            _this.searchInput = '';
+            return _this.updateSearchInput();
+        };
+    })(this);
+    this.loadTags = (function (_this) {
+        return function () {
+            return $http.get('/api/tags').success(function (data) {
+                return _this.tags = data.tags;
+            });
+        };
+    })(this);
+    this.openSortableProjects = function () {
+        return $modal.open({
+            template: require('../layouts/sortableProjects.modal.html'),
+            controller: require('./sortableProjects.modal.ctrl.js'),
+            controllerAs: 'ctrl',
+            size: 'md',
+            resolve: {
+                projects: (function (_this) {
+                    return function () {
+                        return _this.projects;
+                    };
+                })(this)
+            }
+        }).result.then((function (_this) {
+            return function (projects) {
+                _this.projects = projects;
+                return _this.updateProjectOrder(projects);
+            };
+        })(this));
+    };
+    this.loadProjects = function () {
+        return $http.get('/api/projects').success((function (_this) {
+            return function (data) {
+                return _this.projects = data.projects;
+            };
+        })(this));
+    };
+    this.openSortStagesModal = (function (_this) {
+        return function () {
+            return _this.stagesCopy = angular.copy(_this.stages);
+        };
+    })(this);
+    this.updateStagesOrder = (function (_this) {
+        return function (stagesCopy) {
+            return _.each(stagesCopy, function (stage, key) {
+                var realStage;
+                realStage = _.find(_this.stages, {
+                    $id: stage.$id
+                });
+                realStage.$priority = key;
+                return _this.stages.$save(realStage);
+            });
+        };
+    })(this);
+    this.deleteProject = (function (_this) {
+        return function (project) {
+            if (!confirm("Delete '" + project.name + "' and all it's contents?")) {
+                return;
+            }
+            _.remove(_this.projects, project);
+            return $http["delete"]('/api/projects/' + project.id);
+        };
+    })(this);
+    this.createProject = function () {
+        var projectName;
+        projectName = prompt("New Project Name");
+        if (!projectName) {
+            return;
         }
-        $http["delete"]('/api/dailySummaries/' + dailySummary.id);
-        return _.remove(_this.dailySummaries[_this.authUser.id], dailySummary);
-      };
-    })(this);
-    this.editDailySummary = function(dailySummary) {
-      var newDailySummaryBody;
-      newDailySummaryBody = prompt('Edit daily summary', dailySummary.body);
-      if (!newDailySummaryBody) {
-        return;
-      }
-      dailySummary.body = newDailySummaryBody;
-      return this.updateDailySummary(dailySummary);
+        return $http.post('/api/projects', {
+            name: projectName,
+            stages: [{
+                name: 'Open'
+            }, {
+                name: 'In Progress'
+            }, {
+                name: 'Closed'
+            }]
+        }).success((function (_this) {
+            return function (data) {
+                return _this.projects = data.projects;
+            };
+        })(this));
     };
-    this.updateDailySummary = function(dailySummary) {
-      return $http.put('/api/dailySummaries/' + dailySummary.id, {
-        body: dailySummary.body
-      }).success(function(data) {
-        return groupDailySummariesUser(data.dailySummaries);
-      });
+    this.deleteStage = function (project, stageIndex) {
+        if (confirm('Delete this stage?')) {
+            return project.stages.splice(stageIndex, 1);
+        }
     };
-    this.cancelDailySummary = (function(_this) {
-      return function() {
-        return _this.dailySummaryCopy = {};
-      };
+    this.toggleProjectVisibility = function (project) {
+        return project.hidden = !project.hidden;
+    };
+    this.editStage = function (stage) {
+        var newStageName;
+        newStageName = prompt('Edit Stage Name', stage.name);
+        if (!newStageName) {
+            return;
+        }
+        return stage.name = newStageName;
+    };
+    this.deleteAllCardsInStage = function (stage) {
+        if (!confirm('Delete all cards in this stage?')) {
+            return;
+        }
+        stage.cards = [];
+        return $http["delete"]('/api/stages/' + stage.id + '/cards');
+    };
+    this.createStage = (function (_this) {
+        return function () {
+            var newStage, result, stageName;
+            stageName = prompt("Stage name");
+            if (stageName === null) {
+                return;
+            }
+            newStage = {
+                id: createId(),
+                name: stageName,
+                createdAt: new Date().getTime()
+            };
+            result = _this.stages.$add(newStage);
+            return _.each(_this.projects, function (project) {
+                project.stages = project.stages || [];
+                project.stages.push(newStage);
+                return _this.projects.$save(project);
+            });
+        };
     })(this);
-    this.createDailySummary = (function(_this) {
-      return function() {
-        $http.post('/api/dailySummaries', {
-          body: _this.dailySummaryBody
-        }).success(function(data) {
-          return groupDailySummariesUser(data.dailySummaries);
-        });
-        return _this.dailySummaryBody = '';
-      };
+    this.createCard = (function (_this) {
+        return function (project) {
+            var newCardName;
+            newCardName = prompt('Task description');
+            if (!newCardName) {
+                return;
+            }
+            $http.post('/api/cards', {
+                stage_id: project.stages[0].id,
+                name: newCardName
+            }).success(function (data) {
+                return project.stages[0].cards.push(data.card);
+            });
+            return _this.newCardName = '';
+        };
     })(this);
+
+    this.appliedFilters = function (card) {
+        console.log(CardListFiltersService.check(ctrl.filters, ctrl.authUser, card));
+        CardListFiltersService.check(ctrl.filters, ctrl.authUser, card);
+    };
+
+    this.editProject = function (project) {
+        var projectName;
+        projectName = prompt("Project name", project.name);
+        if (projectName === null) {
+            return;
+        }
+        project.name = projectName;
+        return $http.put('/api/projects/' + project.id, {
+            name: project.name
+        }).success((function (_this) {
+            return function (data) {
+                var projectIndex;
+                projectIndex = _.indexOf(_this.projects, _.find(_this.projects, {
+                    id: project.id
+                }));
+                if (cardIndex > -1) {
+                    return _this.projects.splice(projectIndex, 1, project);
+                }
+            };
+        })(this));
+    };
     init();
-  }
-];
+};
 
-
-},{"moment":7}],20:[function(require,module,exports){
+},{"../layouts/sortableProjects.modal.html":36,"./sortableProjects.modal.ctrl.js":24}],20:[function(require,module,exports){
 'use strict';
-module.exports = function($http, $state, $rootScope, $modal, CardCacherService) {
+module.exports = ['$http', '$rootScope', function ($http, $rootScope) {
   var init;
-  this.s3BucketAttachmentsUrl = $rootScope.s3BucketAttachmentsUrl;
-  this.authUser = $rootScope.authUser;
-  this.filters = {
-    tag: null,
-    assignedTo: null,
-    quick: null
-  };
-  this.team = $rootScope.authUser.team;
-  this.projects = [];
-  this.tags = [];
-  this.currentUser = null;
-  this.selectedStage = null;
-  this.selectedCommentBody = '';
-  this.selectedTaskBody = '';
-  this.searchInput = '';
-  this.sortableOptions = {
-    placeholder: "sortable-preview",
-    connectWith: ".sortable",
-    delay: 100,
-    stop: (function(_this) {
-      return function(evt, ui) {
-        var stage;
-        if (ui.item.sortable.droptarget) {
-          stage = ui.item.sortable.droptarget.scope().stage;
-          return _this.updateStageCards(stage);
-        }
-      };
-    })(this)
-  };
-  $rootScope.$on('projects:reload', (function(_this) {
-    return function() {
-      return _this.loadProjects();
-    };
-  })(this));
-  init = (function(_this) {
-    return function() {
-      _this.loadProjects();
-      return _this.loadTags();
+  init = (function (_this) {
+    return function () {
+      return _this.authUser = angular.copy($rootScope.authUser);
     };
   })(this);
-  this.openEditCard = function(card) {
-    CardCacherService.set(card);
-    return $state.go('projects.card', {
-      cardId: card.id
-    });
-  };
-  this.updateStageCards = function(stage) {
-    var cardIds;
-    cardIds = _.pluck(stage.cards, 'id');
-    return $http.put('/api/cards/stageOrder', {
-      card_ids: cardIds,
-      stage_id: stage.id
-    });
-  };
-  this.updateProjectOrder = function(projects) {
-    var projectIds;
-    projectIds = _.pluck(projects, 'id');
-    return $http.post('/api/projects/order', {
-      project_ids: projectIds
-    });
-  };
-  this.selectAssignedToFilter = (function(_this) {
-    return function(newFilter) {
-      _this.filters.assignedTo = newFilter;
-      return $rootScope.$broadcast('filters:update', _this.filters);
-    };
-  })(this);
-  this.selectTagFilter = (function(_this) {
-    return function(newFilter) {
-      _this.filters.tag = newFilter;
-      return $rootScope.$broadcast('filters:update', _this.filters);
-    };
-  })(this);
-  this.selectQuickFilter = (function(_this) {
-    return function(newFilter) {
-      _this.filters.quick = newFilter;
-      return $rootScope.$broadcast('filters:update', _this.filters);
-    };
-  })(this);
-  this.updateSearchInput = (function(_this) {
-    return function() {
-      return $rootScope.$broadcast('search:update', _this.searchInput);
-    };
-  })(this);
-  this.clearSearchInput = (function(_this) {
-    return function() {
-      _this.searchInput = '';
-      return _this.updateSearchInput();
-    };
-  })(this);
-  this.loadTags = (function(_this) {
-    return function() {
-      return $http.get('/api/tags').success(function(data) {
-        return _this.tags = data.tags;
+  this.updateUser = (function (_this) {
+    return function () {
+      return $http.put('/api/me', {
+        name: _this.authUser.name,
+        email: _this.authUser.email
       });
     };
   })(this);
-  this.openSortableProjects = function() {
+  this.updatePassword = (function (_this) {
+    return function () {
+      return $http.put('/api/me/password', {
+        password: _this.password,
+        password_confirm: _this.passwordConfirm
+      });
+    };
+  })(this);
+  init();
+}];
+
+// ---
+// generated by coffee-script 1.9.2
+
+},{}],21:[function(require,module,exports){
+"use strict";
+
+module.exports = function () {};
+
+// ---
+// generated by coffee-script 1.9.2
+
+},{}],22:[function(require,module,exports){
+'use strict';
+module.exports = ['$rootScope', '$http', '$modal', function ($rootScope, $http, $modal) {
+  var init;
+  this.teams = [];
+  init = (function (_this) {
+    return function () {
+      _this.authUser = angular.copy($rootScope.authUser);
+      return _this.loadTeams();
+    };
+  })(this);
+  this.loadTeams = function () {
+    return $http.get('/api/teams').success((function (_this) {
+      return function (data) {
+        return _this.teams = data.teams;
+      };
+    })(this));
+  };
+  this.renameTeam = function (team) {
+    var newName;
+    newName = prompt('New name for this team', team.name);
+    if (!newName) {
+      return;
+    }
+    team.name = newName;
+    return $http.put('/api/teams/' + team.id, {
+      name: newName
+    });
+  };
+  this.openTeamUsers = function (_team) {
     return $modal.open({
-      template: require('../layouts/sortableProjects.modal.html'),
-      controller: require('./sortableProjects.modal.ctrl.coffee'),
+      template: require('../layouts/settings.teams.users.modal.html'),
+      controller: require('./settings.teams.users.modal.ctrl.js'),
       controllerAs: 'ctrl',
       size: 'md',
       resolve: {
-        projects: (function(_this) {
-          return function() {
-            return _this.projects;
-          };
-        })(this)
-      }
-    }).result.then((function(_this) {
-      return function(projects) {
-        _this.projects = projects;
-        return _this.updateProjectOrder(projects);
-      };
-    })(this));
-  };
-  this.loadProjects = function() {
-    return $http.get('/api/projects').success((function(_this) {
-      return function(data) {
-        return _this.projects = data.projects;
-      };
-    })(this));
-  };
-  this.openSortStagesModal = (function(_this) {
-    return function() {
-      return _this.stagesCopy = angular.copy(_this.stages);
-    };
-  })(this);
-  this.updateStagesOrder = (function(_this) {
-    return function(stagesCopy) {
-      return _.each(stagesCopy, function(stage, key) {
-        var realStage;
-        realStage = _.find(_this.stages, {
-          $id: stage.$id
-        });
-        realStage.$priority = key;
-        return _this.stages.$save(realStage);
-      });
-    };
-  })(this);
-  this.deleteProject = (function(_this) {
-    return function(project) {
-      if (!confirm("Delete '" + project.name + "' and all it's contents?")) {
-        return;
-      }
-      _.remove(_this.projects, project);
-      return $http["delete"]('/api/projects/' + project.id);
-    };
-  })(this);
-  this.createProject = function() {
-    var projectName;
-    projectName = prompt("New Project Name");
-    if (!projectName) {
-      return;
-    }
-    return $http.post('/api/projects', {
-      name: projectName,
-      stages: [
-        {
-          name: 'Open'
-        }, {
-          name: 'In Progress'
-        }, {
-          name: 'Closed'
+        team: function team() {
+          return _team;
         }
-      ]
-    }).success((function(_this) {
-      return function(data) {
-        return _this.projects = data.projects;
-      };
-    })(this));
+      }
+    }).result.then(function (team) {
+      return console.log(team);
+    });
   };
-  this.deleteStage = function(project, stageIndex) {
-    if (confirm('Delete this stage?')) {
-      return project.stages.splice(stageIndex, 1);
-    }
-  };
-  this.toggleProjectVisibility = function(project) {
-    return project.hidden = !project.hidden;
-  };
-  this.editStage = function(stage) {
-    var newStageName;
-    newStageName = prompt('Edit Stage Name', stage.name);
-    if (!newStageName) {
-      return;
-    }
-    return stage.name = newStageName;
-  };
-  this.deleteAllCardsInStage = function(stage) {
-    if (!confirm('Delete all cards in this stage?')) {
-      return;
-    }
-    stage.cards = [];
-    return $http["delete"]('/api/stages/' + stage.id + '/cards');
-  };
-  this.createStage = (function(_this) {
-    return function() {
-      var newStage, result, stageName;
-      stageName = prompt("Stage name");
-      if (stageName === null) {
+  this.deleteTeam = (function (_this) {
+    return function (team) {
+      if (!confirm('Delete this team and all it\'s data?')) {
         return;
       }
-      newStage = {
-        id: createId(),
-        name: stageName,
-        createdAt: (new Date).getTime()
-      };
-      result = _this.stages.$add(newStage);
-      return _.each(_this.projects, function(project) {
-        project.stages = project.stages || [];
-        project.stages.push(newStage);
-        return _this.projects.$save(project);
-      });
+      $http["delete"]('/api/teams/' + team.id);
+      return _.remove(_this.teams, team);
     };
   })(this);
-  this.createCard = (function(_this) {
-    return function(project) {
-      var newCardName;
-      newCardName = prompt('Task description');
-      if (!newCardName) {
-        return;
-      }
-      $http.post('/api/cards', {
-        stage_id: project.stages[0].id,
-        name: newCardName
-      }).success(function(data) {
-        return project.stages[0].cards.push(data.card);
-      });
-      return _this.newCardName = '';
-    };
-  })(this);
-  this.editProject = function(project) {
-    var projectName;
-    projectName = prompt("Project name", project.name);
-    if (projectName === null) {
-      return;
-    }
-    project.name = projectName;
-    return $http.put('/api/projects/' + project.id, {
-      name: project.name
-    }).success((function(_this) {
-      return function(data) {
-        var projectIndex;
-        projectIndex = _.indexOf(_this.projects, _.find(_this.projects, {
-          id: project.id
-        }));
-        if (cardIndex > -1) {
-          return _this.projects.splice(projectIndex, 1, project);
-        }
+  this.createTeam = function () {
+    var teamName;
+    teamName = prompt('New team name?');
+    return $http.post('/api/teams', {
+      name: teamName
+    }).success((function (_this) {
+      return function (data) {
+        return _this.teams = data.teams;
       };
     })(this));
   };
   init();
-};
+}];
 
+// ---
+// generated by coffee-script 1.9.2
 
-},{"../layouts/sortableProjects.modal.html":40,"./sortableProjects.modal.ctrl.coffee":25}],21:[function(require,module,exports){
+},{"../layouts/settings.teams.users.modal.html":35,"./settings.teams.users.modal.ctrl.js":23}],23:[function(require,module,exports){
 'use strict';
-module.exports = [
-  '$http', '$rootScope', function($http, $rootScope) {
-    var init;
-    init = (function(_this) {
-      return function() {
-        return _this.authUser = angular.copy($rootScope.authUser);
-      };
-    })(this);
-    this.updateUser = (function(_this) {
-      return function() {
-        return $http.put('/api/me', {
-          name: _this.authUser.name,
-          email: _this.authUser.email
-        });
-      };
-    })(this);
-    this.updatePassword = (function(_this) {
-      return function() {
-        return $http.put('/api/me/password', {
-          password: _this.password,
-          password_confirm: _this.passwordConfirm
-        });
-      };
-    })(this);
-    init();
-  }
-];
-
-
-},{}],22:[function(require,module,exports){
-module.exports = function() {};
-
-
-},{}],23:[function(require,module,exports){
-'use strict';
-module.exports = [
-  '$rootScope', '$http', '$modal', function($rootScope, $http, $modal) {
-    var init;
-    this.teams = [];
-    init = (function(_this) {
-      return function() {
-        _this.authUser = angular.copy($rootScope.authUser);
-        return _this.loadTeams();
-      };
-    })(this);
-    this.loadTeams = function() {
-      return $http.get('/api/teams').success((function(_this) {
-        return function(data) {
-          return _this.teams = data.teams;
-        };
-      })(this));
-    };
-    this.renameTeam = function(team) {
-      var newName;
-      newName = prompt('New name for this team', team.name);
-      if (!newName) {
-        return;
-      }
-      team.name = newName;
-      return $http.put('/api/teams/' + team.id, {
-        name: newName
-      });
-    };
-    this.openTeamUsers = function(team) {
-      return $modal.open({
-        template: require('../layouts/settings.teams.users.modal.html'),
-        controller: require('./settings.teams.users.modal.ctrl.coffee'),
-        controllerAs: 'ctrl',
-        size: 'md',
-        resolve: {
-          team: function() {
-            return team;
-          }
-        }
-      }).result.then(function(team) {
-        return console.log(team);
-      });
-    };
-    this.deleteTeam = (function(_this) {
-      return function(team) {
-        if (!confirm('Delete this team and all it\'s data?')) {
-          return;
-        }
-        $http["delete"]('/api/teams/' + team.id);
-        return _.remove(_this.teams, team);
-      };
-    })(this);
-    this.createTeam = function() {
-      var teamName;
-      teamName = prompt('New team name?');
-      return $http.post('/api/teams', {
-        name: teamName
-      }).success((function(_this) {
-        return function(data) {
-          return _this.teams = data.teams;
-        };
-      })(this));
-    };
-    init();
-  }
-];
-
-
-},{"../layouts/settings.teams.users.modal.html":39,"./settings.teams.users.modal.ctrl.coffee":24}],24:[function(require,module,exports){
-'use strict';
-module.exports = function($modalInstance, team, $http) {
+module.exports = function ($modalInstance, team, $http) {
   var init;
   this.newEmail = '';
-  init = (function(_this) {
-    return function() {
+  init = (function (_this) {
+    return function () {
       return _this.team = angular.copy(team);
     };
   })(this);
-  this.deleteUser = (function(_this) {
-    return function(user) {
+  this.deleteUser = (function (_this) {
+    return function (user) {
       if (!confirm("Remove this user from the team?")) {
         return;
       }
@@ -42200,325 +42085,95 @@ module.exports = function($modalInstance, team, $http) {
       return $http["delete"]('/api/teams/user/' + team.id + '?user_id=' + user.id);
     };
   })(this);
-  this.inviteEmail = (function(_this) {
-    return function() {
+  this.inviteEmail = (function (_this) {
+    return function () {
       return $http.post('/api/teams/user', {
         email: _this.newEmail,
         team_id: _this.team.id
-      }).success(function(data) {
+      }).success(function (data) {
         _this.team = data.team;
         return _this.newEmail = '';
       });
     };
   })(this);
-  this.ok = function() {
+  this.ok = function () {
     return $modalInstance.close(this.team);
   };
-  this.cancel = function() {
+  this.cancel = function () {
     return $modalInstance.dismiss('cancel');
   };
   init();
 };
 
+// ---
+// generated by coffee-script 1.9.2
 
-},{}],25:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 'use strict';
-module.exports = function($modalInstance, projects) {
+module.exports = function ($modalInstance, projects) {
   var init;
-  init = (function(_this) {
-    return function() {
+  init = (function (_this) {
+    return function () {
       return _this.projects = angular.copy(projects);
     };
   })(this);
-  this.ok = function() {
+  this.ok = function () {
     return $modalInstance.close(this.projects);
   };
-  this.cancel = function() {
+  this.cancel = function () {
     return $modalInstance.dismiss('cancel');
   };
   init();
 };
 
+// ---
+// generated by coffee-script 1.9.2
 
-},{}],26:[function(require,module,exports){
-'use strict';
-module.exports = [
-  '$http', '$rootScope', 'TagDataService', function($http, $rootScope, TagData) {
-    var _hasFilteredTags, _hasFilteredUsers, init;
-    this.newCard = {};
-    this.users = [];
-    this.orderBy = 'name';
-    this.filters = {
-      users: [],
-      tags: [],
-      projects: []
-    };
-    init = (function(_this) {
-      return function() {
-        _this.loadProjects();
-        _this.loadTeamUsers();
-        return _this.loadTags();
-      };
-    })(this);
-    $rootScope.$on('card:deleted', (function(_this) {
-      return function() {
-        return _this.loadProjects();
-      };
-    })(this));
-    $rootScope.$on('projects:reload', (function(_this) {
-      return function() {
-        return _this.loadProjects();
-      };
-    })(this));
-    this.createProject = function() {
-      var projectName;
-      projectName = prompt("New Project Name");
-      if (!projectName) {
-        return;
-      }
-      return $http.post('/api/projects', {
-        name: projectName,
-        stages: [
-          {
-            name: 'Open'
-          }, {
-            name: 'In Progress'
-          }, {
-            name: 'Closed'
-          }
-        ]
-      }).success((function(_this) {
-        return function(data) {
-          return _this.projects = data.projects;
-        };
-      })(this));
-    };
-    this.toggleFilter = (function(_this) {
-      return function(filterName, obj) {
-        _this.filters[filterName] = _this.filters[filterName] || [];
-        if (_.find(_this.filters[filterName], {
-          id: obj.id
-        })) {
-          _.remove(_this.filters[filterName], obj);
-        } else {
-          _this.filters[filterName].push(obj);
-        }
-        return _this.createCardList();
-      };
-    })(this);
-    this.isFilterObjActive = (function(_this) {
-      return function(filterName, obj) {
-        return _.find(_this.filters[filterName], obj);
-      };
-    })(this);
-    this.clearFilters = (function(_this) {
-      return function(filterName) {
-        _this.filters[filterName] = [];
-        return _this.createCardList();
-      };
-    })(this);
-    this.loadProjects = function() {
-      return $http.get('/api/projects').success((function(_this) {
-        return function(data) {
-          _this.projects = data.projects;
-          return _this.createCardList();
-        };
-      })(this));
-    };
-    this.loadTags = function() {
-      return TagData.loadTags().success((function(_this) {
-        return function(data) {
-          return _this.tags = data.tags;
-        };
-      })(this));
-    };
-    this.loadTeamUsers = function() {
-      return $http.get('/api/users').success((function(_this) {
-        return function(data) {
-          return _this.users = data.users;
-        };
-      })(this));
-    };
-    this.createCard = (function(_this) {
-      return function() {
-        return $http.post('/api/cards/withoutStage', _this.newCard).success(function(data) {
-          _this.projects = data.projects;
-          _this.createCardList();
-          return _this.newCard.name = '';
-        });
-      };
-    })(this);
-    this.createCardList = (function(_this) {
-      return function() {
-        _this.cards = [];
-        return _.each(_this.projects, function(project) {
-          return _.each(project.stages, function(stage) {
-            if (_this.filters.projects.length > 0 && _.findIndex(_this.filters.projects, {
-              id: stage.project_id
-            }) === -1) {
-              return;
-            }
-            return _.each(stage.cards, function(card) {
-              if (_this.filters.users.length > 0 && !_hasFilteredUsers(card)) {
-                return;
-              }
-              if (_this.filters.tags.length > 0 && !_hasFilteredTags(card)) {
-                return;
-              }
-              return _this.cards.push(card);
-            });
-          });
-        });
-      };
-    })(this);
-    _hasFilteredTags = (function(_this) {
-      return function(card) {
-        var found;
-        found = false;
-        _.each(_this.filters.tags, function(tag) {
-          if (_.findIndex(card.tags, {
-            id: tag.id
-          }) > -1) {
-            return found = true;
-          }
-        });
-        return found;
-      };
-    })(this);
-    _hasFilteredUsers = (function(_this) {
-      return function(card) {
-        var found;
-        found = false;
-        _.each(_this.filters.users, function(user) {
-          if (_.findIndex(card.users, {
-            id: user.id
-          }) > -1) {
-            return found = true;
-          }
-        });
-        return found;
-      };
-    })(this);
-    init();
-  }
-];
-
-
-},{}],27:[function(require,module,exports){
-'use strict';
-module.exports = function($http, $scope) {
-  var date, init;
-  this.data = [];
-  date = new Date();
-  this.options = {
-    fromDate: new Date(),
-    toDate: new Date(date.setDate(date.getDate() + 10))
-  };
-  init = (function(_this) {
-    return function() {
-      return _this.loadProjects();
-    };
-  })(this);
-  this.registerApi = (function(_this) {
-    return function(api) {
-      api.core.on.ready($scope, function(data) {
-        return console.log(data);
-      });
-      return api.data.on.change($scope, function(newData) {
-        return console.log(newData);
-      });
-    };
-  })(this);
-  this.loadProjects = function() {
-    return $http.get('/api/projects').success((function(_this) {
-      return function(data) {
-        _this.projects = data.projects;
-        return _this.createGanttData();
-      };
-    })(this));
-  };
-  this.createGanttData = (function(_this) {
-    return function() {
-      _this.newData = [];
-      return _.each(_this.projects, function(project) {
-        var children;
-        _this.data.push({
-          name: project.name
-        });
-        children = [];
-        return _.each(project.stages, function(stage) {
-          var tasks;
-          tasks = [];
-          _.each(stage.cards, function(card) {
-            return tasks.push({
-              name: card.name,
-              color: '#F1C232',
-              from: new Date(2013, 10, 18, 8, 0, 0),
-              to: new Date(2013, 10, 18, 12, 0, 0)
-            });
-          });
-          return _this.data.push({
-            name: stage.name,
-            parent: project.name,
-            tasks: tasks
-          });
-        });
-      });
-    };
-  })(this);
-  init();
-};
-
-
-},{}],28:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 module.exports = '<!-- <div\n    class="modal fade in"\n    style="display: block; position: absolute; overflow: auto; bottom: auto">\n    <div class="modal-dialog modal-lg">\n        <div class="modal-content">\n            <div class="modal-header">\n                <button\n                    ng-click="ctrl.closeEditCard()"\n                    type="button"\n                    class="close"\n                    data-dismiss="modal"\n                    aria-label="Close"><span aria-hidden="true">&times;</span></button>\n                <h4\n                    ng-click="ctrl.selectedCard.editName = !ctrl.selectedCard.editName; ctrl.selectedCardName = ctrl.selectedCard.name"\n                    ng-hide="ctrl.selectedCard.editName"\n                    class="modal-title">{{ ctrl.selectedCard.name || \'Edit card name...\' }}</h4>\n                <div ng-show="ctrl.selectedCard.editName">\n                    <div class="form-group">\n                        <textarea\n                            class="form-control"\n                            ng-keydown="$event.keyCode == 13 && ctrl.updateCardName()"\n                            ng-blur="ctrl.updateCardName()"\n                            msd-elastic\n                            ng-model="ctrl.selectedCardName"></textarea>\n                    </div>\n                    <button\n                        class="btn btn-success btn-sm"\n                        ng-click="ctrl.updateCardName()">\n                        Save\n                    </button>\n                    <button\n                        class="btn btn-link btn-sm"\n                        ng-click="ctrl.selectedCard.editName = false">\n                        Cancel\n                    </button>\n                </div>\n            </div>\n            <div class="modal-body">\n                <span\n                    ng-hide="ctrl.showCardDescription"\n                    ng-click="ctrl.selectCardDescription()"\n                    ng-class="{ \'text-muted\': !ctrl.selectedCard.description }">{{ ctrl.selectedCard.description || \'Edit the description...\' }}</span>\n\n                <div ng-show="ctrl.showCardDescription">\n                    <div class="form-group">\n                        <textarea\n                            class="form-control"\n                            msd-elastic\n                            placeholder="Describe what\'s happening here..."\n                            ng-blur="ctrl.updateCardDescription()"\n                            ng-model="ctrl.selectedCardDescription"></textarea>\n                    </div>\n                    <button\n                        class="btn btn-success btn-sm"\n                        ng-click="ctrl.updateCardDescription()">\n                        Save\n                    </button>\n                    <button\n                        class="btn btn-link btn-sm"\n                        ng-click="ctrl.showCardDescription = false">\n                        Cancel\n                    </button>\n                </div>\n            </div>\n\n            <hr style="margin: 0;">\n\n            <div class="modal-body">\n                <h4>Assignees</h4>\n                <selectize\n                    config="ctrl.usersConfig"\n                    options="ctrl.users"\n                    ng-model="ctrl.selectedCard.userIds"></selectize>\n            </div>\n\n            <hr style="margin: 0;">\n\n            <div class="modal-body">\n                <h4>Subtasks</h4>\n                <div class="form-group">\n                    <textarea\n                        placeholder="Create a subtask..."\n                        class="form-control"\n                        rows="1"\n                        msd-elastic\n                        ng-model="ctrl.newSubtaskBody"\n                        ng-keyup="$event.keyCode == 13 && ctrl.createSubtask()"></textarea>\n                </div>\n                <div\n                    ui-sortable="ctrl.subTaskSortableOptions"\n                    ng-model="ctrl.selectedCard.subtasks">\n                    <div\n                        class="media"\n                        ng-repeat="task in ctrl.selectedCard.subtasks">\n                        <div class="media-left">\n                            <i\n                                class="fa fa-2 pointer"\n                                ng-click="ctrl.toggleSubtask(task)"\n                                ng-class="{ \'fa-square-o\': task.checked != true, \'fa-check-square-o\': task.checked == true }"></i>\n                        </div>\n                        <div class="media-body">\n                            <div ng-click="ctrl.editSubtask(task)" ng-hide="task.editMode">{{ task.body || \'Click to edit subtask...\' }}</div>\n                            <span ng-show="task.editMode">\n                                <div class="form-group">\n                                    <textarea\n                                        type="text"\n                                        class="form-control"\n                                        msd-elastic\n                                        ng-model="task.newBody"\n                                        ng-keyup="$event.keyCode == 13 && ctrl.updateSubtask(task)"></textarea>\n                                </div>\n                                <button class="btn btn-success btn-sm" ng-click="ctrl.updateSubtask(task)">Save</button>\n                                <button class="btn btn-link btn-sm" ng-click="ctrl.cancelSubtaskEdit(task)">Cancel</button>\n                                <button class="btn btn-link btn-sm pull-right" ng-click="ctrl.deleteSubtask(task)">Delete</button>\n                            </span>\n                        </div>\n                    </div>\n                </div>\n            </div>\n\n            <hr style="margin: 0;">\n\n            <div class="modal-body">\n                <h4>Impact</h4>\n                <p>By adding an impact value we can determine the priority of tasks against others.</p>\n                <input\n                    type="range"\n                    min="0"\n                    max="100"\n                    ng-model="ctrl.selectedCard.impact"\n                    ng-change="ctrl.updateCard()">\n            </div>\n\n            <hr style="margin: 0;">\n\n            <div class="modal-body">\n                <h4>Attachments</h4>\n                <div ngf-no-file-drop>File Drag/Drop is not supported for this browser</div>\n                <div\n                    ngf-drop\n                    ngf-select\n                    ng-model="ctrl.files"\n                    class="dropbox"\n                    ngf-drag-over-class="dragover"\n                    ngf-multiple="true"\n                    ngf-allow-dir="false">\n                    <div class="drag-overlay">Drop files here or <span>Browse<span></div>\n                </div>\n            </div>\n\n            <hr style="margin: 0;">\n\n            <div class="modal-body">\n                <h4>Tags</h4>\n                <selectize\n                    config="ctrl.tagsConfig"\n                    options="ctrl.tags"\n                    ng-model="ctrl.selectedCard.tagNames"></selectize>\n            </div>\n\n            <hr style="margin: 0;">\n\n            <div class="modal-body">\n                <h4>Comments</h4>\n                <div class="form-group">\n                    <textarea\n                        msd-elastic\n                        class="form-control"\n                        placeholder="What\'s on your mind?"\n                        ng-model="ctrl.newCommentBody"></textarea>\n                </div>\n                <button\n                    class="btn btn-success btn-sm"\n                    ng-click="ctrl.createComment()">Comment</button>\n\n                <div\n                    class="media"\n                    ng-repeat="comment in ctrl.selectedCard.comments">\n                    <div class="media-left">\n                        <a href="#">\n                            <img class="media-object" gravatar-src="comment.user.email" gravatar-size="45">\n                        </a>\n                    </div>\n                    <div class="media-body">\n                        <div ng-hide="comment.editMode">\n                            <p ng-bind="comment.body"></p>\n                            yesterday at 9:38am -\n                            <a class="pointer" ng-click="ctrl.editComment(comment)">Edit</a> -\n                            <a class="pointer" ng-click="ctrl.deleteComment(comment)">Delete</a>\n                        </div>\n                        <div ng-show="comment.editMode">\n                            <div class="form-group">\n                                <textarea\n                                    msd-elastic\n                                    type="text"\n                                    class="form-control"\n                                    ng-model="comment.newBody"></textarea>\n                            </div>\n                            <button\n                                class="btn btn-success btn-sm"\n                                ng-click="ctrl.updateComment(comment)">Save</button>\n                            <button\n                                class="btn btn-link btn-sm"\n                                ng-click="ctrl.cancelCommentEdit(comment)">Cancel</button>\n                        </div>\n                    </div>\n                </div>\n            </div>\n            <div class="modal-footer">\n                <button\n                    class="pull-left btn btn-danger"\n                    ng-click="ctrl.deleteCard()">\n                    Delete\n                </button>\n                <button\n                    ng-class="{\n                        \'btn-danger\': ctrl.selectedCard.blocked,\n                        \'btn-primary\': !ctrl.selectedCard.blocked\n                    }"\n                    class="btn" ng-click="ctrl.blockToggleSelectedCard()">\n                    {{ ctrl.selectedCard.blocked ? \'Unblock\' : \'Blocked\' }}\n                </button>\n                <button\n                    type="button"\n                    class="btn btn-default"\n                    data-dismiss="modal"\n                    ng-click="ctrl.closeEditCard()">Close</button>\n            </div>\n        </div>\n    </div>\n</div>\n<div class="modal-backdrop fade in" ng-click="ctrl.closeEditCard()"></div> -->\n';
-},{}],29:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 module.exports = '<div class="modal-header">\n    <button\n        ng-click="ctrl.cancel()"\n        type="button"\n        class="close"\n        data-dismiss="modal"\n        aria-label="Close"><span aria-hidden="true">&times;</span></button>\n\n    <div class="text-center" ng-show="ctrl.selectedCard.attachments.length > 0">\n        <div\n            class="card-image-background"\n            style="background-image: url(http://res.cloudinary.com/michaeljcalkins/image/fetch/h_200,e_blur:719,w_900,c_fill/{{ ctrl.s3BucketAttachmentsUrl + ctrl.selectedCard.attachments[0].filename }})"></div>\n        <a target="_blank" ng-href="{{ ctrl.s3BucketAttachmentsUrl + ctrl.selectedCard.attachments[0].filename }}">\n            <img\n                class="card-image-preview"\n                ng-src="http://res.cloudinary.com/michaeljcalkins/image/fetch/c_fill,g_center,w_600,h_200/{{ ctrl.s3BucketAttachmentsUrl + ctrl.selectedCard.attachments[0].filename }}">\n        </a>\n    </div>\n\n    <h4\n        ng-click="ctrl.selectedCard.editName = !ctrl.selectedCard.editName; ctrl.selectedCardName = ctrl.selectedCard.name"\n        ng-hide="ctrl.selectedCard.editName"\n        style="line-height: 35px;"\n        class="modal-title">{{ ctrl.selectedCard.name || \'Edit card name...\' }}</h4>\n\n    <div ng-show="ctrl.selectedCard.editName">\n        <div class="form-group">\n            <textarea\n                class="form-control"\n                ng-keydown="$event.keyCode == 13 && ctrl.updateCardName()"\n                ng-blur="ctrl.updateCardName()"\n                msd-elastic\n                ng-model="ctrl.selectedCardName"></textarea>\n        </div>\n        <button\n            class="btn btn-success btn-sm"\n            ng-click="ctrl.updateCardName()">\n            Save\n        </button>\n        <button\n            class="btn btn-link btn-sm"\n            ng-click="ctrl.selectedCard.editName = false">\n            Cancel\n        </button>\n    </div>\n</div>\n<div class="modal-body">\n    <div class="row">\n        <div class="col-sm-9">\n            <div style="margin-bottom: 15px">\n                <label class="text-muted" ng-click="ctrl.selectCardDescription()">\n                    Description\n                    <a ng-hide="ctrl.showCardDescription" class="pointer text-muted" ng-click="ctrl.selectCardDescription()"><u>Edit</u></a>\n                </label>\n                <div\n                    class="pointer"\n                    style="white-space: pre;"\n                    ng-hide="ctrl.showCardDescription"\n                    ng-click="ctrl.selectCardDescription()"\n                    ng-class="{ \'text-muted\': !ctrl.selectedCard.description }">{{ ctrl.selectedCard.description || \'Edit the description...\' }}</div>\n\n                <div ng-show="ctrl.showCardDescription">\n                    <div class="form-group">\n                        <textarea\n                            class="form-control"\n                            msd-elastic\n                            placeholder="Describe what\'s happening here..."\n                            ng-blur="ctrl.updateCardDescription()"\n                            ng-model="ctrl.selectedCardDescription"></textarea>\n                    </div>\n                    <button\n                        class="btn btn-success btn-sm"\n                        ng-click="ctrl.updateCardDescription()">\n                        Save\n                    </button>\n                    <button\n                        class="btn btn-link btn-sm"\n                        ng-click="ctrl.showCardDescription = false">\n                        Cancel\n                    </button>\n                </div>\n            </div>\n\n            <div class="row" style="margin-bottom: 15px">\n                <div class="col-sm-12">\n                    <h4><strong>Subtasks</strong></h4>\n                    <div class="form-group">\n                        <textarea\n                            placeholder="Create a subtask..."\n                            class="form-control"\n                            rows="1"\n                            msd-elastic\n                            ng-model="ctrl.newSubtaskBody"\n                            ng-keyup="$event.keyCode == 13 && ctrl.createSubtask()"></textarea>\n                    </div>\n                    <div\n                        ui-sortable="ctrl.subTaskSortableOptions"\n                        ng-model="ctrl.selectedCard.subtasks">\n                        <div\n                            class="media"\n                            ng-repeat="task in ctrl.selectedCard.subtasks">\n                            <div class="media-left">\n                                <i\n                                    class="fa fa-2 pointer"\n                                    ng-click="ctrl.toggleSubtask(task)"\n                                    ng-class="{ \'fa-square-o\': task.checked != true, \'fa-check-square-o\': task.checked == true }"></i>\n                            </div>\n                            <div class="media-body">\n                                <div class="pointer" ng-click="ctrl.editSubtask(task)" ng-hide="task.editMode">{{ task.body || \'Click to edit subtask...\' }}</div>\n                                <span ng-show="task.editMode">\n                                    <div class="form-group">\n                                        <textarea\n                                            type="text"\n                                            class="form-control"\n                                            msd-elastic\n                                            ng-model="task.newBody"\n                                            ng-keyup="$event.keyCode == 13 && ctrl.updateSubtask(task)"></textarea>\n                                    </div>\n                                    <button class="btn btn-success btn-sm" ng-click="ctrl.updateSubtask(task)">Save</button>\n                                    <button class="btn btn-link btn-sm" ng-click="ctrl.cancelSubtaskEdit(task)">Cancel</button>\n                                    <button class="btn btn-link btn-sm pull-right" ng-click="ctrl.deleteSubtask(task)">Delete</button>\n                                </span>\n                            </div>\n                        </div>\n                    </div>\n                </div>\n            </div>\n\n            <div class="row" style="margin-bottom: 15px">\n                <div class="col-sm-12">\n                    <h4><strong>Attachments</strong></h4>\n                    <div ngf-no-file-drop>File Drag/Drop is not supported for this browser</div>\n                    <div\n                        class="dropbox"\n                        ng-model="ctrl.files"\n                        ngf-drop="ctrl.upload($file)"\n                        ngf-select="ctrl.uploadFiles($files)"\n                        ngf-drag-over-class="{accept:\'dragover\'}"\n                        ngf-multiple="true"\n                        ngf-allow-dir="false">\n                        <div class="drag-overlay" ng-hide="ctrl.states.uploading">Drop files here or <span>Browse<span></div>\n                        <div class="drag-overlay" ng-show="ctrl.states.uploading">Uploading...</div>\n                    </div>\n                    <div class="media" ng-repeat="attachment in ctrl.selectedCard.attachments">\n                        <div class="media-left">\n                            <a target="_blank" ng-href="{{ ctrl.s3BucketAttachmentsUrl + attachment.filename }}">\n                                <img simple-lightbox ng-src="http://res.cloudinary.com/michaeljcalkins/image/fetch/w_110,h_80,c_thumb/{{ ctrl.s3BucketAttachmentsUrl + attachment.filename }}">\n                            </a>\n                        </div>\n                        <div class="media-body">\n                            <h4 class="media-heading"><a target="_blank" ng-href="{{ ctrl.s3BucketAttachmentsUrl + attachment.filename }}">{{ attachment.original_filename }}</a></h4>\n                            <p>Added <span am-time-ago="attachment.created_at"></span></p>\n                            <button\n                                class="btn btn-default btn-sm"\n                                ng-click="ctrl.downloadAttachment(attachment)">\n                                Download\n                            </button>\n                            <button\n                                class="btn btn-link btn-sm"\n                                type="button"\n                                ng-click="ctrl.deleteAttachment(attachment)">\n                                Delete\n                            </button>\n                        </div>\n                    </div>\n                </div>\n            </div>\n\n            <div class="row">\n                <div class="col-sm-12">\n                    <h4><strong>Comments</strong></h4>\n                    <div class="form-group">\n                        <textarea\n                            msd-elastic\n                            class="form-control"\n                            placeholder="What\'s on your mind?"\n                            ng-model="ctrl.newCommentBody"></textarea>\n                    </div>\n                    <button\n                        class="btn btn-success btn-sm"\n                        ng-click="ctrl.createComment()">Comment</button>\n\n                    <div\n                        class="media"\n                        ng-repeat="comment in ctrl.selectedCard.comments">\n                        <div class="media-left">\n                            <a href="#">\n                                <img class="media-object" gravatar-src="comment.user.email" gravatar-size="45">\n                            </a>\n                        </div>\n                        <div class="media-body">\n                            <div ng-hide="comment.editMode">\n                                <strong>{{ comment.user.name }}</strong>\n                                <p>{{ comment.body | nl2br }}</p>\n                                <span am-time-ago="comment.created_at"></span> -\n                                <a class="pointer" ng-click="ctrl.editComment(comment)">Edit</a> -\n                                <a class="pointer" ng-click="ctrl.deleteComment(comment)">Delete</a>\n                            </div>\n                            <div ng-show="comment.editMode">\n                                <div class="form-group">\n                                    <textarea\n                                        msd-elastic\n                                        type="text"\n                                        class="form-control"\n                                        ng-model="comment.newBody"></textarea>\n                                </div>\n                                <button\n                                    class="btn btn-success btn-sm"\n                                    ng-click="ctrl.updateComment(comment)">Save</button>\n                                <button\n                                    class="btn btn-link btn-sm"\n                                    ng-click="ctrl.cancelCommentEdit(comment)">Cancel</button>\n                            </div>\n                        </div>\n                    </div>\n                </div>\n            </div>\n        </div>\n        <div class="col-sm-3">\n            <label>Stage</label>\n            <div\n                class="btn-group"\n                style="width: 100%; margin-bottom: 15px"\n                title="Stage this project is in.">\n                <button class="btn btn-block btn-default dropdown-toggle" data-toggle="dropdown" type="button">\n                    {{ ctrl.selectedCard.stage.name }}\n                    <span class="caret"></span>\n                </button>\n                <ul class="dropdown-menu">\n                    <li ng-repeat="stage in ctrl.selectedCard.stage.project.stages" ng-click="ctrl.updateStage(stage)">\n                        <a href="#">{{ stage.name }}</a>\n                    </li>\n                </ul>\n            </div>\n\n            <div style="margin-bottom: 15px">\n                <label title="Impact value lets you determine the priority of tasks against others.">Impact</label>\n                <input\n                    type="range"\n                    min="0"\n                    max="100"\n                    ng-model="ctrl.selectedCard.impact"\n                    ng-change="ctrl.updateCardImpact()">\n            </div>\n\n            <div style="margin-bottom: 15px">\n                <label>Assigned</label>\n                <selectize\n                    config="ctrl.usersConfig"\n                    options="ctrl.users"\n                    ng-model="ctrl.selectedCard.userIds"></selectize>\n            </div>\n\n            <div style="margin-bottom: 15px">\n                <label>Tags</label>\n                <selectize\n                    config="ctrl.tagsConfig"\n                    options="ctrl.tags"\n                    ng-model="ctrl.selectedCard.tagNames"\n                    style="margin-bottom: 15px"></selectize>\n            </div>\n\n            <button\n                ng-class="{\n                    \'btn-danger\': ctrl.selectedCard.blocked,\n                    \'btn-default\': !ctrl.selectedCard.blocked\n                }"\n                class="btn btn-block"\n                ng-click="ctrl.blockToggleSelectedCard()">\n                {{ ctrl.selectedCard.blocked ? \'Unblock\' : \'Blocked\' }}\n            </button>\n            <hr>\n            <button\n                class="btn btn-danger btn-block"\n                ng-click="ctrl.deleteCard()">\n                Delete\n            </button>\n        </div>\n    </div>\n</div>\n';
-},{}],30:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 module.exports = '<div class="panel">\n	<div class="panel-body">\n		<form ng-submit=\'createTopic()\'>\n			<h3 class=\'header normal-weight\'>Create a new Discussion</h3>\n			<div class="form-group">\n				<label>Topic</label>\n				<input type=\'text\' required class=\'form-control\' ng-model=\'newTopic.name\'>\n			</div>\n\n			<div class="form-group">\n				<label>Tag Users</label>\n				<select class=\'form-control\' ui-select2 multiple ng-model=\'newTopic.user_ids\'>\n					<option ng-repeat="user in main.users" value=\'{{ user.id }}\'>{{ user.name }}</option>\n				</select>\n			</div>\n\n			<div class="form-group">\n				<label class="control-label">Post</label>\n				<text-angular ng-model="newTopic.body"></text-angular>\n			</div>\n\n			<div class=\'form-group\'>\n				<button class=\'btn btn-success\' type=\'submit\'>\n					Submit\n				</button>\n			</div>\n		</form>\n	</div>\n</div>\n';
-},{}],31:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 module.exports = '<div class="container-fluid" ui-view></div>\n';
-},{}],32:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 module.exports = '<div class="panel">\n	<div class="panel-body">\n		<div class=\'row\'>\n			<div class=\'col-sm-12\'>\n				<div class=\'inner-medium\'>\n					<ul class="nav nav-pills pull-left mbn">\n						<li ng-class=\'{ active: ctrl.filters.type == "latest" }\'>\n							<a ui-sref=\'conversations.list({ type: "latest" })\'>Latest</a>\n						</li>\n\n						<li ng-class=\'{ active: ctrl.filters.type == "unread" }\'>\n							<a ui-sref=\'conversations.list({ type: "unread" })\'>\n								<i class=\'icon-bookmark\'></i> Unread\n							</a>\n						</li>\n\n						<li ng-class=\'{ active: ctrl.filters.type == "starred" }\'>\n							<a ui-sref=\'conversations.list({ type: "starred" })\'>\n								<i class=\'icon-star\'></i> Starred\n							</a>\n						</li>\n\n						<li ng-class=\'{ active: ctrl.filters.type == "top" }\'>\n							<a ui-sref=\'conversations.list({ type: "top" })\'>Top</a>\n						</li>\n					</ul>\n\n					<a ui-sref=\'conversations.create\' class=\'btn btn-success pull-right\'>\n						<i class=\'icon-plus text-success\'></i> Create Discussion\n					</a>\n				</div>\n			</div>\n		</div>\n	</div>\n</div>\n\n<div class="panel">\n	<div class="panel-body">\n		<div infinite-scroll-disabled=\'ctrl.filters.disableInfiniteScroll\' infinite-scroll=\'nextPage()\' infinite-scroll-distance=\'2\'>\n			<table class=\'table table-striped table-middle table-hover\' style="margin: 0;">\n				<thead>\n					<tr>\n						<th></th>\n						<th class=\'span5\'>Discussion</th>\n						<th>Users</th>\n						<th class=\'text-center\'>Posts</th>\n						<th class=\'text-center\'>Likes</th>\n						<th class=\'text-center\'>Views</th>\n						<th colspan=\'2\' class=\'text-center\'>Activity</th>\n					</tr>\n				</thead>\n				<tbody>\n					<tr ng-repeat=\'topic in ctrl.topics\'>\n						<td class=\'text-center vert-align\'>\n							<i\n								class=\'fa fa-star fa-2\'\n								ng-click=\'ctrl.toggleTopicUserStar(topic)\'\n								ng-class=\'{ "text-muted": !topic.is_starred, "text-orange": topic.is_starred }\'></i>\n						</td>\n						<td class=\'vert-align pointer\' ui-sref=\'conversations.view({ topicId: topic.id })\'>\n							<h5 ng-class=\'{ "text-muted": !topic.is_unread }\'>{{ topic.name }}</h5>\n						</td>\n						<td class="vert-align">\n							<img class="img-rounded" ng-repeat=\'user in topic.users\' gravatar-src="user.email" gravatar-size="25" title="{{ user.name }}">\n						</td>\n						<td class=\'text-center vert-align\'>{{ topic.post_count }}</td>\n						<td class=\'text-center vert-align\'>\n							<span ng-if=\'topic.like_count > 0\'>\n								{{ topic.like_count }} <i class=\'icon-heart text-red\'></i>\n							</span>\n						</td>\n						<td class=\'text-center vert-align\'>\n							<span ng-if=\'topic.view_count > 0\'>\n								{{ topic.view_count }}\n							</span>\n						</td>\n						<td class=\'text-center vert-align\'>{{ topic.created_at }}</td>\n						<td class=\'text-center vert-align\'>{{ topic.updated_at }}</td>\n					</tr>\n				</tbody>\n			</table>\n		</div>\n	</div>\n</div>\n';
-},{}],33:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 module.exports = '<div class="panel">\n	<div class="panel-body">\n		<h3 style="margin: 0;">\n			<i\n				class=\'icon-star pointer\'\n				ng-click=\'ctrl.toggleTopicUserStar(topic)\'\n				ng-class=\'{ muted: !ctrl.topic.is_starred, "text-orange": ctrl.topic.is_starred }\'></i>\n			{{ ctrl.topic.name }}\n		</h3>\n	</div>\n</div>\n\n<div class="panel">\n	<div class="panel-body">\n		<div class=\'row\'>\n			<div class=\'col-sm-12\'>\n				<div class="media" ng-repeat=\'post in ctrl.topic.posts\'>\n					<a class="pull-left" href="#">\n						<img width="50" class="media-object" gravatar-src="post.user.email" gravatar-size="50">\n					</a>\n					<div class="media-body">\n						<h5 class="media-heading muted">{{ post.user.name }}</h5>\n						<div ng-show=\'!post.editMode\'>\n							{{ post.post.user.name }}\n							<div ng-bind-html-unsafe="post.body"></div>\n\n							<div class=\'row\' ng-show=\'$index == 0\'>\n								<div class=\'col-sm-12\'>\n									<div class=\'pull-right\'>\n										 <button\n										 	class=\'btn\'\n											ng-show=\'post.user_id !== ctrl.authUser.id\'\n											ng-class=\'{ active: post.is_liked }\'\n											ng-click=\'ctrl.togglePostUserLike(post)\'>\n											<i class=\'fa fa-heart\' ng-class=\'{ "text-red": post.is_liked }\'></i>\n										</button>\n										<button\n											class=\'btn\'\n											ng-click=\'ctrl.selectPost(post); post.editMode = true\'\n											ng-show=\'post.user_id === ctrl.authUser.id\'>\n											<i class=\'fa fa-pencil\'></i>\n										</button>\n										<button\n											class=\'btn\'\n											ng-show=\'post.user_id === ctrl.authUser.id && ctrl.topic.posts.length == 1\'\n											ng-click=\'ctrl.deleteTopic(ctrl.topic.id)\'\n											title=\'Delete this post?\'>\n											<i class=\'fa fa-trash\'></i>\n										</button>\n									</div>\n								</div>\n							</div>\n\n							<div class=\'row mbm\' ng-show=\'$index > 0\'>\n								<div class=\'col-sm-12\'>\n									<button class=\'btn\' ng-click=\'post.showReplies = !post.showReplies\' ng-show=\'post.posts.length > 0\'>\n										{{ post.posts.length }} Replies <i ng-class=\'{ "icon-chevron-down": !post.showReplies, "icon-chevron-up": post.showReplies }\'></i>\n									</button>\n\n									<div class=\'pull-right\'>\n										<button\n											class=\'btn\'\n											ng-show=\'post.user_id !== ctrl.authUser.id\'\n											ng-class=\'{ active: post.is_liked }\'\n											ng-click=\'ctrl.togglePostUserLike(post)\'>\n											<i class=\'fa fa-heart\' ng-class=\'{ "text-red": post.is_liked }\'></i>\n										</button>\n										<button\n											class=\'btn\'\n											ng-click=\'ctrl.selectPost(post); post.editMode = true\'\n											ng-show=\'post.user_id === ctrl.authUser.id\'>\n											<i class=\'fa fa-pencil\'></i>\n										</button>\n										<button\n											class=\'btn\'\n											ng-show=\'post.user_id === ctrl.authUser.id\'\n											ng-click=\'ctrl.deletePost(post.id)\'\n											title=\'Delete this post?\'>\n											<i class=\'fa fa-trash\'></i>\n										</button>\n										<button\n											class=\'btn btn-primary\'\n											ng-click=\'ctrl.selectPost(post); ctrl.newPost.topic_post_id = post.id; post.showNewPost = true\'>\n											<i class=\'fa fa-reply\'></i> Reply\n										</button>\n									</div>\n								</div>\n							</div>\n						</div>\n\n						<div ng-show=\'post.editMode\'>\n							<div class=\'row\'>\n								<div class=\'col-sm-12\'>\n									<div class=\'form-group\'>\n										<text-angular ng-model=\'ctrl.postCopy.body\'></text-angular>\n									</div>\n									<button class=\'btn btn-success\' ng-click=\'ctrl.updatePost()\'>\n										Submit\n									</button>\n									<button class=\'btn btn-link\' ng-click=\'ctrl.resetCurrentPost()\'>\n										Cancel\n									</button>\n								</div>\n							</div>\n						</div>\n					</div>\n					<div class=\'well well-sm\' ng-show=\'post.posts.length > 0 && post.showReplies\'>\n						<div ng-repeat=\'iPost in post.posts\'>\n							<div class="media" ng-repeat=\'iPost in post.posts\'>\n								<a class="pull-left" href="#">\n									<img width="50" class="media-object" gravatar-src="iPost.user.email" gravatar-size="50">\n								</a>\n								<div class="media-body">\n									<h5 class="media-heading muted">{{ iPost.user.name }}</h5>\n									<div ng-bind-html-unsafe="iPost.body"></div>\n								</div>\n							</div>\n						</div>\n					</div>\n\n					<div class=\'row\' ng-show=\'post.showNewPost\'>\n						<div class=\'col-sm-12\'>\n							<form class=\'mbn\' ng-submit=\'ctrl.createPost()\'>\n								<text-angular ng-model=\'ctrl.newPost.body\'></text-angular>\n								<button type=\'submit\' class=\'btn btn-success\'>\n									Submit\n								</button>\n								<button\n									type=\'button\'\n									ng-click=\'ctrl.resetNewPost()\'\n									class=\'btn btn-link\'>\n									Cancel\n								</button>\n							</form>\n						</div>\n					</div>\n					<hr>\n				</div>\n			</div>\n		</div>\n\n		<div class=\'row mbm\'>\n			<div class=\'col-sm-12\'>\n				<button class=\'btn\' ng-class=\'{ active: ctrl.topic.is_starred }\' ng-click=\'toggleTopicUserStar(topic)\'>\n					<i class=\'icon-star\' ng-class=\'{ "text-orange": ctrl.topic.is_starred }\'></i> Star\n				</button>\n\n				<button class=\'btn btn-primary\' ng-click=\'filters.showNewPost = true\'>\n					<i class=\'icon-plus\'></i> Reply\n				</button>\n\n				<button class="btn" ng-click=\'ctrl.toggleNotification()\'>\n					<span ng-show=\'watchNotification\'>Stop Notifications</span>\n					<span ng-show=\'!watchNotification\'>Get Notifications</span>\n				</button>\n			</div>\n		</div>\n\n		<div class=\'row\' ng-show=\'filters.showNewPost\'>\n			<div class=\'col-sm-12\'>\n				<form ng-submit=\'ctrl.createPost()\' class=\'form-horizontal\'>\n					<!-- <div class=\'mbm\'>\n						<select class=\'input-full\' placeholder=\'Tag Users\'ui-select2 multiple ng-model=\'newctrl.topic.user_ids\'>\n							<option ng-repeat="user in main.users" value=\'{{ user.id }}\'>{{ user.name }}</option>\n						</select>\n					</div> -->\n\n					<text-angular ng-model=\'ctrl.newPost.body\'></text-angular>\n\n					<button type=\'submit\' class=\'btn btn-success\'>\n						Submit\n					</button>\n					<button\n						ng-show=\'!ctrl.newPost.body\'\n						type=\'button\'\n						ng-click=\'ctrl.resetNewPost(post)\'\n						class=\'btn btn-link\'>\n						Cancel\n					</button>\n				</form>\n			</div>\n		</div>\n	</div>\n</div>\n';
-},{}],34:[function(require,module,exports){
-module.exports = '<div class="container-fluid">\n    <div class="row">\n        <div class="col-sm-12">\n            <div class="row" style="margin-bottom: 10px">\n                <div class="col-sm-6">\n                    {{ ctrl.filterDate | date:\'EEEE, MMMM d, y\' }}\n                </div>\n                <div class="col-sm-6 text-right">\n                    <div class="btn-group" style="margin-right: 5px;">\n                        <button class="btn btn-default" ng-click="ctrl.addDay()">&lt;</button>\n                        <button class="btn btn-default" ng-click="ctrl.goToToday()">Today</button>\n                        <button class="btn btn-default" ng-click="ctrl.substractDay()">&gt;</button>\n                    </div>\n\n                    <div class="form-inline pull-right">\n                        <input class="form-control" type="date" ng-model="ctrl.filterDate" ng-click="ctrl.loadDailySummaries()">\n                    </div>\n                </div>\n            </div>\n\n            <div class="panel">\n                <div class="panel-body">\n                    <div class="row">\n                        <div class="col-sm-6">\n                            <h4 style="margin-top: 0">{{ ctrl.authUser.name }}</h4>\n                        </div>\n                        <div class="col-sm-6">\n                        </div>\n                    </div>\n                    <div class="form-group">\n                        <form ng-submit="ctrl.createDailySummary()">\n                            <input\n                                type="text"\n                                class="form-control"\n                                ng-model="ctrl.dailySummaryBody"\n                                placeholder="Today I...">\n                        </form>\n                    </div>\n                    <table class="table">\n                        <tr ng-repeat="dailySummary in ctrl.selectedDailySummaries">\n                            <td>\n                                <div\n                                    ng-show="dailySummary != dailySummaryCopy"\n                                    ng-click="editDailySummary(dailySummary)">\n                                    {{ dailySummary.body }}\n                                </div>\n\n                                <div ng-show="dailySummary == dailySummaryCopy">\n                                    <input\n                                        type="text"\n                                        class="form-control"\n                                        ng-model="dailySummaryCopy.body"\n                                        v-on="\n                                            blur: updateDailySummary(dailySummary),\n                                            keyup: updateDailySummary(dailySummary) | key \'enter\',\n                                            keyup: cancelDailySummary(dailySummary) | key \'esc\'\n                                        ">\n                                </div>\n                            </td>\n                            <td class="text-right">\n                                <button\n                                    class="btn btn-primary"\n                                    ng-click="ctrl.editDailySummary(dailySummary)">\n                                    Edit\n                                </button>\n                                <button\n                                    class="btn btn-danger"\n                                    ng-click="ctrl.deleteDailySummary(userId, dailySummary)">\n                                    Delete\n                                </button>\n                            </td>\n                        </tr>\n                    </table>\n                </div>\n            </div>\n\n            <div\n                class="panel"\n                ng-repeat="user in ctrl.authUser.team.users"\n                ng-hide="user.id == ctrl.authUser.id">\n                <div class="panel-body">\n                    <h4 style="margin-top: 0">{{ user.name }}</h4>\n                    <table class="table">\n                        <tbody>\n                            <tr ng-show="! ctrl.dailySummaries[user.id].length">\n                                <td class="text-center">\n                                    <h5 class="text-muted">No entries.</h5>\n                                </td>\n                            </tr>\n                            <tr ng-repeat="dailySummary in ctrl.dailySummaries[user.id]">\n                                <td>{{ dailySummary.body }}</td>\n                            </tr>\n                        </tbody>\n                    </table>\n                </div>\n            </div>\n        </div>\n    </div>\n</div>\n';
-},{}],35:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 module.exports = '<style>\nnav {\n    margin: 0 !important;\n}\n</style>\n<div class="container-fluid" style="padding-top: 15px; box-shadow: 0 1px 2px -1px rgba(0, 0, 0, 0.3); background: white">\n    <div class="row" style="margin-bottom: 15px">\n        <div class="col-sm-8">\n            <div class="btn-group pull-left" style="margin-right: 10px;">\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        {{ ctrl.filters.tag.name || \'Tags\' }} <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li ng-click="ctrl.selectTagFilter(null)">\n                            <a href="#">Show All Tags</a>\n                        </li>\n                        <li class="divider"></li>\n                        <li\n                            ng-click="ctrl.selectTagFilter(tag)"\n                            ng-repeat="tag in ctrl.tags">\n                            <a href="#">{{ tag.name }}</a>\n                        </li>\n                    </ul>\n                </div>\n\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        <span ng-show="ctrl.assignedTo.name">{{ ctrl.assignedTo.name }}</span>\n                        <span ng-show="ctrl.assignedTo == \'no one\'">Assigned to no one</span>\n                        <span ng-show="ctrl.assignedTo == null">Assigned to</span>\n                        <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li ng-click="ctrl.selectAssignedToFilter(null)"><a href="#">Everyone</a></li>\n                        <li class="divider"></li>\n                        <li ng-click="ctrl.selectAssignedToFilter(ctrl.authUser)"><a href="#">Me</a></li>\n                        <li ng-click="ctrl.selectAssignedToFilter(\'no one\')"><a href="#">No One Assigned</a></li>\n                        <li\n                            ng-click="ctrl.selectAssignedToFilter(user)"\n                            ng-hide="user.id == ctrl.authUser.id"\n                            ng-repeat="user in ctrl.team.users">\n                            <a href="#">{{ user.name }}</a>\n                        </li>\n                    </ul>\n                </div>\n\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                         {{ ctrl.filters.quick || \'Quick filters\' }} <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li ng-click="ctrl.selectQuickFilter(null)"><a href="#">Show all</a></li>\n                        <li class="divider"></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'Created by me\')"><a href="#">Created by me</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'With subtasks\')"><a href="#">With subtasks</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'With impact\')"><a href="#">With impact</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'With comments\')"><a href="#">With comments</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'With files attached\')"><a href="#">With files attached</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'Tasks blocked\')"><a href="#">Tasks blocked</a></li>\n                        <li ng-click="ctrl.selectQuickFilter(\'Tasks unblocked\')"><a href="#">Tasks unblocked</a></li>\n                    </ul>\n                </div>\n            </div>\n\n            <form class="form-inline">\n                <div class="form-group">\n                    <div ng-class="{ \'input-group\': ctrl.searchInput }">\n                        <input\n                            type="text"\n                            class="form-control"\n                            placeholder="Search cards..."\n                            ng-change="ctrl.updateSearchInput()"\n                            ng-model="ctrl.searchInput">\n                        <div\n                            class="input-group-addon btn btn-default"\n                            ng-show="ctrl.searchInput"\n                            ng-click="ctrl.clearSearchInput()">\n                            <i class="fa fa-times"></i>\n                        </div>\n                    </div>\n                </div>\n            </form>\n        </div>\n        <div class="col-sm-4 text-right">\n            <button\n                class="btn btn-primary"\n                ng-click="ctrl.openSortableProjects()">\n                Sort Projects\n            </button>\n            <button\n                class="btn btn-success"\n                ng-click="ctrl.createProject()">\n                Create Project\n            </button>\n        </div>\n    </div>\n</div>\n<div class="projects-container">\n    <div class="panel panel-default" ng-repeat="project in ctrl.projects">\n        <div class="panel-body">\n            <div class="stage-container" ng-hide="project.hidden">\n                <table class="table">\n                    <tr>\n                        <td>\n                            <div class="project-head">\n                                <h4>{{ project.name }}</h4>\n                                <div class="btn-group-vertical" style="width: 100%;">\n                                    <button\n                                        type="button"\n                                        class="btn btn-default btn-sm"\n                                        ng-click="ctrl.createCard(project)">\n                                        <i class="glyphicon glyphicon-plus text-success"></i> Add a Card\n                                    </button>\n                                    <button\n                                        class="btn btn-default btn-sm"\n                                        ng-click="ctrl.editProject(project)">\n                                        <i class="glyphicon glyphicon-pencil text-info"></i> Edit\n                                    </button>\n                                    <button\n                                        class="btn btn-default btn-sm"\n                                        ng-click="ctrl.deleteProject(project)">\n                                        <i class="glyphicon glyphicon-remove text-danger"></i> Delete\n                                    </button>\n                                </div>\n                            </div>\n                        </td>\n                        <td ng-repeat="(stageIndex, stage) in project.stages">\n                            <div class="stage-column">\n                                <div class="stage-header">\n                                    <div class="row">\n                                        <div class="col-sm-6">\n                                            <h5>{{ stage.name }}</h5>\n                                        </div>\n                                        <div class="col-sm-6">\n                                            <div class="btn-group  pull-right">\n                                                <button\n                                                    type="button"\n                                                    class="btn btn-link btn-sm dropdown-toggle pull-right"\n                                                    data-toggle="dropdown">\n                                                    <span class="fa fa-cog"></span>\n                                                </button>\n                                                <ul class="dropdown-menu dropdown-menu-right">\n                                                    <li>\n                                                        <a class="pointer" ng-click="ctrl.editStage(stage)">Rename</a>\n                                                    </li>\n                                                    <li>\n                                                        <a class="pointer" ng-click="ctrl.deleteAllCardsInStage(stage)">Delete All Cards</a>\n                                                    </li>\n                                                    <li role="separator" class="divider"></li>\n                                                    <li>\n                                                        <a ng-click="ctrl.deleteStage(project, stageIndex)">Delete</a>\n                                                    </li>\n                                                </ul>\n                                            </div>\n                                        </div>\n                                    </div>\n                                </div>\n\n                                <ul\n                                    class="sortable"\n                                    ui-sortable="ctrl.sortableOptions"\n                                    ng-model="stage.cards">\n                                    <li\n                                        ng-click="ctrl.openEditCard(card)"\n                                        ng-repeat="card in stage.cards | filter:ctrl.searchInput | filter:ctrl.appliedFilters"\n                                        ng-class="{ \'card-blocked\': card.blocked }"\n                                        card-list-item\n                                        data="card">\n                                    </li>\n                                </ul>\n                            </div>\n                        </td>\n                    </tr>\n                </table>\n            </div>\n        </div>\n    </div>\n</div>\n<div ui-view></div>\n';
-},{}],36:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 module.exports = '<div class="row">\n    <div class="col-sm-6">\n        <div class="panel panel-default">\n            <div class="panel-heading">\n                <h5 class="panel-title">Your info</h5>\n            </div>\n            <div class="panel-body">\n                <form ng-submit="ctrl.updateUser()">\n                    <div class="form-group">\n                        <label>Name</label>\n                        <input\n                            type="text"\n                            class="form-control"\n                            ng-model="ctrl.authUser.name">\n                    </div>\n                    <div class="form-group">\n                        <label>Email</label>\n                        <input\n                            type="email"\n                            class="form-control"\n                            ng-model="ctrl.authUser.email">\n                    </div>\n                    <button\n                        type="submit"\n                        class="btn btn-primary">Submit</button>\n                </form>\n            </div>\n        </div>\n    </div>\n    <div class="col-sm-6">\n        <div class="panel panel-default">\n            <div class="panel-heading">\n                <h5 class="panel-title">Change your password</h5>\n            </div>\n            <div class="panel-body">\n                <form ng-submit="ctrl.updatePassword()">\n                    <div class="form-group">\n                        <label>Password</label>\n                        <input\n                            type="password"\n                            class="form-control"\n                            ng-model="ctrl.password">\n                    </div>\n                    <div class="form-group">\n                        <label>Password Confirmation</label>\n                        <input\n                            type="password"\n                            class="form-control"\n                            ng-model="ctrl.passwordConfirm">\n                    </div>\n                    <button class="btn btn-primary">Submit</button>\n                </form>\n            </div>\n        </div>\n    </div>\n</div>\n';
-},{}],37:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 module.exports = '<div class="container-fluid">\n    <div class="row">\n        <div class="col-sm-3">\n            <div class="list-group">\n                <a class="list-group-item" ui-sref="settings.account">Account</a>\n                <a class="list-group-item" ui-sref="settings.teams" href="#">Teams</a>\n            </div>\n        </div>\n        <div class="col-sm-9">\n            <div ui-view></div>\n        </div>\n    </div>\n</div>\n';
-},{}],38:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 module.exports = '<div class="panel panel-default">\n    <div class="panel-heading">\n        <h3 class="panel-title pull-left">Teams</h3>\n        <button class="pull-right btn btn-sm btn-success" ng-click="ctrl.createTeam()">\n            Create Team\n        </button>\n        <div class="clearfix"></div>\n    </div>\n    <table class="table">\n        <thead>\n            <tr>\n                <th>Name</th>\n                <th>Number of Members</th>\n                <th></th>\n            </tr>\n        </thead>\n        <tr ng-repeat="team in ctrl.teams">\n            <td class="vert-align">\n                {{ team.name || \'Unamed team\' }}\n            </td>\n            <td class="vert-align">\n                {{ team.users.length }}\n            </td>\n            <td class="text-right">\n                <button ng-click="ctrl.renameTeam(team)" class="btn btn-default" type="button">\n                    Rename\n                </button>\n                <button ng-click="ctrl.openTeamUsers(team)" class="btn btn-default" type="button">\n                    Users\n                </button>\n                <button ng-click="ctrl.deleteTeam(team)" class="btn btn-danger" type="button">\n                    Delete\n                </button>\n            </td>\n        </tr>\n    </table>\n</div>\n';
-},{}],39:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 module.exports = '<div class="modal-header">\n    <button\n        ng-click="ctrl.cancel()"\n        type="button"\n        class="close"\n        data-dismiss="modal"\n        aria-label="Close"><span aria-hidden="true">&times;</span></button>\n    <h4 class="modal-title">Team Users</h4>\n</div>\n<div class="modal-body">\n    <form ng-submit="ctrl.inviteEmail()">\n        <div class="row">\n            <div class="col-sm-10">\n                <div class="form-group">\n                    <input\n                        type="email"\n                        class="form-control"\n                        placeholder="Enter user\'s email and hit enter..."\n                        ng-model="ctrl.newEmail">\n                </div>\n            </div>\n            <div class="col-sm-2">\n                <button type="submit" class="btn btn-success">\n                    Invite\n                </button>\n            </div>\n        </div>\n    </form>\n    <table class="table">\n        <thead>\n            <tr>\n                <th>Name</th>\n                <th>Email</th>\n                <th></th>\n            </tr>\n        </thead>\n        <tr ng-repeat="user in ctrl.team.users">\n            <td class="vert-align">\n                <span ng-show="user.name">{{ user.name }}</span>\n                <span ng-hide="user.name" class="text-muted">No name found</span>\n            </td>\n            <td class="vert-align">{{ user.email }}</td>\n            <td class="text-right">\n                <button class="btn btn-danger btn-sm" ng-click="ctrl.deleteUser(user)">\n                    Delete\n                </button>\n            </td>\n        </tr>\n    </table>\n</div>\n<div class="modal-footer">\n    <button\n        type="button"\n        class="btn btn-link"\n        data-dismiss="modal"\n        ng-click="ctrl.cancel()">\n        Close\n    </button>\n</div>\n';
-},{}],40:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 module.exports = '<div class="modal-header">\n    <button\n        ng-click="ctrl.cancel()"\n        type="button"\n        class="close"\n        data-dismiss="modal"\n        aria-label="Close"><span aria-hidden="true">&times;</span></button>\n    <h4 class="modal-title">Sort Projects</h4>\n</div>\n<div class="modal-body">\n    <ul class="list-group" ng-model="ctrl.projects" ui-sortable>\n        <li ng-repeat="project in ctrl.projects" class="list-group-item">\n            <i class="fa fa-arrows"></i> {{ project.name }}\n        </li>\n    </ul>\n</div>\n<div class="modal-footer">\n    <button\n        type="button"\n        class="btn btn-success"\n        ng-click="ctrl.ok()">\n        Submit\n    </button>\n    <button\n        type="button"\n        class="btn btn-link"\n        data-dismiss="modal"\n        ng-click="ctrl.cancel()">Close</button>\n</div>\n';
-},{}],41:[function(require,module,exports){
-module.exports = '<div class="container-fluid">\n    <div class="row" style="margin-bottom: 20px;">\n        <div class="col-sm-6">\n            <div class="btn-group pull-left" style="margin-right: 10px;">\n                <div class="btn-group">\n                    <button\n                        type="button"\n                        class="btn btn-default dropdown-toggle"\n                        data-toggle="dropdown">\n                        Sort cards by <span class="caret"></span>\n                    </button>\n                    <ul class="dropdown-menu">\n                        <li ng-click="ctrl.orderBy = \'name\'">\n                            <a href="#">Name</a>\n                        </li>\n                        <li ng-click="ctrl.orderBy = \'-impact\'">\n                            <a href="#">Impact</a>\n                        </li>\n                    </ul>\n                </div>\n            </div>\n\n            <form class="form-inline">\n                <div class="form-group">\n                    <div ng-class="{ \'input-group\': ctrl.searchInput }">\n                        <input\n                            type="text"\n                            class="form-control"\n                            placeholder="Search cards..."\n                            ng-model="ctrl.searchInput">\n                        <div\n                            class="input-group-addon btn btn-default"\n                            ng-show="ctrl.searchInput"\n                            ng-click="ctrl.searchInput = \'\'">\n                            <i class="fa fa-times"></i>\n                        </div>\n                    </div>\n                </div>\n            </form>\n        </div>\n        <div class="col-sm-6 text-right">\n            <button\n                class="btn btn-success"\n                ng-click="ctrl.createProject()">\n                Create Project\n            </button>\n        </div>\n    </div>\n    <div class="row" style="margin-bottom: 20px;">\n        <div class="col-sm-3">\n            <div class="panel panel-default">\n                <!-- Default panel contents -->\n                <div class="panel-heading">\n                    <h5 class="panel-title">People</h5>\n                </div>\n\n                <!-- List group -->\n                <div class="list-group">\n                    <a\n                        class="list-group-item pointer"\n                        ng-click="ctrl.clearFilters(\'users\')">Show everyone</a>\n                    <a\n                        class="list-group-item pointer"\n                        ng-class="{ active: ctrl.isFilterObjActive(\'users\', user) }"\n                        ng-click="ctrl.toggleFilter(\'users\', user)"\n                        ng-repeat="user in ctrl.users | orderBy:\'name\'">{{ user.name }}</a>\n                </div>\n            </div>\n\n            <div class="panel panel-default">\n                <!-- Default panel contents -->\n                <div class="panel-heading">\n                    <h5 class="panel-title">Projects</h5>\n                </div>\n\n                <!-- List group -->\n                <div class="list-group">\n                    <a\n                        class="list-group-item pointer"\n                        ng-click="ctrl.clearFilters(\'projects\')">Show all projects</a>\n                    <a\n                        class="list-group-item pointer"\n                        ng-class="{ active: ctrl.isFilterObjActive(\'projects\', project) }"\n                        ng-click="ctrl.toggleFilter(\'projects\', project)"\n                        ng-repeat="project in ctrl.projects | orderBy:\'name\'">\n                        {{ project.name }}\n                    </a>\n                </div>\n            </div>\n\n            <div class="panel panel-default">\n                <!-- Default panel contents -->\n                <div class="panel-heading">\n                    <h5 class="panel-title">Tags</h5>\n                </div>\n\n                <!-- List group -->\n                <div class="list-group">\n                    <a\n                        class="list-group-item pointer"\n                        ng-click="ctrl.clearFilters(\'tags\')">Show all tags</a>\n                    <a\n                        class="list-group-item pointer"\n                        ng-class="{ active: ctrl.isFilterObjActive(\'tags\', tag) }"\n                        ng-click="ctrl.toggleFilter(\'tags\', tag)"\n                        ng-repeat="tag in ctrl.tags">{{ tag.name }}</a>\n                </div>\n            </div>\n        </div>\n        <div class="col-sm-9">\n            <form ng-submit="ctrl.createCard()">\n                <div class="row">\n                    <div class="col-sm-9">\n                        <div class="form-group">\n                            <input\n                                type="text"\n                                class="form-control"\n                                ng-model="ctrl.newCard.name"\n                                placeholder="Create a task and hit enter...">\n                        </div>\n                    </div>\n                    <div class="col-sm-3">\n                        <select\n                            class="form-control"\n                            ng-options="project.id as project.name for project in ctrl.projects"\n                            ng-model="ctrl.newCard.project_id"\n                            required>\n                            <option value="">Select a project...</option>\n                        </select>\n                    </div>\n                </div>\n            </form>\n            <div class="list-group">\n                <a\n                    class="list-group-item pointer"\n                    ng-repeat="card in ctrl.cards | filter:ctrl.searchInput | orderBy:ctrl.orderBy"\n                    ng-class="{\'list-group-item-danger\': card.blocked }"\n                    ui-sref="tasklist.card({ cardId: card.id })">\n                    <span class="label label-primary" title="Stage this card is in." ng-show="card.stage">{{ card.stage.name }}</span>\n\n                    <strong>{{ card.stage.project.name }}</strong>\n                    {{ card.name }}\n\n                    <span title="Users assigned to this card." ng-repeat="user in card.users">\n                        <span class="label label-primary"><i class="glyphicon glyphicon-user"></i> {{ user.name }}</span>\n                    </span>\n\n                    <span title="Tags attached to this card." ng-repeat="tag in card.tags">\n                        <span class="label label-primary"><i class="glyphicon glyphicon-tag"></i> {{ tag.name }}</span>\n                    </span>\n\n                    <span class="badge" title="Impact of card on project out of 100." ng-show="card.impact > 0">\n                        <i class="glyphicon glyphicon-fire"></i> {{ card.impact }}\n                    </span>\n\n                    <span class="badge" ng-show="card.description" title="This card has a description.">\n                        <i class="glyphicon glyphicon-align-left"></i>\n                    </span>\n\n                    <span class="badge" ng-show="card.subtasks.length" title="{{ card.subtasks.length }} subtask(s)">\n                        <i class="glyphicon glyphicon-ok"></i> {{ card.subtasks.length }}\n                    </span>\n\n                    <span class="badge" ng-show="card.attachments.length" title="{{ card.attachments.length }} attachment(s)">\n                        <i class="glyphicon glyphicon-download-alt"></i> {{ card.attachments.length }}\n                    </span>\n\n                    <span class="badge" ng-show="card.comments.length" title="{{ card.comments.length }} comment(s)">\n                        <i class="glyphicon glyphicon-comment"></i> {{ card.comments.length }}\n                    </span>\n                </a>\n            </div>\n        </div>\n    </div>\n</div>\n<div ui-view></div>\n';
-},{}],42:[function(require,module,exports){
-module.exports = '<div class="container-fluid">\n    <div class="row">\n        <div class="col-sm-12">\n            <div class="panel">\n                <div class="panel-body">\n                    <div class="form-group text-center">\n                        <label class="control-label">\n                            <i class="fa fa-calendar"></i>\n                            <i class="fa fa-arrows-h"></i>\n                            <i class="fa fa-calendar"></i>\n                            Date range</label>\n                        <br>\n                        <div class="form-group">\n                            <input class="form-control" ng-model="ctrl.options.fromDate" placeholder="From" type="date">\n                        </div>\n                        <div class="form-group">\n                            <input class="form-control" ng-model="ctrl.options.toDate" placeholder="To" type="date">\n                        </div>\n                    </div>\n                </div>\n            </div>\n            <div class="panel">\n                <div class="panel-body">\n                    <div\n                        gantt\n                        api="ctrl.registerApi"\n                        data="ctrl.data"\n                        headers="[\'month\', \'day\']"\n                        from-date="ctrl.options.fromDate"\n                        to-date="ctrl.options.toDate">\n                        <!-- <gantt-table columns="[\'model.name\']"></gantt-table> -->\n                        <gantt-tree></gantt-tree>\n                        <gantt-groups></gantt-groups>\n                        <gantt-tooltips></gantt-tooltips>\n                        <gantt-bounds></gantt-bounds>\n                        <gantt-progress></gantt-progress>\n                        <gantt-sortable></gantt-sortable>\n                        <gantt-movable></gantt-movable>\n                        <gantt-draw-task></gantt-draw-task>\n                        <gantt-resize-sensor></gantt-resize-sensor>\n                    </div>\n                </div>\n            </div>\n        </div>\n    </div>\n</div>\n';
-},{}],43:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 'use strict';
-angular.module('simple.team.auth', []).service('AuthService', [
-  '$http', function($http) {
-    this.user;
-    this.loadUser = function() {
-      return $http.get('/api/users/me').success((function(_this) {
-        return function(data) {
-          return _this.user = data.user;
-        };
-      })(this));
-    };
-  }
-]);
+angular.module('simple.team.auth', []).service('AuthService', ['$http', function ($http) {
+  this.user;
+  this.loadUser = function () {
+    return $http.get('/api/users/me').success((function (_this) {
+      return function (data) {
+        return _this.user = data.user;
+      };
+    })(this));
+  };
+}]);
 
+// ---
+// generated by coffee-script 1.9.2
 
-},{}],44:[function(require,module,exports){
-angular.module('simple.team.bytes', []).filter('bytes', function() {
-  return function(bytes, precision) {
+},{}],38:[function(require,module,exports){
+'use strict';
+
+angular.module('simple.team.bytes', []).filter('bytes', function () {
+  return function (bytes, precision) {
     var number, units;
     if (isNaN(parseFloat(bytes)) || !isFinite(bytes)) {
       return '-';
@@ -42532,19 +42187,21 @@ angular.module('simple.team.bytes', []).filter('bytes', function() {
   };
 });
 
+// ---
+// generated by coffee-script 1.9.2
 
-},{}],45:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 'use strict';
-angular.module('simple.team.cardCacher', []).service('CardCacherService', function() {
+angular.module('simple.team.cardCacher', []).service('CardCacherService', function () {
   this.card = null;
   return {
-    set: (function(_this) {
-      return function(card) {
+    set: (function (_this) {
+      return function (card) {
         return _this.card = card;
       };
     })(this),
-    get: (function(_this) {
-      return function() {
+    get: (function (_this) {
+      return function () {
         var card;
         card = _this.card;
         _this.card = null;
@@ -42554,156 +42211,181 @@ angular.module('simple.team.cardCacher', []).service('CardCacherService', functi
   };
 });
 
+// ---
+// generated by coffee-script 1.9.2
 
-},{}],46:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 'use strict';
-var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-module.exports = function($state, $http, $rootScope, CardListFiltersService, CardCacherService) {
-  var CtrlFunc;
-  CtrlFunc = (function() {
-    function CtrlFunc($scope) {
-      this.appliedFilters = bind(this.appliedFilters, this);
-      this.authUser = $rootScope.authUser;
-      this.filters = {
-        tag: null,
-        assignedTo: null,
-        quick: null
-      };
-      this.stage = $scope.data;
-      this.searchInput = '';
-      $rootScope.$on('filters:update', (function(_this) {
-        return function(evt, data) {
-          return _this.filters = data;
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+module.exports = (function () {
+    function CardList() {
+        _classCallCheck(this, CardList);
+
+        this.scope = {
+            data: '='
         };
-      })(this));
-      $rootScope.$on('search:update', (function(_this) {
-        return function(evt, data) {
-          return _this.searchInput = data;
-        };
-      })(this));
+
+        this.controllerAs = 'ctrl';
     }
 
-    CtrlFunc.prototype.appliedFilters = function(card) {
-      return CardListFiltersService.check(this.filters, this.authUser, card);
-    };
+    _createClass(CardList, [{
+        key: 'controller',
+        value: function controller($state, $http, $rootScope, CardListFiltersService, CardCacherService) {
+            ctrl = this;
+            ctrl.appliedFilters = bind(this.appliedFilters, this);
+            ctrl.authUser = $rootScope.authUser;
+            ctrl.filters = {
+                tag: null,
+                assignedTo: null,
+                quick: null
+            };
+            ctrl.stage = $scope.data;
+            ctrl.searchInput = '';
 
-    return CtrlFunc;
+            $rootScope.$on('filters:update', function (evt, data) {
+                ctrl.filters = data;
+            });
 
-  })();
-  return {
-    scope: {
-      data: '='
-    },
-    controller: CtrlFunc,
-    controllerAs: 'ctrl'
-  };
-};
+            $rootScope.$on('search:update', function (evt, data) {
+                ctrl.searchInput = data;
+            });
 
+            ctrl.appliedFilters = function (card) {
+                CardListFiltersService.check(ctrl.filters, ctrl.authUser, card);
+            };
+        }
+    }]);
 
-},{}],47:[function(require,module,exports){
+    return CardList;
+})();
+
+},{}],41:[function(require,module,exports){
 'use strict';
-module.exports = function() {
-  var CtrlFunc;
-  CtrlFunc = (function() {
-    function CtrlFunc($scope) {
-      this.card = $scope.data;
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+module.exports = (function () {
+    function CardListItem() {
+        _classCallCheck(this, CardListItem);
+
+        this.scope = {
+            data: '='
+        };
+        this.controllerAs = 'ctrl';
+        this.template = require('./views/cardListItem.html');
     }
 
-    return CtrlFunc;
+    _createClass(CardListItem, [{
+        key: 'controller',
+        value: function controller($scope) {
+            this.card = $scope.data;
+        }
+    }]);
 
-  })();
-  return {
-    scope: {
-      data: '='
-    },
-    controller: CtrlFunc,
-    controllerAs: 'ctrl',
-    template: require('./views/cardListItem.html')
-  };
-};
+    return CardListItem;
+})();
 
-
-},{"./views/cardListItem.html":48}],48:[function(require,module,exports){
+},{"./views/cardListItem.html":42}],42:[function(require,module,exports){
 module.exports = '<div class="row">\n    <div class="col-sm-12">\n        {{ ctrl.card.name }}\n    </div>\n</div>\n<div class="row" style="margin-bottom: 7px;" ng-show="ctrl.card.impact || ctrl.card.tags.length > 0">\n    <div class="col-sm-12">\n        <span ng-repeat="tag in ctrl.card.tags" ng-show="ctrl.card.tags.length > 0">\n            <span class="label label-primary">{{ tag.name }}</span>\n        </span>\n    </div>\n</div>\n<div class="row text-center text-muted">\n    <div class="col-sm-5ths" title="This ctrl.card has a description.">\n        <span ng-show="ctrl.card.description">\n            <i class="glyphicon glyphicon-align-left"></i>\n        </span>\n    </div>\n    <div class="col-sm-5ths" title="{{ ctrl.card.users.length }} user(s) assigned to this ctrl.card">\n        <span ng-show="ctrl.card.users.length">\n            <i class="glyphicon glyphicon-user"></i> {{ ctrl.card.users.length }}\n        </span>\n    </div>\n    <div class="col-sm-5ths" title="{{ ctrl.card.subtasks.length }} subtask(s)">\n        <span ng-show="ctrl.card.subtasks.length">\n            <i class="glyphicon glyphicon-ok"></i> {{ ctrl.card.subtasks.length }}\n        </span>\n    </div>\n    <div class="col-sm-5ths" title="{{ ctrl.card.attachments.length }} attachment(s)">\n        <span ng-show="ctrl.card.attachments.length">\n            <i class="glyphicon glyphicon-download-alt"></i> {{ ctrl.card.attachments.length }}\n        </span>\n    </div>\n    <div class="col-sm-5ths" title="{{ ctrl.card.comments.length }} comment(s)">\n        <span ng-show="ctrl.card.comments.length">\n            <i class="glyphicon glyphicon-comment"></i> {{ ctrl.card.comments.length }}\n        </span>\n    </div>\n</div>\n<div class="progress" ng-show="ctrl.card.impact">\n    <div\n        class="progress-bar progress-bar-info"\n        style="width: {{ ctrl.card.impact }}%;"\n        title="Impact this ctrl.card has on the project"></div>\n</div>\n';
-},{}],49:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 'use strict';
-angular.module('simple.team.cardList', []).directive('cardList', require('./directives/cardList.directive.coffee')).directive('cardListItem', require('./directives/cardListItem.directive.coffee')).service('CardListFiltersService', require('./services/cardList.filters.service.coffee'));
 
+angular.module('simple.team.cardList', []);
 
-},{"./directives/cardList.directive.coffee":46,"./directives/cardListItem.directive.coffee":47,"./services/cardList.filters.service.coffee":50}],50:[function(require,module,exports){
+register('simple.team.cardList').directive('cardList', require('./directives/cardList.js')).directive('cardListItem', require('./directives/cardListItem.js')).service('CardListFiltersService', require('./services/cardList.filters.js'));
+
+},{"./directives/cardList.js":40,"./directives/cardListItem.js":41,"./services/cardList.filters.js":44}],44:[function(require,module,exports){
 'use strict';
-module.exports = function() {
-  var CardListFilters;
-  return CardListFilters = (function() {
-    function CardListFilters() {}
 
-    CardListFilters.check = function(filters, authUser, card) {
-      if (filters.tag !== null && _.findIndex(card.tags, {
-        id: filters.tag.id
-      }) === -1) {
-        return false;
-      }
-      if (filters.assignedTo === 'no one' && card.users.length > 0) {
-        return false;
-      }
-      if (_.isObject(filters.assignedTo) && _.findIndex(card.users, {
-        id: filters.assignedTo.id
-      }) === -1) {
-        return false;
-      }
-      if (filters.quick === 'Created by me' && card.user_id !== authUser.id) {
-        return false;
-      }
-      if (filters.quick === 'With subtasks' && card.subtasks && card.subtasks.length === 0) {
-        return false;
-      }
-      if (filters.quick === 'With impact' && !card.impact) {
-        return false;
-      }
-      if (filters.quick === 'With comments' && card.comments.length === 0) {
-        return false;
-      }
-      if (filters.quick === 'With files attached' && card.attachments && card.attachments.length === 0) {
-        return false;
-      }
-      if (filters.quick === 'Tasks blocked' && !card.blocked) {
-        return false;
-      }
-      if (filters.quick === 'Tasks unblocked' && card.blocked) {
-        return false;
-      }
-      return true;
-    };
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+module.exports = (function () {
+    function CardListFilters() {
+        _classCallCheck(this, CardListFilters);
+    }
+
+    _createClass(CardListFilters, [{
+        key: 'check',
+        value: function check(filters, authUser, card) {
+            if (filters.tag !== null && _.findIndex(card.tags, { id: filters.tag.id }) === -1) {
+                return false;
+            }
+
+            if (filters.assignedTo === 'no one' && card.users.length > 0) {
+                return false;
+            }
+
+            if (_.isObject(filters.assignedTo) && _.findIndex(card.users, { id: filters.assignedTo.id }) === -1) {
+                return false;
+            }
+
+            if (filters.quick === 'Created by me' && card.user_id !== authUser.id) {
+                return false;
+            }
+
+            if (filters.quick === 'With subtasks' && card.subtasks && card.subtasks.length === 0) {
+                return false;
+            }
+
+            if (filters.quick === 'With impact' && !card.impact) {
+                return false;
+            }
+
+            if (filters.quick === 'With comments' && card.comments.length === 0) {
+                return false;
+            }
+
+            if (filters.quick === 'With files attached' && card.attachments && card.attachments.length === 0) {
+                return false;
+            }
+
+            if (filters.quick === 'Tasks blocked' && !card.blocked) {
+                return false;
+            }
+
+            if (filters.quick === 'Tasks unblocked' && card.blocked) {
+                return false;
+            }
+
+            return true;
+        }
+    }]);
 
     return CardListFilters;
+})();
 
-  })();
-};
+},{}],45:[function(require,module,exports){
+'use strict';
 
+angular.module('simple.team.focusMe', []).directive('focusMe', ['$timeout', function ($timeout) {
+  return {
+    scope: {
+      trigger: '=focusMe'
+    },
+    link: function link(scope, element) {
+      return scope.$watch('trigger', function (value) {
+        if (value === true) {
+          return $timeout(function () {
+            return element[0].focus();
+          });
+        }
+      });
+    }
+  };
+}]);
 
-},{}],51:[function(require,module,exports){
-angular.module('simple.team.focusMe', []).directive('focusMe', [
-  '$timeout', function($timeout) {
-    return {
-      scope: {
-        trigger: '=focusMe'
-      },
-      link: function(scope, element) {
-        return scope.$watch('trigger', function(value) {
-          if (value === true) {
-            return $timeout(function() {
-              return element[0].focus();
-            });
-          }
-        });
-      }
-    };
-  }
-]);
+// ---
+// generated by coffee-script 1.9.2
 
-
-},{}],52:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 'use strict';
 
 angular.module('simple.team.mediaComment', []).factory('Parser', [function () {
@@ -42835,92 +42517,7 @@ angular.module('simple.team.mediaComment', []).factory('Parser', [function () {
 	};
 }]);
 
-},{}],53:[function(require,module,exports){
-'use strict';
-angular.module('simple.team.navbar', []).directive('navbar', function() {
-  return {
-    restrict: 'E',
-    template: require('./view.html'),
-    controllerAs: 'navCtrl',
-    controller: [
-      '$firebaseArray', '$firebaseObject', 'config', '$state', 'Auth', 'localStorageService', function($firebaseArray, $firebaseObject, config, $state, Auth, localStorageService) {
-        var init;
-        this.teams = [];
-        this.selectedTeamId = localStorageService.get('selectedTeamId');
-        this.authUser = null;
-        init = (function(_this) {
-          return function() {
-            return Auth.$onAuth(function(authData) {
-              _this.authData = authData;
-              return _this.loadTeams();
-            });
-          };
-        })(this);
-        this.loadTeams = (function(_this) {
-          return function() {
-            var userTeamsRef;
-            userTeamsRef = new Firebase(config.FIREBASE_URL + 'users/' + _this.authData.uid + '/teams');
-            _this.userTeams = $firebaseArray(userTeamsRef);
-            return _this.userTeams.$loaded(function() {
-              return _.each(_this.userTeams, function(userTeam) {
-                var team, teamRef;
-                teamRef = new Firebase(config.FIREBASE_URL + 'teams/' + userTeam.$id);
-                team = $firebaseObject(teamRef);
-                return team.$loaded(function() {
-                  _this.selectedTeam = team.$id === _this.selectedTeamId ? team : _this.selectedTeam;
-                  return _this.teams.push(team);
-                });
-              });
-            });
-          };
-        })(this);
-        this.setCurrentTeam = (function(_this) {
-          return function(team) {
-            var user, userRef;
-            _this.selectedTeam = team;
-            localStorageService.set('selectedTeamId', team.$id);
-            userRef = new Firebase(config.FIREBASE_URL + 'users/' + _this.authData.uid);
-            user = $firebaseObject(userRef);
-            return user.$loaded(function() {
-              user.team = team.$id;
-              user.$save(user);
-              return $state.go($state.current, {}, {
-                reload: true
-              });
-            });
-          };
-        })(this);
-        this.deleteTeam = (function(_this) {
-          return function(team) {
-            if (!confirm('Delete this team and all it\'s data?')) {
-              return;
-            }
-            return _this.teams.$remove(team);
-          };
-        })(this);
-        this.createTeam = function() {
-          var teamName, teams, teamsRef, users;
-          teamName = prompt('New team name?');
-          users = {};
-          users[this.authData.uid] = true;
-          teamsRef = new Firebase(config.FIREBASE_URL + 'teams');
-          teams = $firebaseArray(teamsRef);
-          return teams.$add({
-            user: this.authData.uid,
-            name: teamName,
-            users: users
-          });
-        };
-        init();
-      }
-    ]
-  };
-});
-
-
-},{"./view.html":54}],54:[function(require,module,exports){
-module.exports = '<nav class="navbar navbar-default navbar-static-top">\n    <div class="container-fluid">\n        <ul class="nav navbar-nav">\n            <li class="dropdown">\n                <a href="#" class="dropdown-toggle" data-toggle="dropdown">{{ navCtrl.selectedTeam.name || \'Select a team...\' }} <span class="caret"></span></a>\n                <ul class="dropdown-menu">\n                    <li ng-repeat="team in navCtrl.teams" ng-click="navCtrl.setCurrentTeam(team)">\n                        <a href="#">{{ team.name }}</a>\n                    </li>\n                </ul>\n            </li>\n        </ul>\n        <ul class="nav navbar-nav navbar-right">\n            <li class="dropdown">\n                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Menu<span class="caret"></span></a>\n                <ul class="dropdown-menu">\n                    <li><a ui-sref="simple.settings.account">Account</a></li>\n                    <li><a ui-sref="simple.settings.teams">Teams</a></li>\n                    <li class="divider"></li>\n                    <li><a ui-sref="auth.logout">Sign Out</a></li>\n                </ul>\n            </li>\n        </ul>\n    </div>\n</nav>\n';
-},{}],55:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 "use strict";
 
 angular.module('simple.team.ngBindHtmlUnsafe', []).directive('ngBindHtmlUnsafe', [function () {
@@ -42932,7 +42529,7 @@ angular.module('simple.team.ngBindHtmlUnsafe', []).directive('ngBindHtmlUnsafe',
     };
 }]);
 
-},{}],56:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 'use strict';
 
 angular.module('simple.team.redactor', [])
@@ -42977,7 +42574,7 @@ angular.module('simple.team.redactor', [])
 	};
 }]);
 
-},{}],57:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 /**
  * Angular Selectize2
  * https://github.com/machineboy2045/angular-selectize
@@ -43087,18 +42684,7 @@ angular.module('selectize', []).value('selectizeConfig', {}).directive("selectiz
   };
 }]);
 
-},{}],58:[function(require,module,exports){
-angular.module('simple.team.sidebar', []).directive('sidebar', function() {
-  return {
-    restrict: 'E',
-    template: require('./view.html')
-  };
-});
-
-
-},{"./view.html":59}],59:[function(require,module,exports){
-module.exports = '<div class="wrapper">\n    <div class="sidebar">\n        <div class="title">simple.team</div>\n        <ul class="side-nav">\n            <li><a ui-sref="simple.projects.kanban">Kanban</a></li>\n            <li><a ui-sref="simple.projects.list">Projects List</a></li>\n            <!-- <li><a ui-sref="chat">Chat</a></li>\n            <li><a ui-sref="timeline">Timeline</a></li>\n            <li><a ui-sref="daily-summary">Daily Summary</a></li>\n            <li><a ui-sref="notes.list">Notes</a></li>\n            <li><a ui-sref="one-use-notes">Secure Notes</a></li>\n            <li><a ui-sref="designer">Designer</a></li>\n            <li><a ui-sref="settings.teams">Settings</a></li> -->\n        </ul>\n    </div>\n</div>\n';
-},{}],60:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 'use strict';
 
 angular.module('simple.team.strings', [])
@@ -43239,18 +42825,18 @@ angular.module('simple.team.strings', [])
 	};
 }]);
 
-},{}],61:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 'use strict';
-angular.module('simple.team.tagData', []).service('TagDataService', [
-  '$http', function($http) {
-    this.loadTags = function() {
-      return $http.get('/api/tags');
-    };
-  }
-]);
+angular.module('simple.team.tagData', []).service('TagDataService', ['$http', function ($http) {
+  this.loadTags = function () {
+    return $http.get('/api/tags');
+  };
+}]);
 
+// ---
+// generated by coffee-script 1.9.2
 
-},{}],62:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 'use strict';
 
 angular.module('simple.team.time', []).filter('moment', [function () {
@@ -43318,18 +42904,18 @@ angular.module('simple.team.time', []).filter('moment', [function () {
 	};
 }]);
 
-},{}],63:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 'use strict';
-angular.module('simple.team.userData', []).service('UserDataService', [
-  '$http', function($http) {
-    this.loadUsers = function() {
-      return $http.get('/api/team/users');
-    };
-  }
-]);
+angular.module('simple.team.userData', []).service('UserDataService', ['$http', function ($http) {
+  this.loadUsers = function () {
+    return $http.get('/api/team/users');
+  };
+}]);
 
+// ---
+// generated by coffee-script 1.9.2
 
-},{}],64:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 'use strict';
 
 module.exports = angular.module('simple.team.www', []).factory('$www', ['$http', function ($http) {
@@ -43384,77 +42970,56 @@ module.exports = angular.module('simple.team.www', []).factory('$www', ['$http',
 	return self;
 }]);
 
-},{}],65:[function(require,module,exports){
-angular.module('simple.team.routes', []).config([
-  '$stateProvider', function($stateProvider) {
+},{}],55:[function(require,module,exports){
+'use strict';
+
+angular.module('simple.team.routes', []).config(['$stateProvider', function ($stateProvider) {
     return $stateProvider.state('projects', {
-      url: '/projects',
-      template: require('./layouts/projects.html'),
-      controller: require('./controllers/projects.ctrl.coffee'),
-      controllerAs: 'ctrl'
+        url: '/projects',
+        template: require('./layouts/projects.html'),
+        controller: require('./controllers/projects.ctrl.js'),
+        controllerAs: 'ctrl'
     }).state('projects.card', {
-      url: '/card/?cardId',
-      template: require('./layouts/card.html'),
-      controller: require('./controllers/card.ctrl.coffee'),
-      controllerAs: 'ctrl'
-    }).state('tasklist', {
-      url: '/tasklist',
-      template: require('./layouts/tasklist.html'),
-      controller: require('./controllers/tasklist.ctrl.coffee'),
-      controllerAs: 'ctrl'
-    }).state('tasklist.card', {
-      url: '/card/?cardId',
-      template: require('./layouts/card.html'),
-      controller: require('./controllers/card.ctrl.coffee'),
-      controllerAs: 'ctrl'
-    }).state('dailySummary', {
-      url: '/dailySummary',
-      template: require('./layouts/dailySummary.html'),
-      controller: require('./controllers/dailySummary.ctrl.coffee'),
-      controllerAs: 'ctrl'
-    }).state('timeline', {
-      url: '/timeline',
-      template: require('./layouts/timeline.html'),
-      controller: require('./controllers/timeline.ctrl.coffee'),
-      controllerAs: 'ctrl'
+        url: '/card/?cardId',
+        template: require('./layouts/card.html'),
+        controller: require('./controllers/card.ctrl.js'),
+        controllerAs: 'ctrl'
     }).state('settings', {
-      url: '/settings',
-      template: require('./layouts/settings.html'),
-      controller: require('./controllers/settings.ctrl.coffee'),
-      controllerAs: 'ctrl'
+        url: '/settings',
+        template: require('./layouts/settings.html'),
+        controller: require('./controllers/settings.ctrl.js'),
+        controllerAs: 'ctrl'
     }).state('settings.account', {
-      url: '/account',
-      template: require('./layouts/settings.account.html'),
-      controller: require('./controllers/settings.account.ctrl.coffee'),
-      controllerAs: 'ctrl'
+        url: '/account',
+        template: require('./layouts/settings.account.html'),
+        controller: require('./controllers/settings.account.ctrl.js'),
+        controllerAs: 'ctrl'
     }).state('settings.teams', {
-      url: '/teams',
-      template: require('./layouts/settings.teams.html'),
-      controller: require('./controllers/settings.teams.ctrl.coffee'),
-      controllerAs: 'ctrl'
+        url: '/teams',
+        template: require('./layouts/settings.teams.html'),
+        controller: require('./controllers/settings.teams.ctrl.js'),
+        controllerAs: 'ctrl'
     }).state('conversations', {
-      url: '/conversations',
-      template: require('./layouts/conversations.html'),
-      controller: require('./controllers/conversations.ctrl.coffee'),
-      controllerAs: 'ctrl'
+        url: '/conversations',
+        template: require('./layouts/conversations.html'),
+        controller: require('./controllers/conversations.ctrl.js'),
+        controllerAs: 'ctrl'
     }).state('conversations.list', {
-      url: '/list?type',
-      template: require('./layouts/conversations.list.html'),
-      controller: require('./controllers/conversations.list.ctrl.coffee'),
-      controllerAs: 'ctrl'
+        url: '/list?type',
+        template: require('./layouts/conversations.list.html'),
+        controller: require('./controllers/conversations.list.ctrl.js'),
+        controllerAs: 'ctrl'
     }).state('conversations.create', {
-      url: '/create',
-      template: require('./layouts/conversations.create.html'),
-      controller: require('./controllers/conversations.create.ctrl.coffee'),
-      controllerAs: 'ctrl'
+        url: '/create',
+        template: require('./layouts/conversations.create.html'),
+        controller: require('./controllers/conversations.create.ctrl.js'),
+        controllerAs: 'ctrl'
     }).state('conversations.view', {
-      url: '/view?topicId',
-      template: require('./layouts/conversations.view.html'),
-      controller: require('./controllers/conversations.view.ctrl.coffee'),
-      controllerAs: 'ctrl'
+        url: '/view?topicId',
+        template: require('./layouts/conversations.view.html'),
+        controller: require('./controllers/conversations.view.ctrl.js'),
+        controllerAs: 'ctrl'
     });
-  }
-]);
+}]);
 
-
-},{"./controllers/card.ctrl.coffee":13,"./controllers/conversations.create.ctrl.coffee":15,"./controllers/conversations.ctrl.coffee":16,"./controllers/conversations.list.ctrl.coffee":17,"./controllers/conversations.view.ctrl.coffee":18,"./controllers/dailySummary.ctrl.coffee":19,"./controllers/projects.ctrl.coffee":20,"./controllers/settings.account.ctrl.coffee":21,"./controllers/settings.ctrl.coffee":22,"./controllers/settings.teams.ctrl.coffee":23,"./controllers/tasklist.ctrl.coffee":26,"./controllers/timeline.ctrl.coffee":27,"./layouts/card.html":28,"./layouts/conversations.create.html":30,"./layouts/conversations.html":31,"./layouts/conversations.list.html":32,"./layouts/conversations.view.html":33,"./layouts/dailySummary.html":34,"./layouts/projects.html":35,"./layouts/settings.account.html":36,"./layouts/settings.html":37,"./layouts/settings.teams.html":38,"./layouts/tasklist.html":41,"./layouts/timeline.html":42}]},{},[12]);
+},{"./controllers/card.ctrl.js":13,"./controllers/conversations.create.ctrl.js":15,"./controllers/conversations.ctrl.js":16,"./controllers/conversations.list.ctrl.js":17,"./controllers/conversations.view.ctrl.js":18,"./controllers/projects.ctrl.js":19,"./controllers/settings.account.ctrl.js":20,"./controllers/settings.ctrl.js":21,"./controllers/settings.teams.ctrl.js":22,"./layouts/card.html":25,"./layouts/conversations.create.html":27,"./layouts/conversations.html":28,"./layouts/conversations.list.html":29,"./layouts/conversations.view.html":30,"./layouts/projects.html":31,"./layouts/settings.account.html":32,"./layouts/settings.html":33,"./layouts/settings.teams.html":34}]},{},[12]);

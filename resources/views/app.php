@@ -115,6 +115,7 @@
             teams: <?php echo json_encode(Auth::user()->teams) ?>
         }
     </script>
+    <script src="/js/register.js"></script>
     <script src="/js/app.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/js/standalone/selectize.min.js"></script>
     <?php if ($app->environment('production')): ?>
