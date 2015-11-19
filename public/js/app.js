@@ -41050,7 +41050,7 @@ angular.module('simple.team', ['ngFileUpload', 'ui.router', 'ui.sortable', 'ui.g
     };
 
     ctrl.setCurrentTeam = function (team) {
-        previousTeam = angular.copy(ctrl.authUser.team);
+        var previousTeam = angular.copy(ctrl.authUser.team);
         ctrl.authUser.team = team;
         $http.put('/api/me/team', {
             team_id: team.id
