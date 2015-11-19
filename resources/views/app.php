@@ -37,7 +37,7 @@
 <body class="simple-page">
     <nav class="navbar navbar-default navbar-static-top">
         <div class="container-fluid">
-            <a ui-sref="projects" class="navbar-brand">{{ appCtrl.authUser.email }}</a>
+            <a ui-sref="projects" class="navbar-brand">simple.team</a>
             <ul class="nav navbar-nav navbar-right">
                 <li ui-sref-active="active" ui-sref="projects" class="pointer">
                     <a>Projects</a>
@@ -70,7 +70,7 @@
                 </li>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        <span class="fa fa-bars"></span>
+                        {{ appCtrl.authUser.email }} <span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu">
                         <li><a ui-sref="settings.account">Account</a></li>
