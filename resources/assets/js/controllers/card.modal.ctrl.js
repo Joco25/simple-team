@@ -48,7 +48,7 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
         tags: tags,
         card_id: _this.selectedCard.id
       }).success(function() {
-        return $rootScope.$emit('projects:reload')
+        $rootScope.$emit('projects:reload')
       })
     }
   })(this)
@@ -58,7 +58,7 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
         user_ids: userIds,
         card_id: _this.selectedCard.id
       }).success(function() {
-        return $rootScope.$emit('projects:reload')
+        $rootScope.$emit('projects:reload')
       })
     }
   })(this)
@@ -75,7 +75,7 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
         _this.selectedCard.tagNames = _.pluck(data.card.tags, 'name')
         _this.selectedCard.userIds = _.pluck(data.card.users, 'id')
         _this.selectedCard.impact = _this.selectedCard.impact || 0
-        return $rootScope.$emit('projects:reload')
+        $rootScope.$emit('projects:reload')
       })
     }
   })(this)
@@ -120,7 +120,7 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
         blocked: _this.selectedCard.blocked,
         impact: _this.selectedCard.impact
       }).success(function() {
-        return $rootScope.$emit('projects:reload')
+        $rootScope.$emit('projects:reload')
       })
     }
   })(this)
@@ -233,7 +233,7 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
         return
       }
       $http["delete"]('/api/comments/' + comment.id).success(function() {
-        return $rootScope.$emit('projects:reload')
+        $rootScope.$emit('projects:reload')
       })
       return _.remove(_this.selectedCard.comments, comment)
     }

@@ -36,7 +36,7 @@ var ProjectsCtrl = function($http, $state, $rootScope, $modal, CardCacherService
     })
 
     this.openEditCard = (card) => {
-        this.CardCacherService.set(card)
+        CardCacherService.set(card)
         $state.go('projects.card', {
             cardId: card.id
         })
@@ -67,21 +67,21 @@ var ProjectsCtrl = function($http, $state, $rootScope, $modal, CardCacherService
 
     this.selectAssignedToFilter = (newFilter) => {
         this.filters.assignedTo = newFilter
-        this.$rootScope.$broadcast('filters:update', this.filters)
+        $rootScope.$broadcast('filters:update', this.filters)
     }
 
     this.selectTagFilter = (newFilter) => {
         this.filters.tag = newFilter
-        this.$rootScope.$broadcast('filters:update', this.filters)
+        $rootScope.$broadcast('filters:update', this.filters)
     }
 
     this.selectQuickFilter = (newFilter) => {
         this.filters.quick = newFilter
-        this.$rootScope.$broadcast('filters:update', this.filters)
+        $rootScope.$broadcast('filters:update', this.filters)
     }
 
     this.updateSearchInput = () => {
-        this.$rootScope.$broadcast('search:update', this.searchInput)
+        $rootScope.$broadcast('search:update', this.searchInput)
     }
 
     this.clearSearchInput = () => {
