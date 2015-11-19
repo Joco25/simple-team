@@ -115,9 +115,9 @@ class ApiTopicController extends Controller
 			->get();
 
 		_::each($d['topics'], function($topic) {
-			$topic->is_starred = $topic->is_starred(Auth::user()->id);
+			$topic->is_starred = $topic->isStarred(Auth::user()->id);
 			$topic->users = $topic->users();
-			$topic->is_unread = $topic->is_unread();
+			$topic->is_unread = $topic->isUnread();
 			// $topic->created_at = from_utc($topic->created_at, $account->timezone);
 			// $topic->updated_at = from_utc($topic->updated_at, $account->timezone);
 		});
