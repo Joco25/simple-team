@@ -24,6 +24,7 @@ require('./modules/time')
 require('./modules/www')
 require('./modules/cardList')
 require('./modules/cardCacher')
+require('./modules/uiSrefActiveIf')
 
 angular
     .module('simple.team', [
@@ -40,6 +41,7 @@ angular
         'monospaced.elastic',
         'textAngular',
 
+        'simple.team.uiSrefActiveIf',
         'simple.team.routes',
         'simple.team.focusMe',
         'simple.team.ngBindHtmlUnsafe',

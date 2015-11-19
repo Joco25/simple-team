@@ -39,27 +39,12 @@
         <div class="container-fluid">
             <a ui-sref="projects" class="navbar-brand">simple.team</a>
             <ul class="nav navbar-nav navbar-right">
-                <li ui-sref-active="active" ui-sref="projects" class="pointer">
-                    <a>Projects</a>
+                <li ui-sref-active-if="projects">
+                    <a ui-sref="projects">Projects</a>
                 </li>
-                <li ui-sref-active="active" ui-sref="conversations.list" class="pointer">
-                    <a>Conversations</a>
+                <li ui-sref-active-if="conversations">
+                    <a ui-sref="conversations.list">Conversations</a>
                 </li>
-
-                <!-- <li ui-sref-active="active" ui-sref="tasklist" class="pointer">
-                    <a>Tasklist</a>
-                </li> -->
-                <!-- <li ng-class="{ active: appCtrl.state.current.name.indexOf('timeline') > -1 }">
-                    <a ui-sref="timeline">Timeline</a>
-                </li>
-                <li ng-class="{ active: appCtrl.state.current.name.indexOf('dailySummary') > -1 }">
-                    <a ui-sref="dailySummary">Daily Summary</a>
-                </li> -->
-                <!-- <li><a ui-sref="chat">Chat</a></li>
-                <li><a ui-sref="notes">Notes</a></li>
-                <li><a ui-sref="one-use-notes">View Once Notes</a></li>
-                <li><a ui-sref="designer">Designer</a></li> -->
-
                 <li class="dropdown">
                     <a class="pointer dropdown-toggle" data-toggle="dropdown">{{ appCtrl.authUser.team.name || 'Select a team...' }} <span class="caret"></span></a>
                     <ul class="dropdown-menu">
