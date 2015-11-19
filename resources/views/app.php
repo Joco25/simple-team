@@ -23,7 +23,6 @@
     <link href="//cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/css/selectize.default.min.css" rel="stylesheet" type='text/css'>
     <link href="//cdnjs.cloudflare.com/ajax/libs/textAngular/1.4.6/textAngular.css" rel="stylesheet" type='text/css'>
 
-
     <!-- Custom CSS -->
 	<link href="/css/app.css" rel="stylesheet" type="text/css">
 

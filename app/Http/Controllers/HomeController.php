@@ -15,7 +15,7 @@ class HomeController extends Controller
         {
             return \Redirect::to('home');
         }
-        
+
         return view('welcome');
     }
 }
