@@ -98,7 +98,7 @@ var ProjectsCtrl = function($http, $state, $rootScope, $modal, CardCacherService
     }
 
     this.openSortableProjects = () => {
-        this.$modal.open({
+        $modal.open({
             template: require('../layouts/sortableProjects.modal.html'),
             controller: require('./sortableProjects.modal.ctrl.js'),
             controllerAs: 'ctrl',

@@ -41785,7 +41785,7 @@ var ProjectsCtrl = function ProjectsCtrl($http, $state, $rootScope, $modal, Card
     };
 
     this.openSortableProjects = function () {
-        _this.$modal.open({
+        $modal.open({
             template: require('../layouts/sortableProjects.modal.html'),
             controller: require('./sortableProjects.modal.ctrl.js'),
             controllerAs: 'ctrl',
