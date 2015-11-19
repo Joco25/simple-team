@@ -2,24 +2,24 @@ angular.module('simple.team.time', [])
 
 	.filter('moment', [function() {
 		return function (value, format) {
-			return moment(value).format(format);
-		};
+			return moment(value).format(format)
+		}
 	}])
 
 	.filter('fromNow', [function() {
 		return function(date) {
-			return moment(date).fromNow();
-		};
+			return moment(date).fromNow()
+		}
 	}])
 
 	.filter('smallFromNow', [function() {
 		return function(input, nowTime, p_allowFuture) {
-			nowTime = (new Date(nowTime)).getTime() || (new Date()).getTime();
+			nowTime = (new Date(nowTime)).getTime() || (new Date()).getTime()
 
 			var substitute = function (stringOrFunction, number, strings) {
-					var string = $.isFunction(stringOrFunction) ? stringOrFunction(number, dateDifference) : stringOrFunction;
-					var value = (strings.numbers && strings.numbers[number]) || number;
-					return string.replace(/%d/i, value);
+					var string = $.isFunction(stringOrFunction) ? stringOrFunction(number, dateDifference) : stringOrFunction
+					var value = (strings.numbers && strings.numbers[number]) || number
+					return string.replace(/%d/i, value)
 				},
 				date = (new Date(input)).getTime(),
 				//refreshMillis= 6e4, //A minute
@@ -50,14 +50,14 @@ angular.module('simple.team.time', [])
 				years = days / 365,
 				separator = strings.wordSeparator === undefined ?  " " : strings.wordSeparator,
 
-				// var strings = this.settings.strings;
+				// var strings = this.settings.strings
 				prefix = strings.prefixAgo,
-				suffix = strings.suffixAgo;
+				suffix = strings.suffixAgo
 
 			if (allowFuture) {
 				if (dateDifference < 0) {
-					prefix = strings.prefixFromNow;
-					suffix = strings.suffixFromNow;
+					prefix = strings.prefixFromNow
+					suffix = strings.suffixFromNow
 				}
 			}
 
@@ -71,8 +71,8 @@ angular.module('simple.team.time', [])
 			days < 45 && substitute(strings.month, 1, strings) ||
 			days < 365 && substitute(strings.months, Math.round(days / 30), strings) ||
 			years < 1.5 && substitute(strings.year, 1, strings) ||
-			substitute(strings.years, Math.round(years), strings);
+			substitute(strings.years, Math.round(years), strings)
 
-			return $.trim([prefix, words, suffix].join(separator));
-		};
-	}]);
+			return $.trim([prefix, words, suffix].join(separator))
+		}
+	}])

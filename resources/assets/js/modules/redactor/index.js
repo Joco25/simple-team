@@ -7,7 +7,7 @@ angular.module('simple.team.redactor', [])
 			require: 'ngModel',
 			link: function ($scope, element, attrs, controller) {
 				var instance,
-					initialised = false;
+					initialised = false
 
 				// redactor
 				instance = element.redactor({
@@ -19,23 +19,23 @@ angular.module('simple.team.redactor', [])
 						// view -> model
 						if (initialised && controller.$viewValue !== html) {
 							$timeout(function () {
-								controller.$setViewValue(html);
-							});
+								controller.$setViewValue(html)
+							})
 						}
 					}
-				}).redactor('getObject');
+				}).redactor('getObject')
 
 				// model -> view
 				controller.$render = function () {
-					instance.set(controller.$viewValue || "");
-					initialised = true;
-				};
+					instance.set(controller.$viewValue || "")
+					initialised = true
+				}
 
 				// destroy
 				$scope.$on('$destroy', function () {
-					instance.destroy();
-					instance = null;
-				});
+					instance.destroy()
+					instance = null
+				})
 			}
-		};
-	}]);
+		}
+	}])

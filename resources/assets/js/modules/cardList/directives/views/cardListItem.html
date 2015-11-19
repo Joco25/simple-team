@@ -3,7 +3,7 @@
         {{ ctrl.card.name }}
     </div>
 </div>
-<div class="row" style="margin-bottom: 7px;" ng-show="ctrl.card.impact || ctrl.card.tags.length > 0">
+<div class="row" style="margin-bottom: 7px" ng-show="ctrl.card.impact || ctrl.card.tags.length > 0">
     <div class="col-sm-12">
         <span ng-repeat="tag in ctrl.card.tags" ng-show="ctrl.card.tags.length > 0">
             <span class="label label-primary">{{ tag.name }}</span>
@@ -40,6 +40,6 @@
 <div class="progress" ng-show="ctrl.card.impact">
     <div
         class="progress-bar progress-bar-info"
-        style="width: {{ ctrl.card.impact }}%;"
+        style="width: {{ ctrl.card.impact }}%"
         title="Impact this ctrl.card has on the project"></div>
 </div>

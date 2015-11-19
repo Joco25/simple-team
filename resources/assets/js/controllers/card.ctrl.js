@@ -1,14 +1,14 @@
-'use strict';
+'use strict'
 module.exports = function($state, $stateParams, $modal) {
-  var cardId, init;
-  cardId = $stateParams.cardId;
+  var cardId, init
+  cardId = $stateParams.cardId
   init = (function(_this) {
     return function() {
-      return _this.openModal();
-    };
-  })(this);
+      return _this.openModal()
+    }
+  })(this)
   this.openModal = function(size) {
-    var modalInstance;
+    var modalInstance
     modalInstance = $modal.open({
       template: require('../layouts/card.modal.html'),
       controller: require('./card.modal.ctrl.js'),
@@ -16,25 +16,25 @@ module.exports = function($state, $stateParams, $modal) {
       size: 'lg',
       resolve: {
         cardId: function() {
-          return cardId;
+          return cardId
         }
       }
-    });
+    })
     return modalInstance.result.then((function(_this) {
       return function(selectedItem) {
-        return _this.closeEditCard();
-      };
+        return _this.closeEditCard()
+      }
     })(this), (function(_this) {
       return function() {
-        return _this.closeEditCard();
-      };
-    })(this));
-  };
+        return _this.closeEditCard()
+      }
+    })(this))
+  }
   this.closeEditCard = function() {
     if ($state.current.name.indexOf('projects') > -1) {
-      return $state.go('projects');
+      return $state.go('projects')
     }
-    return $state.go('tasklist');
-  };
-  init();
-};
+    return $state.go('tasklist')
+  }
+  init()
+}

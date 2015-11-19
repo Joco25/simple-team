@@ -1,45 +1,45 @@
 angular.module('simple.team.youtube', [])
 
 	.service('Youtube', [function() {
-		var regex = /(?:https?:\/{2})?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&]+)/;
+		var regex = /(?:https?:\/{2})?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&]+)/
 
 		return {
 			regex: function() {
-				return regex;
+				return regex
 			}
-		};
+		}
 	}])
 
 	.filter('youtubeIframe', ['$filter', 'Youtube', function($filter, Youtube){
 		return function (value) {
 			if (!value) {
-				return value;
+				return value
 			}
 
-			var videoid = value.match(Youtube.regex());
+			var videoid = value.match(Youtube.regex())
 
 			if (videoid === null) {
-				return "";
+				return ""
 			}
 
-			return "//www.youtube.com/embed/" + videoid[1];
-		};
+			return "//www.youtube.com/embed/" + videoid[1]
+		}
 	}])
 
 	.filter('youtubeImage', ['$filter', 'Youtube', function($filter, Youtube){
 		return function (value, quality) {
-			quality = quality || 'default';
+			quality = quality || 'default'
 
 			if (!value) {
-				return value;
+				return value
 			}
 
-			var videoid = value.match(Youtube.regex());
+			var videoid = value.match(Youtube.regex())
 
 			if (videoid === null) {
-				return "";
+				return ""
 			}
 
-			return "https://img.youtube.com/vi/" + videoid[1] + "/" + quality + ".jpg";
-		};
-	}]);
+			return "https://img.youtube.com/vi/" + videoid[1] + "/" + quality + ".jpg"
+		}
+	}])

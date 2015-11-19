@@ -70,7 +70,7 @@
                 </li>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        {{ appCtrl.authUser.email }} <span class="caret"></span>
+                        <i class="fa fa-bars"></i>
                     </a>
                     <ul class="dropdown-menu">
                         <li><a ui-sref="settings.account">Account</a></li>

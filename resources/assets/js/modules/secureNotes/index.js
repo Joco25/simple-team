@@ -34,7 +34,7 @@ module.exports = {
                 if (data.success !== true) {
                     alert('Secure note was not deleted.')
                 }
-            });
+            })
 
             this.secureNotes.$remove(secureNote)
         },

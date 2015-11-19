@@ -7,18 +7,18 @@ angular.module('simple.team.strings', [])
 	.filter('titleCase', function() {
 		var titleCaseFilter = function(input) {
 			if (!input) {
-				return;
+				return
 			}
 
-			var words = input.split(' ');
+			var words = input.split(' ')
 			for (var i = 0; i < words.length; i++) {
-				words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1);
+				words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1)
 			}
 
-			return words.join(' ');
-		};
+			return words.join(' ')
+		}
 
-		return titleCaseFilter;
+		return titleCaseFilter
 	})
 
 
@@ -29,14 +29,14 @@ angular.module('simple.team.strings', [])
 
 	.filter('lowerCase', function() {
 		var titleCaseFilter = function(input) {
-			var words = input.split(' ');
+			var words = input.split(' ')
 			for (var i = 0; i < words.length; i++) {
-				words[i] = words[i].charAt(0).toLowerCase() + words[i].slice(1);
+				words[i] = words[i].charAt(0).toLowerCase() + words[i].slice(1)
 			}
 
-			return words.join(' ');
-		};
-		return titleCaseFilter;
+			return words.join(' ')
+		}
+		return titleCaseFilter
 	})
 
 
@@ -48,13 +48,13 @@ angular.module('simple.team.strings', [])
 	.filter('nl2br', [function(){
 		return function (value) {
 			if (!value) {
-				return value;
+				return value
 			}
 
-			value = value + '';
+			value = value + ''
 
-			return value.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br>$2');
-		};
+			return value.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br>$2')
+		}
 	}])
 
 
@@ -71,7 +71,7 @@ angular.module('simple.team.strings', [])
 	 * @return string
 	 *
 	 * Usage
-	 * var myText = "This is an example.";
+	 * var myText = "This is an example."
 	 *
 	 * {{myText|Truncate}}
 	 * {{myText|Truncate:5}}
@@ -85,23 +85,23 @@ angular.module('simple.team.strings', [])
 	.filter('truncate', function () {
 		return function (text, length, end) {
 			if (isNaN(length)) {
-				length = 10;
+				length = 10
 			}
 
 			if (end === undefined) {
-				end = "...";
+				end = "..."
 			}
 
 			if (!text) {
-				return text;
+				return text
 			}
 
 			if (text.length <= length || text.length - end.length <= length) {
-				return text;
+				return text
 			} else {
-				return String(text).substring(0, length-end.length) + end;
+				return String(text).substring(0, length-end.length) + end
 			}
-		};
+		}
 	})
 
 
@@ -111,7 +111,7 @@ angular.module('simple.team.strings', [])
 	// --------------------------------------------------
 
 	.filter('encodeURIComponent', function() {
-		return window.encodeURIComponent;
+		return window.encodeURIComponent
 	})
 
 
@@ -127,13 +127,13 @@ angular.module('simple.team.strings', [])
 			link: function(scope, element, attrs) {
 				scope.$watch(attrs.ngModel, function(value) {
 					if (!value) {
-						return;
+						return
 					}
 
-					$parse(attrs.ngModel).assign(scope, value.toLowerCase().replace(/[\W\s]/g, '-'));
-				});
+					$parse(attrs.ngModel).assign(scope, value.toLowerCase().replace(/[\W\s]/g, '-'))
+				})
 			}
-		};
+		}
 	}])
 
 
@@ -143,6 +143,6 @@ angular.module('simple.team.strings', [])
 
 	.filter('stripHtml', [function () {
 		return function(text) {
-			return String(text).replace(/<(?:.|\n)*?>/gm, '');
-		};
-	}]);
+			return String(text).replace(/<(?:.|\n)*?>/gm, '')
+		}
+	}])
