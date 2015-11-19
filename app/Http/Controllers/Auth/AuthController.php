@@ -77,7 +77,8 @@ class AuthController extends Controller
         $project = Project::create([
             'name' => 'My First Project',
             'team_id' => $team->id,
-            'user_id' => $user->id
+            'user_id' => $user->id,
+            'priority' => 0
         ]);
 
         $stage = Stage::create([

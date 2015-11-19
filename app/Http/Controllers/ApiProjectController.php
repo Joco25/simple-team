@@ -56,11 +56,12 @@ class ApiProjectController extends Controller
     {
         $stages = Input::get('stages');
 
+        $priority = is_null(Auth::user()->team) ? 0 : count(Auth::user()->team->projects);
         $project = Project::create([
             'user_id' => Auth::user()->id,
             'team_id' => Auth::user()->team_id,
             'name' => Input::get('name'),
-            'priority' => count(Auth::user()->team->projects)
+            'priority' => $priority
         ]);
 
         foreach ($stages as $key => $stage)
