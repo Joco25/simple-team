@@ -51,6 +51,9 @@ button.close {
   position: relative;
   z-index: 2; }
 
+.text-orange {
+  color: gold; }
+
 .simple-page {
   background: #F1F1F1;
   color: #212121;

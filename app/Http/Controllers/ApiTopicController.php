@@ -236,13 +236,13 @@ class ApiTopicController extends Controller
 			abort("Could not find topic.");
 		}
 
-		// $topic->is_starred = $topic->is_starred(Auth::user()->id);
+		$topic->is_starred = $topic->isStarred(Auth::user()->id);
 		// $topic->created_at = from_utc($topic->created_at, $account->timezone);
 		// $topic->updated_at = from_utc($topic->updated_at, $account->timezone);
 
-		// _::each($topic->posts, function($post) {
-		// 	$post->is_liked = $post->is_liked(Auth::user()->id);
-		// });
+		_::each($topic->posts, function($post) {
+			$post->is_liked = $post->isLiked(Auth::user()->id);
+		});
 
 		return response()->json([
 			'topic' => $topic
