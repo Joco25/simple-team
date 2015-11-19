@@ -41488,9 +41488,9 @@ module.exports = function ($stateParams, $www) {
             take: 50,
             page: _this.filters.page
         }).success(function (data) {
-            this.topics = this.topics.concat(data.topics);
-            this.filters.busy = false;
-            this.filters.disableInfiniteScroll = data.topics.length === 0 ? true : false;
+            _this.topics = _this.topics.concat(data.topics);
+            _this.filters.busy = false;
+            _this.filters.disableInfiniteScroll = data.topics.length === 0 ? true : false;
         });
     };
 

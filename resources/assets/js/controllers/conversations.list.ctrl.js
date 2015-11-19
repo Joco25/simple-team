@@ -17,7 +17,7 @@ module.exports = function($stateParams, $www) {
                 take: 50,
                 page: this.filters.page
             })
-            .success(function(data) {
+            .success((data) => {
                 this.topics = this.topics.concat(data.topics)
                 this.filters.busy = false
                 this.filters.disableInfiniteScroll = data.topics.length === 0 ? true : false
@@ -39,13 +39,13 @@ module.exports = function($stateParams, $www) {
         topic.is_starred = !topic.is_starred
     }
 
-    this.starTopic = function(topicId) {
+    this.starTopic = (topicId) => {
         $www.post('/api/topicStars', {
             topic_id: topicId
         })
     }
 
-    this.unstarTopic = function(topicId) {
+    this.unstarTopic = (topicId) => {
         $www.delete('/api/topicStars', {
             topic_id: topicId
         })
