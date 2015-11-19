@@ -108,34 +108,38 @@ class Topic extends Model
 
 	public function isUnread()
 	{
-		$query = DB::query("
-			SELECT COUNT(*) as topic_count
-			FROM topics t
-			WHERE NOT exists(
-				SELECT tuv.topic_id, max(tuv.created_at) as last_view, max(tp.created_at) as last_post
-				from topic_user_views tuv
-				inner join topic_posts as tp
-				on tuv.topic_id=tp.topic_id and tuv.created_at > tp.created_at
-				group by topic_id
-				having t.id=topic_id)
-				AND t.id = {$this->id}
-		");
+		// $query = DB::query("
+		// 	SELECT COUNT(*) as topic_count
+		// 	FROM topics t
+		// 	WHERE NOT exists(
+		// 		SELECT tuv.topic_id, max(tuv.created_at) as last_view, max(tp.created_at) as last_post
+		// 		from topic_user_views tuv
+		// 		inner join topic_posts as tp
+		// 		on tuv.topic_id=tp.topic_id and tuv.created_at > tp.created_at
+		// 		group by topic_id
+		// 		having t.id=topic_id)
+		// 		AND t.id = {$this->id}
+		// ");
+        //
+		// $topicCounts = DB::table('topics')
+		// 	->whereNotExists(function($query) {
+		// 		$query->select(DB::raw('topic_views.topic_id, max(topic_views.created_at) as last_view, max(topic_posts.created_at) as last_post'))
+		// 			->from('topic_views')
+		// 			->join('topic_posts', function($join) {
+		// 				$join->on('topic_views.topic_id', '=', 'topic_posts.topic_id')
+		// 					->on('topic_views.created_at', '>', 'topic_posts.created_at');
+		// 			})
+		// 			->groupBy('topic_id')
+		// 			->having('topics.id', '=', 'topic_id')
+		// 			->having('topics.id', '=', $this->id);
+		// 	})
+		// 	->count();
+		$count = TopicView::whereUserId(Auth::user()->id)
+            ->whereTopicId($this->id)
+            ->whereTeamId(Auth::user()->team_id)
+            ->count();
 
-		$topicCounts = DB::table('topics')
-			->whereNotExists(function($query) {
-				$query->select(DB::raw('topic_views.topic_id, max(topic_views.created_at) as last_view, max(topic_posts.created_at) as last_post'))
-					->from('topic_views')
-					->join('topic_posts', function($join) {
-						$join->on('topic_views.topic_id', '=', 'topic_posts.topic_id')
-							->on('topic_views.created_at', '>', 'topic_posts.created_at');
-					})
-					->groupBy('topic_id')
-					->having('topics.id', '=', 'topic_id')
-					->having('topics.id', '=', $this->id);
-			})
-			->count();
-
-		return $topicCounts > 0;
+		return $count == 0;
 	}
 
 	public function notifications()

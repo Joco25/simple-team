@@ -25,13 +25,13 @@ class ApiTopicController extends Controller
 			->orderBy('updated_at', 'desc')
 			->get();
 
-		foreach ($topics as $topic) {
-			$topic->is_starred = $topic->isStarred(Auth::user()->id);
+		_::each($topics, function($topic) {
+            $topic->is_starred = $topic->isStarred(Auth::user()->id);
 			$topic->users = $topic->users();
 			$topic->is_unread = $topic->isUnread();
 			// $topic->created_at = from_utc($topic->created_at, $account->timezone);
 			// $topic->updated_at = from_utc($topic->updated_at, $account->timezone);
-		}
+		});
 
 		return response()->json([
 			'topics' => $topics
@@ -154,14 +154,14 @@ class ApiTopicController extends Controller
 			->forPage($inputs['page'], $inputs['take'])
 			->orderBy('popularity_score', 'desc')
 			->get(['name']);
-		//
-		// _::each($d['topics'], function($topic) use ($account) {
-		// 	$topic->is_starred = $topic->is_starred(Auth::user()->id);
-		// 	$topic->users = $topic->users();
-		// 	$topic->is_unread = $topic->is_unread();
-		// 	$topic->created_at = from_utc($topic->created_at, $account->timezone);
-		// 	$topic->updated_at = from_utc($topic->updated_at, $account->timezone);
-		// });
+
+		_::each($topics, function($topic) {
+			$topic->is_starred = $topic->isStarred(Auth::user()->id);
+			$topic->users = $topic->users();
+			$topic->is_unread = $topic->isUnread();
+			// $topic->created_at = from_utc($topic->created_at, $account->timezone);
+			// $topic->updated_at = from_utc($topic->updated_at, $account->timezone);
+		});
 
 		return response()->json([
 			'topics' => $topics
