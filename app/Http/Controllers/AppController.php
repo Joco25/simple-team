@@ -16,9 +16,9 @@ class AppController extends Controller
      */
     public function index()
     {
-        if (\Auth::check())
+        if (\Auth::guest())
         {
-            return \Redirect::to('welcome');
+            return \Redirect::to('auth/login');
         }
 
         return view('app');
