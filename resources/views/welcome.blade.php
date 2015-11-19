@@ -8,6 +8,14 @@
         <h1>A Web Developer's Best Friend.</h1>
         <p>Simple tools for design, development, and communication.</p>
         <a href="/auth/register" class="btn btn-primary btn-lg">Create My Free Account</a>
+        <div class="row" style="margin-top: 20px;">
+            <div class="col-sm-6 col-sm-offset-3">
+                <div class="alert alert-warning text-center" role="alert">
+                    Simple.Team is currently in beta and was accidentally leaked.<br>
+                    If you find any bugs or have questions please let me know <a target="_blank" href="https://twitter.com/michaeljcalkins">@michaeljcalkins</a>, I'm constantly updating this product.
+                </div>
+            </div>
+        </div>
         <div class="site-preview"></div>
     </section>
 
