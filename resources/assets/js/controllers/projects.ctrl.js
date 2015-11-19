@@ -31,6 +31,10 @@ var ProjectsCtrl = function($http, $state, $rootScope, $modal, CardCacherService
         this.loadProjects()
     })
 
+    $rootScope.$on('team:changed', () => {
+        this.loadProjects()
+    })
+
     this.openEditCard = (card) => {
         this.CardCacherService.set(card)
         $state.go('projects.card', {

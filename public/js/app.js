@@ -41055,10 +41055,7 @@ angular.module('simple.team', ['ngFileUpload', 'ui.router', 'ui.sortable', 'ui.g
         $http.put('/api/me/team', {
             team_id: team.id
         }).success(function (data) {
-            if (!data.success) ctrl.authUser.team = previousTeam;
-            return;
-
-            $state.go($state.current, {}, { reload: true });
+            $state.reload();
             $rootScope.$broadcast('team:changed');
         });
     };
@@ -41726,6 +41723,10 @@ var ProjectsCtrl = function ProjectsCtrl($http, $state, $rootScope, $modal, Card
     };
 
     $rootScope.$on('projects:reload', function () {
+        _this.loadProjects();
+    });
+
+    $rootScope.$on('team:changed', function () {
         _this.loadProjects();
     });
 

@@ -92,11 +92,7 @@ angular
                     team_id: team.id
                 })
                 .success(function(data) {
-                    if (! data.success)
-                        ctrl.authUser.team = previousTeam
-                        return
-
-                    $state.go($state.current, {}, {reload: true})
+                    $state.reload()
                     $rootScope.$broadcast('team:changed')
                 })
         }
