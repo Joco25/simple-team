@@ -17,12 +17,10 @@ class ApiTopicController extends Controller
 {
 	public function latest()
 	{
-		$inputs = Input::all([
-			'page' => 1,
-			'take' => 50
-		]);
+    	$page = Input::get('page', 0);
+        $take = Input::get('take', 50);
 
-		$topics = Topic::forPage($inputs['page'], $inputs['take'])
+		$topics = Topic::forPage($page, $take)
 			->whereTeamId(Auth::user()->team_id)
 			->orderBy('updated_at', 'desc')
 			->get();
