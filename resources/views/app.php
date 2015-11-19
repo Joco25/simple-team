@@ -35,12 +35,9 @@
 </head>
 
 <body class="simple-page">
-    <div class="alert alert-warning text-center" role="alert">
-        Simple.Team is currently in beta and was accidentally leaked.  If you find any bugs or have questions please let me know <a href="https://twitter.com/michaeljcalkins">@michaeljcalkins</a>, I'm constantly updating this product.
-    </div>
     <nav class="navbar navbar-default navbar-static-top">
         <div class="container-fluid">
-            <a ui-sref="projects" class="navbar-brand">simple.team</a>
+            <a ui-sref="projects" class="navbar-brand">{{ appCtrl.authUser.email }}</a>
             <ul class="nav navbar-nav navbar-right">
                 <li ui-sref-active="active" ui-sref="projects" class="pointer">
                     <a>Projects</a>
