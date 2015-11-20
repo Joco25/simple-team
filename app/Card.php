@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Card extends Model
 {
     //
-    protected $fillable = ['name', 'user_id', 'stage_id', 'priority', 'team_id'];
+    protected $fillable = ['name', 'user_id', 'stage_id', 'priority', 'team_id', 'impact'];
 
     public function attachments()
     {

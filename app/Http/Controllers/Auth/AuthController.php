@@ -81,7 +81,7 @@ class AuthController extends Controller
             'priority' => 0
         ]);
 
-        $stage = Stage::create([
+        $inProgressStage = Stage::create([
             'name' => 'In Progress',
             'team_id' => $team->id,
             'user_id' => $user->id,
@@ -97,7 +97,7 @@ class AuthController extends Controller
             'project_id' => $project->id
         ]);
 
-        $stage = Stage::create([
+        $newStage = Stage::create([
             'name' => 'New',
             'team_id' => $team->id,
             'user_id' => $user->id,
@@ -106,10 +106,29 @@ class AuthController extends Controller
         ]);
 
         $card = Card::create([
-            'name' => 'My first card',
+            'name' => 'This card was just created and is waiting to get started.',
             'team_id' => $team->id,
             'user_id' => $user->id,
-            'stage_id' => $stage->id
+            'stage_id' => $newStage->id,
+            'impact' => 45,
+            'priority' => 0
+        ]);
+
+        $card = Card::create([
+            'name' => 'Another task in this project with a lower impact on the project.',
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'stage_id' => $newStage->id,
+            'impact' => 22,
+            'priority' => 1
+        ]);
+
+        $card = Card::create([
+            'name' => 'This card is in progress and being worked on.  When completed drag to the right to show your team you\'re done.',
+            'team_id' => $team->id,
+            'user_id' => $user->id,
+            'stage_id' => $inProgressStage->id,
+            'impact' => 78
         ]);
 
         return $user;
