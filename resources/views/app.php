@@ -37,7 +37,9 @@
 <body class="simple-page">
     <nav class="navbar navbar-default navbar-static-top">
         <div class="container-fluid">
-            <a ui-sref="projects" class="navbar-brand">simple.team</a>
+            <a ui-sref="projects" class="navbar-brand">
+                <img src="/img/SimpleTeamBlack.png" height="20">
+            </a>
             <ul class="nav navbar-nav navbar-right">
                 <li ui-sref-active-if="projects">
                     <a ui-sref="projects">Projects</a>
