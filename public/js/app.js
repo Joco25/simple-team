@@ -41687,6 +41687,15 @@ module.exports = function ($stateParams, $www, $state, $rootScope) {
 Object.defineProperty(exports, '__esModule', {
     value: true
 });
+function isJsonString(str) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
+
 var ProjectsCtrl = function ProjectsCtrl($http, $state, $rootScope, $modal, CardCacherService, CardListFiltersService, localStorageService) {
     var _this = this;
 
@@ -41713,7 +41722,12 @@ var ProjectsCtrl = function ProjectsCtrl($http, $state, $rootScope, $modal, Card
         }
     };
 
-    this.filters = JSON.parse(localStorageService.get('filters'));
+    if (isJsonString(localStorageService.get('filters'))) {
+        this.filters = JSON.parse(localStorageService.get('filters'));
+    } else {
+        localStorageService.remove('filters');
+    }
+
     if (!this.filters) this.filters = {
         tag: null,
         assignedTo: null,

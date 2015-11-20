@@ -1,3 +1,12 @@
+function isJsonString(str) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
+
 var ProjectsCtrl = function($http, $state, $rootScope, $modal, CardCacherService, CardListFiltersService, localStorageService) {
     this.s3BucketAttachmentsUrl = $rootScope.s3BucketAttachmentsUrl
     this.authUser = $rootScope.authUser
@@ -22,7 +31,12 @@ var ProjectsCtrl = function($http, $state, $rootScope, $modal, CardCacherService
         }
     }
 
-    this.filters = JSON.parse(localStorageService.get('filters'))
+    if (isJsonString(localStorageService.get('filters'))) {
+        this.filters = JSON.parse(localStorageService.get('filters'))
+    } else {
+        localStorageService.remove('filters')
+    }
+
     if (! this.filters)
         this.filters = {
             tag: null,
