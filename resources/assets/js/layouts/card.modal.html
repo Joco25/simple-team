@@ -185,15 +185,14 @@
                         ng-repeat="comment in ctrl.selectedCard.comments">
                         <div class="media-left">
                             <a href="#">
-                                <img class="media-object" gravatar-src="comment.user.email" gravatar-size="45">
+                                <img class="img-rounded media-object" gravatar-src="comment.user.email" gravatar-size="40">
                             </a>
                         </div>
                         <div class="media-body">
                             <div ng-hide="comment.editMode">
-                                <strong>{{ comment.user.name }}</strong>
+                                <strong>{{ comment.user.name }}</strong> <small class="text-muted"><span am-time-ago="comment.created_at"></span></small>
                                 <div media-comment style="margin: 4px 0 4px" ng-model="comment.body"></div>
-                                <small class="text-muted">
-                                    <span am-time-ago="comment.created_at"></span> -
+                                <small>
                                     <a class="pointer" ng-click="ctrl.editComment(comment)">Edit</a> -
                                     <a class="pointer" ng-click="ctrl.deleteComment(comment)">Delete</a>
                                 </small>
