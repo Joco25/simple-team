@@ -191,10 +191,12 @@
                         <div class="media-body">
                             <div ng-hide="comment.editMode">
                                 <strong>{{ comment.user.name }}</strong>
-                                <p>{{ comment.body | nl2br }}</p>
-                                <span am-time-ago="comment.created_at"></span> -
-                                <a class="pointer" ng-click="ctrl.editComment(comment)">Edit</a> -
-                                <a class="pointer" ng-click="ctrl.deleteComment(comment)">Delete</a>
+                                <div media-comment style="margin: 4px 0 4px" ng-model="comment.body"></div>
+                                <small class="text-muted">
+                                    <span am-time-ago="comment.created_at"></span> -
+                                    <a class="pointer" ng-click="ctrl.editComment(comment)">Edit</a> -
+                                    <a class="pointer" ng-click="ctrl.deleteComment(comment)">Delete</a>
+                                </small>
                             </div>
                             <div ng-show="comment.editMode">
                                 <div class="form-group">

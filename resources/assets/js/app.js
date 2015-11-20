@@ -52,6 +52,7 @@ angular
         'simple.team.userData',
         'simple.team.www',
         'simple.team.cardList',
+        'simple.team.mediaComment',
         'simple.team.cardCacher'
     ])
     .config(function($urlRouterProvider, cfpLoadingBarProvider) {
