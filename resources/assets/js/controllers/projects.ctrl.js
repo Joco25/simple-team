@@ -1,11 +1,6 @@
-var ProjectsCtrl = function($http, $state, $rootScope, $modal, CardCacherService, CardListFiltersService) {
+var ProjectsCtrl = function($http, $state, $rootScope, $modal, CardCacherService, CardListFiltersService, localStorageService) {
     this.s3BucketAttachmentsUrl = $rootScope.s3BucketAttachmentsUrl
     this.authUser = $rootScope.authUser
-    this.filters = {
-        tag: null,
-        assignedTo: null,
-        quick: null
-    }
     this.team = $rootScope.authUser.team
     this.projects = []
     this.tags = []
@@ -26,6 +21,14 @@ var ProjectsCtrl = function($http, $state, $rootScope, $modal, CardCacherService
             }
         }
     }
+
+    this.filters = JSON.parse(localStorageService.get('filters'))
+    if (! this.filters)
+        this.filters = {
+            tag: null,
+            assignedTo: null,
+            quick: null
+        }
 
     $rootScope.$on('projects:reload', () => {
         this.loadProjects()
@@ -68,16 +71,19 @@ var ProjectsCtrl = function($http, $state, $rootScope, $modal, CardCacherService
     this.selectAssignedToFilter = (newFilter) => {
         this.filters.assignedTo = newFilter
         $rootScope.$broadcast('filters:update', this.filters)
+        localStorageService.set('filters', JSON.stringify(this.filters))
     }
 
     this.selectTagFilter = (newFilter) => {
         this.filters.tag = newFilter
         $rootScope.$broadcast('filters:update', this.filters)
+        localStorageService.set('filters', JSON.stringify(this.filters))
     }
 
     this.selectQuickFilter = (newFilter) => {
         this.filters.quick = newFilter
         $rootScope.$broadcast('filters:update', this.filters)
+        localStorageService.set('filters', JSON.stringify(this.filters))
     }
 
     this.updateSearchInput = () => {

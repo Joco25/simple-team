@@ -16,7 +16,7 @@ nav {
                     </button>
                     <ul class="dropdown-menu">
                         <li ng-click="ctrl.selectTagFilter(null)">
-                            <a href="#">Show All Tags</a>
+                            <a href="#">Show all tags</a>
                         </li>
                         <li class="divider"></li>
                         <li
@@ -32,16 +32,17 @@ nav {
                         type="button"
                         class="btn btn-default dropdown-toggle"
                         data-toggle="dropdown">
-                        <span ng-show="ctrl.assignedTo.name">{{ ctrl.assignedTo.name }}</span>
-                        <span ng-show="ctrl.assignedTo == 'no one'">Assigned to no one</span>
-                        <span ng-show="ctrl.assignedTo == null">Assigned to</span>
+                        <span ng-show="ctrl.filters.assignedTo.name">{{ ctrl.filters.assignedTo.name }}</span>
+                        <span ng-show="ctrl.filters.assignedTo == 'no one'">Assigned to no one</span>
+                        <span ng-show="ctrl.filters.assignedTo == null">Assigned to</span>
                         <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu">
                         <li ng-click="ctrl.selectAssignedToFilter(null)"><a href="#">Everyone</a></li>
                         <li class="divider"></li>
                         <li ng-click="ctrl.selectAssignedToFilter(ctrl.authUser)"><a href="#">Me</a></li>
-                        <li ng-click="ctrl.selectAssignedToFilter('no one')"><a href="#">No One Assigned</a></li>
+                        <li ng-click="ctrl.selectAssignedToFilter('no one')"><a href="#">No one assigned</a></li>
+                        <li class="divider"></li>
                         <li
                             ng-click="ctrl.selectAssignedToFilter(user)"
                             ng-hide="user.id == ctrl.authUser.id"
