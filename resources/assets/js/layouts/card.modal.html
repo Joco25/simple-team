@@ -20,7 +20,6 @@
     <h4
         ng-click="ctrl.selectedCard.editName = !ctrl.selectedCard.editName; ctrl.selectedCardName = ctrl.selectedCard.name"
         ng-hide="ctrl.selectedCard.editName"
-        style="line-height: 35px;"
         class="modal-title">{{ ctrl.selectedCard.name || 'Edit card name...' }}</h4>
 
     <div ng-show="ctrl.selectedCard.editName">
