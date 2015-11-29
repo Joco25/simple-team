@@ -21,7 +21,8 @@ class UserController extends CrudController{
 		$this->filter->build();
 
 		$this->grid = \DataGrid::source($this->filter);
-		$this->grid->add('name', 'Name');
+        $this->grid->add('id', 'ID');
+        $this->grid->add('name', 'Name');
         $this->grid->add('email', 'Email');
         $this->grid->add('created_at', 'Created');
         $this->grid->add('updated_at', 'Updated');

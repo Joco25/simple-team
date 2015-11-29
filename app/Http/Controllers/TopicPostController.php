@@ -20,6 +20,7 @@ class TopicPostController extends CrudController{
 		$this->filter->build();
 
 		$this->grid = \DataGrid::source($this->filter);
+        $this->grid->add('id', 'ID');
 		$this->grid->add('user_id', 'User ID');
         $this->grid->add('team_id', 'Team ID');
         $this->grid->add('topic_id', 'Topic ID');
