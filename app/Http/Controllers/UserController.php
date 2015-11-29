@@ -13,7 +13,6 @@ class UserController extends CrudController{
     public function all($entity){
         parent::all($entity);
 
-        /* Simple code of  filter and grid part , List of all fields here : http://laravelpanel.com/docs/master/crud-fields */
 		$this->filter = \DataFilter::source(new \App\User);
 		$this->filter->add('name', 'Name', 'text');
         $this->filter->add('email', 'Email', 'text');
