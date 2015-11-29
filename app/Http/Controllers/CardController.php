@@ -26,6 +26,8 @@ class CardController extends CrudController{
         $this->grid->add('description', 'Description');
         $this->grid->add('blocked', 'Blocked');
         $this->grid->add('impact', 'Impact');
+        $this->grid->add('created_at', 'Created');
+        $this->grid->add('updated_at', 'Updated');
 		$this->addStylesToGrid();
 
         return $this->returnView();

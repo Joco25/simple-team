@@ -22,6 +22,8 @@ class TeamController extends CrudController{
 		$this->grid = \DataGrid::source($this->filter);
 		$this->grid->add('user_id', 'User ID');
         $this->grid->add('name', 'Name');
+        $this->grid->add('created_at', 'Created');
+        $this->grid->add('updated_at', 'Updated');
 		$this->addStylesToGrid();
 
         return $this->returnView();

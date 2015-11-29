@@ -26,6 +26,8 @@ class TopicController extends CrudController{
         $this->grid->add('post_count', 'Post Count');
         $this->grid->add('like_count', 'Like Count');
         $this->grid->add('view_count', 'View Count');
+        $this->grid->add('created_at', 'Created');
+        $this->grid->add('updated_at', 'Updated');
 		$this->addStylesToGrid();
 
         return $this->returnView();

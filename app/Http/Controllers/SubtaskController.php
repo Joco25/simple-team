@@ -26,6 +26,8 @@ class SubtaskController extends CrudController{
         $this->grid->add('name', 'Body');
 		$this->grid->add('priority', 'Priority');
         $this->grid->add('checked', 'Checked');
+        $this->grid->add('created_at', 'Created');
+        $this->grid->add('updated_at', 'Updated');
 		$this->addStylesToGrid();
 
         return $this->returnView();

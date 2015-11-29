@@ -25,6 +25,8 @@ class TopicPostController extends CrudController{
         $this->grid->add('topic_id', 'Topic ID');
         $this->grid->add('topic_post_id', 'Topic Post ID');
         $this->grid->add('body', 'Body');
+        $this->grid->add('created_at', 'Created');
+        $this->grid->add('updated_at', 'Updated');
 		$this->addStylesToGrid();
 
         return $this->returnView();

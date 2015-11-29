@@ -23,6 +23,8 @@ class ProjectController extends CrudController{
         $this->grid->add('user_id', 'User ID');
         $this->grid->add('team_id', 'Team ID');
         $this->grid->add('name', 'Name');
+        $this->grid->add('created_at', 'Created');
+        $this->grid->add('updated_at', 'Updated');
 		$this->addStylesToGrid();
 
         return $this->returnView();
