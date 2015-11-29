@@ -150,10 +150,11 @@ return [
          */
         Bugsnag\BugsnagLaravel\BugsnagLaravelServiceProvider::class,
         Aws\Laravel\AwsServiceProvider::class,
+        Serverfireteam\Panel\PanelServiceProvider::class,
 
         // Used when generating migrations is necessary.
-        'Way\Generators\GeneratorsServiceProvider',
-        'Xethron\MigrationsGenerator\MigrationsGeneratorServiceProvider'
+        // 'Way\Generators\GeneratorsServiceProvider',
+        // 'Xethron\MigrationsGenerator\MigrationsGeneratorServiceProvider'
 
     ],
 
