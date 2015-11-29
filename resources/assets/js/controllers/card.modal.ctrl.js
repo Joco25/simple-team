@@ -151,9 +151,6 @@ module.exports = function($state, $stateParams, $scope, $http, $rootScope, TagDa
   })(this)
   this.updateCardDescription = (function(_this) {
     return function() {
-      if (!_this.selectedCardDescription) {
-        return
-      }
       _this.selectedCard.description = angular.copy(_this.selectedCardDescription)
       _this.selectedCardDescription = null
       _this.showCardDescription = false
