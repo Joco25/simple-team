@@ -8,7 +8,7 @@ use \Serverfireteam\Panel\CrudController;
 
 use Illuminate\Http\Request;
 
-class subtaskController extends CrudController{
+class SubtaskController extends CrudController{
 
     public function all($entity){
         parent::all($entity);

@@ -8,7 +8,7 @@ use \Serverfireteam\Panel\CrudController;
 
 use Illuminate\Http\Request;
 
-class cardController extends CrudController{
+class CardController extends CrudController{
 
     public function all($entity){
         parent::all($entity);
