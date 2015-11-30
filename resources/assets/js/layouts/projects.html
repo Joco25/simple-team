@@ -42,7 +42,7 @@ nav {
                         <li class="divider"></li>
                         <li ng-click="ctrl.selectAssignedToFilter(ctrl.authUser)"><a href="#">Me</a></li>
                         <li ng-click="ctrl.selectAssignedToFilter('no one')"><a href="#">No one assigned</a></li>
-                        <li class="divider"></li>
+                        <li class="divider" ng-show="ctrl.team.users.length > 1"></li>
                         <li
                             ng-click="ctrl.selectAssignedToFilter(user)"
                             ng-hide="user.id == ctrl.authUser.id"
