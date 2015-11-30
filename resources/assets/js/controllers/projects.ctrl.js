@@ -28,6 +28,9 @@ var ProjectsCtrl = function($http, $state, $rootScope, $modal, CardCacherService
                 stage = ui.item.sortable.droptarget.scope().stage
                 this.updateStageCards(stage)
             }
+        },
+        start: function(e, ui){
+            ui.placeholder.height(ui.item.height());
         }
     }
 

@@ -41716,6 +41716,9 @@ var ProjectsCtrl = function ProjectsCtrl($http, $state, $rootScope, $modal, Card
                 stage = ui.item.sortable.droptarget.scope().stage;
                 _this.updateStageCards(stage);
             }
+        },
+        start: function start(e, ui) {
+            ui.placeholder.height(ui.item.height());
         }
     };
 
