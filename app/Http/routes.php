@@ -33,7 +33,7 @@ Route::post('password/email', 'Auth\PasswordController@postEmail');
 Route::get('password/reset/{token}', 'Auth\PasswordController@getReset');
 Route::post('password/reset', 'Auth\PasswordController@postReset');
 
-Route::group(['middleware' => 'auth'], function () {
+Route::group(['middleware' => ['auth']], function () {
     Route::get('home', 'AppController@index');
     Route::resource('api/attachments', 'ApiAttachmentController');
     Route::resource('api/teams', 'ApiTeamController');

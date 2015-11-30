@@ -1,6 +1,6 @@
 'use strict'
 
-module.exports = function($stateParams, $www) {
+module.exports = function($stateParams, $www, $rootScope) {
     this.topics = []
     this.filters = {
         type: $stateParams.type || 'latest',
@@ -8,6 +8,7 @@ module.exports = function($stateParams, $www) {
         page: 1,
         disableInfiniteScroll: false
     }
+    this.authUser = $rootScope.authUser
 
     this.loadConversations = () => {
         if (this.filters.busy) return

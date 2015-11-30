@@ -97,7 +97,8 @@
                 id: <?php echo Auth::user()->id ?>,
                 team: <?php echo json_encode(Auth::user()->team) ?>,
                 name: <?php echo json_encode(Auth::user()->name) ?>,
-                email: <?php echo json_encode(Auth::user()->email) ?>
+                email: <?php echo json_encode(Auth::user()->email) ?>,
+                timezone: <?php echo json_encode(Auth::user()->timezone) ?>
             },
             s3BucketAttachmentsUrl: <?php echo json_encode(env('S3_BUCKET_ATTACHMENTS_URL')) ?>,
             teams: <?php echo json_encode(Auth::user()->teams) ?>

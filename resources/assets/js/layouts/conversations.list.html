@@ -74,8 +74,7 @@
 								{{ topic.view_count }}
 							</span>
 						</td>
-						<td class='text-center vert-align'>{{ topic.created_at }}</td>
-						<td class='text-center vert-align'>{{ topic.updated_at }}</td>
+						<td class='text-center vert-align'>{{ topic.updated_at | amUtc | amLocal | amDateFormat:'MMM Do' }}</td>
 					</tr>
 				</tbody>
 			</table>
