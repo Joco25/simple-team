@@ -23,7 +23,8 @@ class CardController extends CrudController{
 
 		$this->grid = \DataGrid::source($this->filter);
         $this->grid->add('id', 'ID');
-		$this->grid->add('name', 'Name');
+		$this->grid->add('user_id', 'User ID');
+        $this->grid->add('name', 'Name');
         $this->grid->add('description', 'Description');
         $this->grid->add('blocked', 'Blocked');
         $this->grid->add('impact', 'Impact');
