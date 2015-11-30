@@ -24,7 +24,7 @@ class SubtaskController extends CrudController{
         $this->grid->add('user_id', 'User ID');
         $this->grid->add('team_id', 'Team ID');
         $this->grid->add('card_id', 'Card ID');
-        $this->grid->add('name', 'Body');
+        $this->grid->add('body', 'Body');
 		$this->grid->add('priority', 'Priority');
         $this->grid->add('checked', 'Checked');
         $this->grid->add('created_at', 'Created');
