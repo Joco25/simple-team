@@ -21,6 +21,8 @@ class ApiTeamController extends Controller
             ->whereUserId(Auth::user()->id)
             ->first();
 
+        if (! $team) abort(404);
+
         $success = $team->users()->detach($userId);
 
         $team = Team::with('users')
@@ -74,7 +76,6 @@ class ApiTeamController extends Controller
      */
     public function index()
     {
-        //
         $teams = \Auth::user()->teams;
 
         return response()->json([
