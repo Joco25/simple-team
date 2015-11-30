@@ -148,7 +148,7 @@
                         </div>
                         <div class="media-body">
                             <h4 class="media-heading"><a target="_blank" ng-href="{{ ctrl.s3BucketAttachmentsUrl + attachment.filename }}">{{ attachment.original_filename }}</a></h4>
-                            <p>Added <span am-time-ago="attachment.created_at"></span></p>
+                            <p>Added on {{ attachment.created_at | amUtc | amLocal | amDateFormat:'MMM Do' }}</p>
                             <button
                                 class="btn btn-default btn-sm"
                                 ng-click="ctrl.downloadAttachment(attachment)">
@@ -181,7 +181,7 @@
 
                     <div
                         class="media"
-                        ng-repeat="comment in ctrl.selectedCard.comments">
+                        ng-repeat="comment in ctrl.selectedCard.comments | orderBy:'-'">
                         <div class="media-left">
                             <a href="#">
                                 <img class="img-rounded media-object" gravatar-src="comment.user.email" gravatar-size="40">
@@ -189,7 +189,7 @@
                         </div>
                         <div class="media-body">
                             <div ng-hide="comment.editMode">
-                                <strong>{{ comment.user.name }}</strong> <small class="text-muted"><span am-time-ago="comment.created_at"></span></small>
+                                <strong>{{ comment.user.name }}</strong> <small class="text-muted">{{ comment.created_at | amUtc | amLocal | amDateFormat:'MMM Do' }}</small>
                                 <div media-comment style="margin: 4px 0 4px" ng-model="comment.body"></div>
                                 <small>
                                     <a class="pointer" ng-click="ctrl.editComment(comment)">Edit</a> -
