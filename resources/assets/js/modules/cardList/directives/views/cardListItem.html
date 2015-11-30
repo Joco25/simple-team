@@ -1,3 +1,6 @@
+<div
+    style="background-image: url(http://res.cloudinary.com/michaeljcalkins/image/fetch/c_fill,g_center,w_500,h_200/{{ ctrl.s3BucketAttachmentsUrl + ctrl.card.attachments[0].filename }}); background-position: center; height: 190px; width: 100%; background-size: cover; margin-bottom: 5px;"
+    ng-show="ctrl.card.attachments.length > 0"></div>
 <div class="row">
     <div class="col-sm-12">
         {{ ctrl.card.name }}

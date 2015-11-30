@@ -7,7 +7,8 @@ module.exports = class CardListItem {
         this.template = require('./views/cardListItem.html')
     }
 
-    controller($scope) {
+    controller($scope, $rootScope) {
         this.card = $scope.data
+        this.s3BucketAttachmentsUrl = $rootScope.s3BucketAttachmentsUrl
     }
 }
