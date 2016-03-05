@@ -1,7 +1,5 @@
 # Simple Team
 
-![](http://simple.team/img/site-preview-full.png)
-
 ### Projects, expressive progress.
 
 Clearly communicate project progress by quickly glancing over your projects. Prioritize what is most important to your team and give them the info to get it done.
@@ -9,3 +7,7 @@ Clearly communicate project progress by quickly glancing over your projects. Pri
 ### Tasklist, tailored goals.
 
 Turns your cards into a list that allows you to sort and filter by impact or stage. You can scan them quickly to see what issues are being issues are being worked on and what might have been missed.
+
+![](http://i.imgur.com/SXXJ335.png)
+
+![](http://i.imgur.com/yqo9Iea.png)
