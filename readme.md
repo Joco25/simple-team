@@ -1,5 +1,7 @@
 # Simple Team
 
+![](http://simple.team/img/site-preview-full.png)
+
 ### Projects, expressive progress.
 
 Clearly communicate project progress by quickly glancing over your projects. Prioritize what is most important to your team and give them the info to get it done.
