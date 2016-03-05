@@ -11,3 +11,7 @@ Turns your cards into a list that allows you to sort and filter by impact or sta
 ![](http://i.imgur.com/SXXJ335.png)
 
 ![](http://i.imgur.com/yqo9Iea.png)
+
+![](http://i.imgur.com/xLfenIG.png)
+
+![](http://i.imgur.com/auzZrW1.png)
